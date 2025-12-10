@@ -1,0 +1,152 @@
+[
+  {
+    "id": "principle_001",
+    "principle_name": "Benefit of Doubt - Golden Rule",
+    "category": "fundamental_principles",
+    "explanation": "The golden rule of benefit of doubt is a rule of prudence that cannot be ignored while dispensing justice. Finding of guilt against an accused cannot be based merely on high probabilities inferred from evidence. The finding must rest surely and firmly on evidence produced and plain inferences irresistibly drawn from that evidence. Mere conjectures and probabilities cannot take the place of proof. This is based on the maxim: It is better that ten guilty persons be acquitted rather than one innocent be convicted.",
+    "islamic_basis": "This principle occupies a pivotal place in Islamic Law, as evident from the Holy Prophet's (PBUH) saying: The mistake of a Qazi (Judge) in releasing a criminal is better than his mistake in punishing an innocent.",
+    "application": "Courts must resolve every reasonable doubt in favor of the accused not as a matter of grace but as a matter of right.",
+    "citations": ["PLD 1970 SC 10 Muhammad Luqman", "2013 MLD 665", "2022 SCMR 1954"],
+    "legal_basis": "Criminal jurisprudence and Islamic legal principles"
+  },
+  {
+    "id": "principle_002",
+    "principle_name": "Single Doubt Sufficiency",
+    "category": "benefit_of_doubt",
+    "explanation": "A single circumstance creating reasonable doubt in a prudent mind about the guilt of the accused makes him entitled to benefit of doubt. Multiple circumstances creating doubt are NOT required. Even one reasonable doubt is sufficient to entitle the accused to acquittal as a matter of right, not as a matter of grace or concession.",
+    "application": "Courts need not find several infirmities in prosecution case. One fundamental doubt about guilt is sufficient for acquittal.",
+    "citations": ["2022 SCMR 1954", "2022 SCMR 1540", "2024 SCMR 51"],
+    "legal_basis": "Supreme Court precedents on benefit of doubt",
+    "wrong_application": "Requiring multiple doubts or cumulative defects before granting benefit of doubt"
+  },
+  {
+    "id": "principle_003",
+    "principle_name": "Burden of Proof Never Shifts",
+    "category": "burden_of_proof",
+    "explanation": "The prosecution bears the burden to prove the accused's guilt beyond reasonable doubt. This burden never shifts to the accused. The accused is not required to prove his innocence. Even if the accused's special pleading fails, he must be acquitted if he succeeds in raising reasonable doubt about prosecution's case. The entire evidence must be looked at in its entirety, not merely the accused's special pleading.",
+    "application": "Failure of defense does not mean success of prosecution. Prosecution must independently prove its case beyond reasonable doubt.",
+    "citations": ["PLD 1953 F.C 93", "Section 105 Evidence Act", "PLD 1961 LAHORE 137"],
+    "legal_basis": "Fundamental principle of criminal justice; Evidence Act",
+    "wrong_application": "Convicting accused because his defense was not accepted, without independently proving prosecution case"
+  },
+  {
+    "id": "principle_004",
+    "principle_name": "Standard of Proof - Beyond Reasonable Doubt",
+    "category": "burden_of_proof",
+    "explanation": "In criminal cases, prosecution must prove guilt beyond any shadow of reasonable doubt. This standard is considerably greater than the civil standard of balance of probabilities. The prosecution must satisfy the court with regard to the actuality of reasonable grounds, beyond any shadow of doubt, to secure a conviction. If reasonable possibility exists that defense version might be true, accused is entitled to acquittal as of right.",
+    "application": "Courts must be fully convinced of guilt based on evidence, not mere probabilities or suspicions.",
+    "citations": ["2024 SCMR 51", "Article 10-A Constitution", "2011 SCMR 208 Abid Ali"],
+    "legal_basis": "Constitutional right to fair trial; Criminal jurisprudence",
+    "wrong_application": "Convicting based on high probability or strong suspicion without concrete proof"
+  },
+  {
+    "id": "principle_005",
+    "principle_name": "Presumption of Innocence",
+    "category": "fundamental_rights",
+    "explanation": "An accused person is presumed innocent until proved guilty beyond reasonable doubt. This presumption continues throughout the trial until prosecution succeeds in proving the charge on the basis of legally admissible, confidence-inspiring, trustworthy and reliable evidence. This is a constitutional guarantee that cannot be taken away regardless of how heinous the crime.",
+    "application": "Every accused starts with clean slate. Prosecution must overcome this presumption with solid evidence.",
+    "citations": ["Article 10-A Constitution", "Multiple SC precedents"],
+    "legal_basis": "Constitution of Pakistan Article 10-A; Universal legal principle",
+    "wrong_application": "Treating accused as guilty from the start or requiring accused to prove innocence"
+  },
+  {
+    "id": "principle_006",
+    "principle_name": "Medical Evidence - Confirmatory Nature",
+    "category": "medical_evidence",
+    "explanation": "Medical evidence is confirmatory or explanatory of direct or circumstantial evidence. It cannot override trustworthy ocular evidence unless it renders the ocular account impossible or highly improbable. Medical evidence alone cannot connect the accused with the crime or support prosecution story. It only confirms injuries and their nature.",
+    "application": "Courts give primacy to reliable eyewitness testimony over medical evidence in most cases, unless medical evidence shows occurrence as described is impossible.",
+    "citations": ["PLJ 1994 S.C. 87 Abdul Subhan", "1997 SCMR 866 Muhammad Sharif", "NLR 1986 Cr. 773"],
+    "legal_basis": "Established precedents on evidence hierarchy",
+    "wrong_application": "Automatically preferring medical evidence over eyewitness accounts in all cases"
+  },
+  {
+    "id": "principle_007",
+    "principle_name": "Medical Evidence Contradiction - Effect",
+    "category": "medical_evidence",
+    "explanation": "When ocular evidence is directly in conflict with medical evidence, and medical evidence shows the described occurrence is impossible, benefit of doubt goes to accused. However, minor discrepancies between ocular and medical evidence may be explained by confusion in observation and do not necessarily destroy prosecution case. Courts must distinguish between fundamental contradictions and minor variances.",
+    "application": "Assess whether medical contradiction makes occurrence impossible (fundamental) or merely shows minor variance (not fatal).",
+    "citations": ["1981 SCMR 132 Nawaz Ali", "1986 SCMR 1027 Saeed Ullah Khan", "PLD 1974 Lah. 306"],
+    "legal_basis": "Supreme Court precedents on evidence assessment",
+    "wrong_application": "Treating every minor discrepancy as fatal contradiction"
+  },
+  {
+    "id": "principle_008",
+    "principle_name": "FIR Delay - Not Automatically Fatal",
+    "category": "FIR_principles",
+    "explanation": "Delay in filing FIR is not always fatal to prosecution. The delay must be taken into consideration when assessing evidence, but if properly explained, it does not necessarily destroy the case. Legitimate reasons include: taking victim to hospital, waiting for family members, funeral arrangements in murder cases, honor considerations in abduction/rape cases, or shock after traumatic incident.",
+    "application": "Courts examine reason for delay and assess whether explanation is reasonable in the circumstances.",
+    "citations": ["1976 P.Cr.LJ 40 Abbas Shah", "PLJ 1995 FSC 118 Bali Khan", "2020 SCMR 178"],
+    "legal_basis": "Established case law on FIR delay assessment",
+    "wrong_application": "Automatically dismissing cases with any delay without examining explanation"
+  },
+  {
+    "id": "principle_009",
+    "principle_name": "Prompt FIR - Value and Limitations",
+    "category": "FIR_principles",
+    "explanation": "Prompt FIR rules out possibility of consultation to concoct false case and eliminates chances of fabrication. However, promptness alone does not guarantee correctness of facts mentioned in FIR or prove that innocent persons have not been implicated. Promptitude in lodging FIR is not enough if on analysis prosecution fails to prove case beyond reasonable doubt.",
+    "application": "Prompt FIR is a positive factor but not conclusive proof. All evidence must still be assessed.",
+    "citations": ["1975 P.Cr.LJ 44 Moharram", "PLJ 1974 SC 134", "PLJ 1981 Cr.C. (Pesh.) 74"],
+    "legal_basis": "Case law on FIR evidentiary value",
+    "wrong_application": "Treating prompt FIR as conclusive proof of guilt or correctness"
+  },
+  {
+    "id": "principle_010",
+    "principle_name": "FIR Unexplained Delay - Inference",
+    "category": "FIR_principles",
+    "explanation": "When FIR is delayed by several hours without explanation given in the FIR itself, inference is that the FIR was recorded after preliminary investigation, consultation, and calculated preparation. Delay beyond 3 months without satisfactory explanation may indicate mala fide intent. Such delay can be basis for pre-arrest bail or questioning prosecution credibility.",
+    "application": "Unexplained delay raises suspicion of afterthought, consultation, and false implication.",
+    "citations": ["PLJ 1996 Cr.C. (Pesh) 1752 Mashal Khan", "PLD 1986 SC 53"],
+    "legal_basis": "Precedents on FIR delay assessment",
+    "wrong_application": "Accepting prosecution case despite long unexplained delay"
+  },
+  {
+    "id": "principle_011",
+    "principle_name": "Related Witness vs Interested Witness",
+    "category": "witness_testimony",
+    "explanation": "Related witness cannot be automatically termed interested witness. If offense is committed in presence of family members, they are natural witnesses. Their evidence can be accepted if reliable, cogent and clear. Related witness becomes interested witness only when evidence is tainted with malice and shows desire to falsely implicate accused through fabrication. Evidence of related witness who is near relative of victim should be closely scrutinized but not rejected solely due to relationship.",
+    "application": "Courts must distinguish between natural witnesses (related but credible) and interested witnesses (related with malice).",
+    "citations": ["2023 SCMR 1375"],
+    "legal_basis": "Supreme Court precedents on witness categorization",
+    "wrong_application": "Automatically rejecting testimony because witness is related to victim"
+  },
+  {
+    "id": "principle_012",
+    "principle_name": "Contradiction vs Minor Discrepancy",
+    "category": "evidence_assessment",
+    "explanation": "Contradiction in witness statement is fatal for prosecution case, whereas minor discrepancy or variance in evidence will not make case doubtful. In normal course of human conduct, minor discrepancies occur while narrating incidents. Parrot-like statements are discredited by courts. Whether discrepancy is minor or amounts to contradiction depends on case circumstances, social status of witnesses, and environment of statements. Such discrepancies are due to normal errors of observation, memory lapse, and mental disposition.",
+    "application": "Courts must distinguish material contradictions (fatal) from human variance in narration (acceptable).",
+    "citations": ["2023 SCMR 1375"],
+    "legal_basis": "Supreme Court precedents on evidence appreciation",
+    "wrong_application": "Treating every minor variance as fatal contradiction or accepting contradictory evidence"
+  },
+  {
+    "id": "principle_013",
+    "principle_name": "Bail in Non-Bailable Offences - Grounds",
+    "category": "bail",
+    "explanation": "Bail in non-bailable offences can be granted under Section 497(2) CrPC when: (1) Further inquiry needed and accused in custody for considerable time; (2) No reasonable grounds to believe accused committed offense; (3) Unreasonable delay in trial; (4) Accused is minor, woman, or infirm; (5) Mala fide prosecution or false implication evident. Bail is matter of right when grounds established, not discretionary favor.",
+    "application": "Courts must balance individual liberty against societal interests while assessing bail applications.",
+    "citations": ["Section 497(2) CrPC", "PLD 1995 SC 34 Tariq Bashir", "2017 SCMR 733"],
+    "legal_basis": "Criminal Procedure Code; Constitutional rights",
+    "wrong_application": "Automatically refusing bail in serious cases without examining grounds"
+  },
+  {
+    "id": "principle_014",
+    "principle_name": "Pre-Arrest Bail - Preventive Protection",
+    "category": "bail",
+    "explanation": "Pre-arrest bail under Section 498 CrPC is preventive protection against arbitrary arrest and harassment. It safeguards fundamental right to personal liberty under Article 9 Constitution. Granted when: (1) Delay in FIR indicates mala fide; (2) False implication due to enmity/politics evident; (3) Absence of independent corroborative evidence; (4) Case shows harassment or vindictive litigation. It is essential instrument for protecting citizens against misuse of criminal laws.",
+    "application": "Courts protect personal liberty while maintaining balance with law enforcement objectives.",
+    "citations": ["Section 498 CrPC", "Article 9 Constitution", "Chaudhry Zahoor Elahi v. State"],
+    "legal_basis": "Criminal Procedure Code; Constitutional fundamental rights",
+    "wrong_application": "Refusing pre-arrest bail without examining grounds for false implication"
+  },
+  {
+    "id": "principle_015",
+    "principle_name": "Expert Evidence - Weight and Limitations",
+    "category": "expert_evidence",
+    "explanation": "Expert opinion (medical, ballistics, forensic) is entitled to great weight but cannot override factual observations by equally competent witnesses. Expert evidence is confirmatory or explanatory of direct or circumstantial evidence. When experts give contradictory opinions, benefit of doubt goes to accused. Non-production of available expert can be adverse to prosecution under Section 114 illustration (g) Evidence Act.",
+    "application": "Courts consider expert evidence carefully but do not treat it as conclusive if contradictory or if factual evidence conflicts.",
+    "citations": ["1973 SCMR 162 Samano", "PLJ 1974 Cr. C. (Lah.) 600", "1976 P.Cr.LJ 28"],
+    "legal_basis": "Evidence Act; Case law on expert testimony",
+    "wrong_application": "Blindly following expert opinion without assessing its consistency with other evidence"
+  }
+]

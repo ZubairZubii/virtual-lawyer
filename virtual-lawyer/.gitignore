@@ -1,0 +1,92 @@
+# API Keys and Secrets
+config.py
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Ignore virtual environment
+.venv/
+
+# Ignore Python cache
+__pycache__/
+*.pyc
+
+# Ignore LFS if needed
+*.dll
+*.zip
+# Model files
+models/*.bin
+models/*.safetensors
+*.pt
+*.pth
+
+# Data
+data/raw/
+data/embeddings/
+*.pkl
+*.pickle
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Next.js build files
+.next/
+out/
+build/
+dist/
+node_modules/
+*.lock
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Generated documents (optional - remove if you want to track them)
+data/generated_documents/
+
+# Deletion logs
+deletion_log_*.txt
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

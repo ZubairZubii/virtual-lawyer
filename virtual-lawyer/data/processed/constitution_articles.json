@@ -1,0 +1,68 @@
+[
+  {
+    "article_number": "4",
+    "title": "Constitution Article 4 - Right to be Dealt with According to Law",
+    "text": "Article 4 of the Constitution of Pakistan - Right of individuals to be dealt with in accordance with law. To enjoy the protection of law and to be treated in accordance with law is the inalienable right of every citizen, wherever he may be, and of every other person for the time being within Pakistan. In particular, no action detrimental to the life, liberty, body, reputation, or property of any person shall be taken except in accordance with law. This article guarantees fundamental rights and due process. It ensures that all actions must be lawful.",
+    "source": "constitution_article_4",
+    "type": "constitution_article",
+    "metadata": {
+      "article": "4",
+      "topic": "Right to Law"
+    }
+  },
+  {
+    "article_number": "9",
+    "title": "Constitution Article 9 - Security of Person",
+    "text": "Article 9 of the Constitution of Pakistan - Security of person. No person shall be deprived of life or liberty save in accordance with law. This article guarantees the fundamental right to life and liberty. Any deprivation of life or liberty must be in accordance with law, meaning through proper legal procedures. This is a fundamental right that cannot be suspended except during emergency. It protects against arbitrary detention and extrajudicial killings.",
+    "source": "constitution_article_9",
+    "type": "constitution_article",
+    "metadata": {
+      "article": "9",
+      "topic": "Life and Liberty"
+    }
+  },
+  {
+    "article_number": "10",
+    "title": "Constitution Article 10 - Safeguards for Arrest and Detention",
+    "text": "Article 10 of the Constitution of Pakistan - Safeguards as to arrest and detention. No person who is arrested shall be detained in custody without being informed, as soon as may be, of the grounds for such arrest, nor shall he be denied the right to consult and be defended by a legal practitioner of his choice. Every person who is arrested and detained in custody shall be produced before a Magistrate within a period of twenty-four hours of such arrest. No such person shall be detained in custody beyond the said period without the authority of a Magistrate. This article protects against arbitrary arrest and ensures due process.",
+    "source": "constitution_article_10",
+    "type": "constitution_article",
+    "metadata": {
+      "article": "10",
+      "topic": "Arrest Rights"
+    }
+  },
+  {
+    "article_number": "10-A",
+    "title": "Constitution Article 10-A - Right to Fair Trial",
+    "text": "Article 10-A of the Constitution of Pakistan - Right to fair trial. For the determination of his civil rights and obligations or in a criminal charge, a person shall be entitled to a fair trial and due process. This article guarantees the right to a fair trial, which includes the right to be heard, right to legal representation, right to present evidence, and right to be tried by an impartial tribunal. Fair trial is a fundamental right essential for justice.",
+    "source": "constitution_article_10a",
+    "type": "constitution_article",
+    "metadata": {
+      "article": "10-A",
+      "topic": "Fair Trial"
+    }
+  },
+  {
+    "article_number": "13",
+    "title": "Constitution Article 13 - Protection Against Double Jeopardy",
+    "text": "Article 13 of the Constitution of Pakistan - Protection against double punishment and self-incrimination. No person shall be prosecuted or punished for the same offence more than once. No person shall, when accused of an offence, be compelled to be a witness against himself. This article protects against double jeopardy and self-incrimination. It ensures that a person cannot be tried twice for the same offence and cannot be forced to testify against themselves.",
+    "source": "constitution_article_13",
+    "type": "constitution_article",
+    "metadata": {
+      "article": "13",
+      "topic": "Double Jeopardy"
+    }
+  },
+  {
+    "article_number": "14",
+    "title": "Constitution Article 14 - Dignity and Privacy",
+    "text": "Article 14 of the Constitution of Pakistan - Inviolability of dignity of man. The dignity of man and, subject to law, the privacy of home, shall be inviolable. This article protects human dignity and privacy. It ensures that individuals are treated with respect and that their privacy is protected, subject to lawful restrictions. Dignity and privacy are fundamental rights that must be respected.",
+    "source": "constitution_article_14",
+    "type": "constitution_article",
+    "metadata": {
+      "article": "14",
+      "topic": "Dignity"
+    }
+  }
+]

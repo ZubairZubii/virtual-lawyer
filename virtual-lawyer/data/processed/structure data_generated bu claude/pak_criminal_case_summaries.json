@@ -1,0 +1,283 @@
+[
+  {
+    "id": "case_001",
+    "citation": "PLD 1970 SC 10",
+    "case_name": "Muhammad Luqman",
+    "court": "Supreme Court of Pakistan",
+    "year": 1970,
+    "subject": "Benefit of Doubt - Golden Rule",
+    "facts_summary": "Case concerning establishment of guilt based on probabilities versus concrete evidence.",
+    "legal_issue": "What standard of proof is required for criminal conviction and when must benefit of doubt be given?",
+    "holding": "Finding of guilt cannot be based merely on high probabilities inferred from evidence. Finding must rest surely and firmly on evidence produced. Mere conjectures and probabilities cannot replace proof. Otherwise the golden rule of benefit of doubt will be reduced to naught.",
+    "principles_established": [
+      "Golden rule of benefit of doubt",
+      "Conjectures cannot replace proof",
+      "Guilt must be firmly established on evidence"
+    ],
+    "application": "Foundational case for benefit of doubt principle in Pakistan criminal law. Cited in thousands of subsequent cases.",
+    "category": "benefit_of_doubt"
+  },
+  {
+    "id": "case_002",
+    "citation": "2022 SCMR 1954",
+    "case_name": "Recent Murder Appeal",
+    "court": "Supreme Court of Pakistan",
+    "year": 2022,
+    "subject": "Single Circumstance Doubt; Confessional Video",
+    "facts_summary": "Murder case involving confessional video and questions about sufficiency of single doubt for acquittal.",
+    "legal_issue": "How many circumstances creating doubt are required for benefit of doubt? What is evidentiary value of confessional video?",
+    "holding": "Single circumstance creating reasonable doubt in prudent mind about guilt of accused makes him entitled to benefit of doubt as matter of right, not grace or concession. Confessional video has no evidentiary value unless properly produced before court, genuineness established through forensic examination, and proved in accordance with law.",
+    "principles_established": [
+      "Single doubt sufficient for acquittal",
+      "Benefit of doubt is right not grace",
+      "Confessional video requires forensic authentication"
+    ],
+    "application": "Recent precedent reinforcing benefit of doubt principle and addressing modern digital evidence issues.",
+    "category": "benefit_of_doubt, digital_evidence"
+  },
+  {
+    "id": "case_003",
+    "citation": "2023 SCMR 1375",
+    "case_name": "Related Witness and Evidence Discrepancies",
+    "court": "Supreme Court of Pakistan",
+    "year": 2023,
+    "subject": "Related vs Interested Witness; Contradictions vs Minor Discrepancies",
+    "facts_summary": "Murder case where defense challenged credibility of related witnesses and pointed out discrepancies in testimony.",
+    "legal_issue": "When is related witness considered interested witness? What is difference between contradiction and minor discrepancy?",
+    "holding": "Related witness cannot be automatically termed interested witness. If offense committed in presence of family, they are natural witnesses. Evidence acceptable if reliable, cogent, clear. Related witness becomes interested only when evidence tainted with malice showing desire to falsely implicate. Contradiction in statement is fatal; minor discrepancy due to human variance is not. Parrot-like statements are discredited. Assessment depends on circumstances, social status, environment.",
+    "principles_established": [
+      "Related vs interested witness distinction",
+      "Natural witness doctrine",
+      "Contradiction vs discrepancy distinction",
+      "Close scrutiny of related witness required but not automatic rejection"
+    ],
+    "application": "Important recent guidance on assessing witness credibility and distinguishing material contradictions from human variance.",
+    "category": "witness_testimony, evidence_assessment"
+  },
+  {
+    "id": "case_004",
+    "citation": "2024 SCMR 51 (2024 SCLR 9)",
+    "case_name": "State v. Respondent No.1",
+    "court": "Supreme Court of Pakistan",
+    "year": 2024,
+    "subject": "Ocular vs Medical Evidence; Burden of Proof",
+    "facts_summary": "Appeal against acquittal where prosecution claimed medical evidence supported ocular testimony.",
+    "legal_issue": "What is relationship between ocular and medical evidence? What is prosecution's burden of proof?",
+    "holding": "In criminal justice administration, evidence may be ocular or circumstantial, direct or indirect. Prosecution must prove guilt beyond any reasonable doubt. Where doubt exists, court may extend benefit to accused. Courts must gauge witness trustworthiness, resolve evidentiary inconsistencies, contemplate medical evidence vis-à-vis ocular testimony as corroborative. Contradictions between ocular and medical evidence create doubts entitling accused to benefit of doubt. Single circumstance creating reasonable doubt sufficient for acquittal. Standard of proof in criminal trial considerably greater than civil standard of balance of probabilities.",
+    "principles_established": [
+      "Beyond reasonable doubt standard",
+      "Medical evidence as corroborative",
+      "Contradictions between ocular and medical evidence favor accused",
+      "Single doubt sufficient",
+      "Criminal vs civil standard of proof distinction"
+    ],
+    "application": "Very recent comprehensive statement on evidence standards and assessment principles in Pakistan criminal law.",
+    "category": "evidence_standards, burden_of_proof, medical_evidence"
+  },
+  {
+    "id": "case_005",
+    "citation": "1983 SCMR 1292",
+    "case_name": "Bagh Ali v. Muhammad Anwar",
+    "court": "Supreme Court of Pakistan",
+    "year": 1983,
+    "subject": "Medical Evidence Priority Over Ocular Evidence",
+    "facts_summary": "Conflict between eyewitness accounts and medical evidence regarding nature and causation of injuries.",
+    "legal_issue": "When does medical evidence override ocular testimony?",
+    "holding": "When conflict exists between ocular and medical evidence and medical evidence renders ocular account impossible or highly improbable, medical evidence must be preferred. Reliance on oral evidence contrary to medical evidence is dangerous for conviction.",
+    "principles_established": [
+      "Medical evidence preferred when it shows occurrence as described is impossible",
+      "Danger of convicting based on contradicted oral evidence",
+      "Impossibility test for medical vs ocular conflict"
+    ],
+    "application": "Leading case on when medical evidence takes precedence over eyewitness testimony.",
+    "category": "medical_evidence, ocular_evidence"
+  },
+  {
+    "id": "case_006",
+    "citation": "PLD 1995 SC 34",
+    "case_name": "Tariq Bashir Case",
+    "court": "Supreme Court of Pakistan",
+    "year": 1995,
+    "subject": "Bail in Non-Bailable Offences",
+    "facts_summary": "Application for bail in non-bailable offense arguing grounds under Section 497(2) CrPC.",
+    "legal_issue": "What are grounds for granting bail in non-bailable offences?",
+    "holding": "Bail in non-bailable offences granted when: further inquiry needed under Section 497(2) CrPC; no reasonable grounds to believe accused committed offense; unreasonable delay in trial; accused is minor, woman or infirm; mala fide prosecution evident. When grounds established, bail is matter of right.",
+    "principles_established": [
+      "Grounds for bail in non-bailable offences",
+      "Further inquiry provision",
+      "Bail as right when grounds met",
+      "Special consideration for vulnerable accused"
+    ],
+    "application": "Foundational case on bail jurisprudence in non-bailable offences in Pakistan.",
+    "category": "bail"
+  },
+  {
+    "id": "case_007",
+    "citation": "PLD 1986 SC 53",
+    "case_name": "Syed Zafar Ali Shah v. The State",
+    "court": "Supreme Court of Pakistan",
+    "year": 1986,
+    "subject": "Pre-Arrest Bail; FIR Delay as Mala Fide Indicator",
+    "facts_summary": "Pre-arrest bail application where FIR filing was significantly delayed.",
+    "legal_issue": "When is pre-arrest bail justified and what is significance of FIR delay?",
+    "holding": "Delay in filing FIR often indicates mala fide intent. Such delay can be basis for granting pre-arrest bail. Pre-arrest bail protects against harassment and preserves personal liberty guaranteed under Constitution.",
+    "principles_established": [
+      "FIR delay as mala fide indicator",
+      "Pre-arrest bail as preventive protection",
+      "Constitutional protection of personal liberty",
+      "Harassment prevention through pre-arrest bail"
+    ],
+    "application": "Key precedent for pre-arrest bail applications based on delayed FIR registration.",
+    "category": "pre_arrest_bail, FIR_delay"
+  },
+  {
+    "id": "case_008",
+    "citation": "2011 SCMR 941",
+    "case_name": "Abdul Majeed v. The State",
+    "court": "Supreme Court of Pakistan",
+    "year": 2011,
+    "subject": "Spousal Murder; Presumption vs Proof",
+    "facts_summary": "Husband convicted for wife's murder occurring in their private room with no direct evidence.",
+    "legal_issue": "Can husband be convicted for wife's murder based on presumption without direct evidence?",
+    "holding": "In absence of direct or substantial evidence, conviction cannot be maintained merely because husband is bound to explain wife's murder inside their room. Prosecution must prove guilt through positive evidence. Presumption alone is insufficient. Husband cannot be convicted on presumption that since murder occurred in house, only he could have committed it.",
+    "principles_established": [
+      "No conviction on presumption alone",
+      "Positive evidence required",
+      "Prosecution burden not shifted by circumstances",
+      "Domestic setting does not create automatic presumption"
+    ],
+    "application": "Important precedent on limitations of circumstantial evidence and presumptions in criminal cases.",
+    "category": "circumstantial_evidence, burden_of_proof"
+  },
+  {
+    "id": "case_009",
+    "citation": "1972 SCMR 578",
+    "case_name": "Darya Khan etc.",
+    "court": "Supreme Court of Pakistan",
+    "year": 1972,
+    "subject": "Medical Evidence Contradicting Prosecution Story",
+    "facts_summary": "Two accused charged with murder; prosecution claimed each fired shot; medical evidence showed only one bullet wound.",
+    "legal_issue": "What happens when medical evidence fundamentally contradicts prosecution's version of events?",
+    "holding": "Prosecution claimed both accused fired shots hitting deceased. Medical evidence showed only one bullet entry and one exit wound. Benefit of doubt given to accused and both acquitted. Medical evidence contradicting fundamental aspect of prosecution case entitles accused to acquittal.",
+    "principles_established": [
+      "Medical evidence contradiction of key facts is fatal",
+      "Both accused entitled to benefit when impossible to determine culprit",
+      "Fundamental contradiction vs minor discrepancy"
+    ],
+    "application": "Classic case on medical evidence contradicting prosecution narrative requiring acquittal.",
+    "category": "medical_evidence, benefit_of_doubt"
+  },
+  {
+    "id": "case_010",
+    "citation": "2020 SCMR 178",
+    "case_name": "Abdul Khalique v. The State",
+    "court": "Supreme Court of Pakistan",
+    "year": 2020,
+    "subject": "Explained Delay in FIR Registration",
+    "facts_summary": "FIR delayed by one day; complainant explained delay due to hospital visit, waiting for family, and funeral arrangements.",
+    "legal_issue": "Is delay in FIR registration always fatal to prosecution case?",
+    "holding": "Delay in FIR registration with proper explanation is not fatal. Complainant took deceased and injured to hospital, waited for parents who were in another city, completed funeral rites before lodging FIR. Such delay in particular facts and circumstances is not fatal to prosecution case. Each case must be judged on its own merits.",
+    "principles_established": [
+      "Explained delay not fatal",
+      "Legitimate reasons for delay accepted",
+      "Context-dependent assessment",
+      "Medical care and funeral arrangements justify delay"
+    ],
+    "application": "Recent guidance on acceptable explanations for FIR delay in murder cases.",
+    "category": "FIR_delay"
+  },
+  {
+    "id": "case_011",
+    "citation": "PLD 1953 F.C 93",
+    "case_name": "Fundamental Burden of Proof Case",
+    "court": "Federal Court",
+    "year": 1953,
+    "subject": "Burden of Proof Never Shifts",
+    "facts_summary": "Foundational case establishing burden of proof principles in Pakistan criminal law.",
+    "legal_issue": "Does burden of proof ever shift from prosecution to accused in criminal cases?",
+    "holding": "Burden of general issue always on prosecution. Accused's burden not as heavy as prosecution's. Accused failing to prove special pleadings but succeeding in raising reasonable doubt entitled to acquittal. Whole evidence to be looked at in entirety, not merely special pleading of accused. No conflict between Section 105 Evidence Act and fundamental principle that prosecution bears burden.",
+    "principles_established": [
+      "Prosecution always bears burden of proof",
+      "Burden never shifts to accused",
+      "Accused need only raise reasonable doubt",
+      "Evidence assessed in entirety"
+    ],
+    "application": "Foundational precedent cited in virtually all criminal cases regarding burden of proof.",
+    "category": "burden_of_proof, fundamental_principles"
+  },
+  {
+    "id": "case_012",
+    "citation": "PLJ 1995 FSC 118",
+    "case_name": "Bali Khan",
+    "court": "Federal Shariat Court",
+    "year": 1995,
+    "subject": "FIR Delay in Zina-bil-Jabr Case",
+    "facts_summary": "Rape case where FIR was delayed by few hours as 12-year-old victim was first taken to hospital.",
+    "legal_issue": "Does delay in FIR registration in rape cases affect prosecution?",
+    "holding": "Delay in FIR for few hours in Zina-bil-jabr case where young girl is first taken to hospital does not affect prosecution case. Medical treatment and care for victim is legitimate reason for delay. Nature of offense and victim's age justify prioritizing medical care.",
+    "principles_established": [
+      "Medical care justifies FIR delay",
+      "Victim-centered approach in sexual assault cases",
+      "Nature of offense affects delay assessment",
+      "Trauma and medical needs considered"
+    ],
+    "application": "Important precedent for sexual assault cases where victim's medical needs caused FIR delay.",
+    "category": "FIR_delay, sexual_offenses"
+  },
+  {
+    "id": "case_013",
+    "citation": "1981 SCMR 132",
+    "case_name": "Nawaz Ali",
+    "court": "Supreme Court of Pakistan",
+    "year": 1981,
+    "subject": "Ocular vs Medical Evidence - Distance and Wounds",
+    "facts_summary": "Eyewitnesses stated shots fired from 5 paces but medical evidence showed charring indicating close range.",
+    "legal_issue": "What is effect when medical evidence contradicts eyewitness account of firing distance?",
+    "holding": "Eyewitnesses stating shots from 5 paces but four entrance wounds showing charring. Witnesses stating deceased fired at from front but entrance wound at back. Evidence doubtful. When medical evidence directly contradicts eyewitness account on material aspects, prosecution case becomes doubtful and accused entitled to benefit of doubt.",
+    "principles_established": [
+      "Medical evidence of firing distance controls",
+      "Charring and blackening indicates close range",
+      "Fundamental contradiction in location of wounds is material",
+      "Doubt created by medical contradiction favors accused"
+    ],
+    "application": "Leading case on firearms injury assessment and medical vs eyewitness evidence in shooting cases.",
+    "category": "medical_evidence, firearms_injuries"
+  },
+  {
+    "id": "case_014",
+    "citation": "PLD 1963 SC 17",
+    "case_name": "Sikandar",
+    "court": "Supreme Court of Pakistan",
+    "year": 1963,
+    "subject": "Benefit of Doubt Principle",
+    "facts_summary": "Early foundational case establishing benefit of doubt principle.",
+    "legal_issue": "What is scope of benefit of doubt in Pakistan criminal law?",
+    "holding": "Benefit of doubt in every case must go to the accused. This is fundamental principle of criminal justice that cannot be compromised.",
+    "principles_established": [
+      "Universal application of benefit of doubt",
+      "Mandatory not discretionary",
+      "Fundamental principle of justice"
+    ],
+    "application": "Early landmark case establishing benefit of doubt as cornerstone of Pakistan criminal justice system.",
+    "category": "benefit_of_doubt"
+  },
+  {
+    "id": "case_015",
+    "citation": "PLJ 1997 Cr.C. (Lah.) 61",
+    "case_name": "Muhammad Sarwar",
+    "court": "Lahore High Court",
+    "year": 1997,
+    "subject": "FIR Delay in Abduction Cases",
+    "facts_summary": "Abduction case where FIR was delayed; defense argued delay should be fatal.",
+    "legal_issue": "How should courts assess FIR delay in abduction cases involving family honor?",
+    "holding": "FIR delay in abduction case is of no consequence as family honor is involved. People do not immediately run to police but try to exhaust all other sources before going to police. Cultural and social context must be considered when assessing delay in such cases.",
+    "principles_established": [
+      "Honor considerations justify delay",
+      "Cultural context in delay assessment",
+      "Nature of offense affects delay evaluation",
+      "Family attempts at private resolution acceptable"
+    ],
+    "application": "Important precedent recognizing cultural factors in FIR delay for abduction and honor-related cases.",
+    "category": "FIR_delay, abduction"
+  }
+]

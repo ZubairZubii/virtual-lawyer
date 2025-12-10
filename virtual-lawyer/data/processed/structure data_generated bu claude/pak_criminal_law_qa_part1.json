@@ -1,0 +1,82 @@
+[
+  {
+    "id": "qa_001",
+    "category": "medical_evidence",
+    "question": "When does medical evidence override ocular testimony in Pakistan criminal law?",
+    "answer": "Medical evidence overrides ocular testimony only when it renders the ocular account impossible or highly doubtful. Otherwise, ocular evidence prevails if it is trustworthy and above suspicion. Courts prefer ocular evidence when medical evidence merely contradicts minor details but the occurrence itself remains plausible.",
+    "citations": ["PLD 2009 SC 45", "2020 SCMR 316", "Bagh Ali v. Muhammad Anwar 1983 SCMR 1292"],
+    "principles": ["primacy_of_ocular_evidence", "medical_corroboration"]
+  },
+  {
+    "id": "qa_002",
+    "category": "benefit_of_doubt",
+    "question": "What is the golden rule of benefit of doubt in Pakistan criminal law?",
+    "answer": "The golden rule states that finding of guilt cannot be based merely on high probabilities. The finding must rest surely and firmly on evidence produced. Mere conjectures and probabilities cannot replace proof. It is better that ten guilty persons be acquitted rather than one innocent be convicted. This rule is based on the Islamic principle that a judge's mistake in releasing a criminal is better than punishing an innocent.",
+    "citations": ["PLD 1970 SC 10 Muhammad Luqman", "PLD 1963 SC 17 Sikandar"],
+    "principles": ["benefit_of_doubt", "burden_of_proof", "presumption_of_innocence"]
+  },
+  {
+    "id": "qa_003",
+    "category": "benefit_of_doubt",
+    "question": "How many circumstances are needed to create reasonable doubt for acquittal?",
+    "answer": "A single circumstance creating reasonable doubt in a prudent mind about the guilt of the accused is sufficient to entitle him to benefit of doubt as a matter of right, not grace. Multiple circumstances are not required; even one reasonable doubt is enough for acquittal.",
+    "citations": ["2022 SCMR 1954", "2022 SCMR 1540", "2024 SCMR 51"],
+    "principles": ["single_doubt_sufficient", "benefit_as_right"]
+  },
+  {
+    "id": "qa_004",
+    "category": "medical_evidence",
+    "question": "Can medical evidence alone connect the accused with the crime?",
+    "answer": "No, medical evidence cannot connect the accused with the crime, nor can it support the prosecution story independently. Medical evidence only confirms injuries and their nature, but does not have corroborative value regarding the identity or involvement of the accused.",
+    "citations": ["NLR 1986 Cr. 773 Saifullah Khan", "1997 SCMR 866 Muhammad Sharif"],
+    "principles": ["medical_evidence_limitations", "identity_proof_required"]
+  },
+  {
+    "id": "qa_005",
+    "category": "medical_evidence",
+    "question": "What happens when ocular evidence conflicts with medical evidence regarding injuries?",
+    "answer": "When ocular evidence is directly in conflict with medical evidence, the benefit of doubt must go to the accused. Medical evidence is preferred when the conflict makes the occurrence impossible or highly improbable. However, minor discrepancies may be attributed to confusion in observation.",
+    "citations": ["1981 SCMR 132 Nawaz Ali", "PLD 1974 Lah. 306 Gharib Alam", "1986 SCMR 1027 Saeed Ullah Khan"],
+    "principles": ["medical_contradiction", "benefit_to_accused"]
+  },
+  {
+    "id": "qa_006",
+    "category": "FIR_delay",
+    "question": "Is delay in filing FIR always fatal to the prosecution case?",
+    "answer": "No, delay in filing FIR is not always fatal to prosecution. The delay must be taken into consideration when assessing evidence, but if properly explained, it does not necessarily destroy the case. Factors like taking victim to hospital, waiting for family members, or honor considerations in abduction cases may justify delay.",
+    "citations": ["1976 P.Cr.LJ 40 Abbas Shah", "PLJ 1995 FSC 118 Bali Khan", "PLJ 1997 Cr.C. (Lah.) 61 Muhammad Sarwar"],
+    "principles": ["delay_assessment", "reasonable_explanation"]
+  },
+  {
+    "id": "qa_007",
+    "category": "FIR_delay",
+    "question": "What is the effect of prompt FIR in criminal cases?",
+    "answer": "Prompt FIR rules out possibility of consultation to concoct a false case and eliminates chances of fabrication. However, promptness alone does not guarantee correctness of facts or that innocent persons have not been implicated. The FIR must still be assessed with all other evidence.",
+    "citations": ["1975 P.Cr.LJ 44 Moharram", "PLJ 1974 SC 134 Abdul Sattar", "PLD 1977 Kar. 235 Tariq"],
+    "principles": ["prompt_FIR_value", "not_conclusive_proof"]
+  },
+  {
+    "id": "qa_008",
+    "category": "FIR_delay",
+    "question": "When does delay in FIR indicate mala fide intent?",
+    "answer": "Delay of several hours without explanation in the FIR itself suggests the report was recorded after preliminary investigation, consultation, and calculation. Delay beyond 3 months without satisfactory explanation may indicate mala fide intent and can be grounds for pre-arrest bail or questioning the prosecution's case.",
+    "citations": ["PLJ 1996 Cr.C. (Pesh) 1752 Mashal Khan", "PLD 1986 SC 53 Syed Zafar Ali Shah"],
+    "principles": ["unexplained_delay_suspicious", "mala_fide_inference"]
+  },
+  {
+    "id": "qa_009",
+    "category": "bail",
+    "question": "What are the main grounds for granting bail in non-bailable offences?",
+    "answer": "Bail in non-bailable offences is granted when: (1) Further inquiry is needed and accused has been in custody for considerable time; (2) No reasonable grounds exist to believe accused committed the offense; (3) Unreasonable delay in trial; (4) Accused is a minor, woman, or infirm; (5) Case shows mala fide prosecution or false implication.",
+    "citations": ["Section 497(2) CrPC", "PLD 1995 SC 34 Tariq Bashir", "2017 SCMR 733"],
+    "principles": ["bail_in_non_bailable", "further_inquiry", "false_implication"]
+  },
+  {
+    "id": "qa_010",
+    "category": "bail",
+    "question": "When is pre-arrest bail granted in Pakistan?",
+    "answer": "Pre-arrest bail is granted as preventive protection when: (1) Delay in filing FIR indicates mala fide intent; (2) False implication due to personal enmity or political pressure is evident; (3) Absence of independent or corroborative evidence; (4) Case shows harassment or vindictive litigation; (5) Accused has good social/professional standing with no flight risk.",
+    "citations": ["Section 498 CrPC", "PLD 1986 SC 53 Syed Zafar Ali Shah", "Chaudhry Zahoor Elahi v. The State"],
+    "principles": ["pre_arrest_protection", "fundamental_rights", "Article_9_Constitution"]
+  }
+]

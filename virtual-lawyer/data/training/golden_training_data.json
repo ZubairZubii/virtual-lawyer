@@ -1,0 +1,2999 @@
+[
+  {
+    "prompt": "Question: What is the principle of benefit of doubt - golden rule in Pakistani criminal law?\n\nAnswer:",
+    "completion": " The golden rule of benefit of doubt is a rule of prudence that cannot be ignored while dispensing justice. Finding of guilt against an accused cannot be based merely on high probabilities inferred from evidence. The finding must rest surely and firmly on evidence produced and plain inferences irresistibly drawn from that evidence. Mere conjectures and probabilities cannot take the place of proof. This is based on the maxim: It is better that ten guilty persons be acquitted rather than one innocent be convicted.\n\nApplication: Courts must resolve every reasonable doubt in favor of the accused not as a matter of grace but as a matter of right.\n\nCitations: PLD 1970 SC 10 Muhammad Luqman, 2013 MLD 665, 2022 SCMR 1954",
+    "source": "principle_based",
+    "category": "fundamental_principles",
+    "verified": true,
+    "principle_id": "principle_001"
+  },
+  {
+    "prompt": "Question: What is the principle of single doubt sufficiency in Pakistani criminal law?\n\nAnswer:",
+    "completion": " A single circumstance creating reasonable doubt in a prudent mind about the guilt of the accused makes him entitled to benefit of doubt. Multiple circumstances creating doubt are NOT required. Even one reasonable doubt is sufficient to entitle the accused to acquittal as a matter of right, not as a matter of grace or concession.\n\nApplication: Courts need not find several infirmities in prosecution case. One fundamental doubt about guilt is sufficient for acquittal.\n\nCitations: 2022 SCMR 1954, 2022 SCMR 1540, 2024 SCMR 51",
+    "source": "principle_based",
+    "category": "benefit_of_doubt",
+    "verified": true,
+    "principle_id": "principle_002"
+  },
+  {
+    "prompt": "Question: What is the principle of burden of proof never shifts in Pakistani criminal law?\n\nAnswer:",
+    "completion": " The prosecution bears the burden to prove the accused's guilt beyond reasonable doubt. This burden never shifts to the accused. The accused is not required to prove his innocence. Even if the accused's special pleading fails, he must be acquitted if he succeeds in raising reasonable doubt about prosecution's case. The entire evidence must be looked at in its entirety, not merely the accused's special pleading.\n\nApplication: Failure of defense does not mean success of prosecution. Prosecution must independently prove its case beyond reasonable doubt.\n\nCitations: PLD 1953 F.C 93, Section 105 Evidence Act, PLD 1961 LAHORE 137",
+    "source": "principle_based",
+    "category": "burden_of_proof",
+    "verified": true,
+    "principle_id": "principle_003"
+  },
+  {
+    "prompt": "Question: What is the principle of standard of proof - beyond reasonable doubt in Pakistani criminal law?\n\nAnswer:",
+    "completion": " In criminal cases, prosecution must prove guilt beyond any shadow of reasonable doubt. This standard is considerably greater than the civil standard of balance of probabilities. The prosecution must satisfy the court with regard to the actuality of reasonable grounds, beyond any shadow of doubt, to secure a conviction. If reasonable possibility exists that defense version might be true, accused is entitled to acquittal as of right.\n\nApplication: Courts must be fully convinced of guilt based on evidence, not mere probabilities or suspicions.\n\nCitations: 2024 SCMR 51, Article 10-A Constitution, 2011 SCMR 208 Abid Ali",
+    "source": "principle_based",
+    "category": "burden_of_proof",
+    "verified": true,
+    "principle_id": "principle_004"
+  },
+  {
+    "prompt": "Question: What is the principle of presumption of innocence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " An accused person is presumed innocent until proved guilty beyond reasonable doubt. This presumption continues throughout the trial until prosecution succeeds in proving the charge on the basis of legally admissible, confidence-inspiring, trustworthy and reliable evidence. This is a constitutional guarantee that cannot be taken away regardless of how heinous the crime.\n\nApplication: Every accused starts with clean slate. Prosecution must overcome this presumption with solid evidence.\n\nCitations: Article 10-A Constitution, Multiple SC precedents",
+    "source": "principle_based",
+    "category": "fundamental_rights",
+    "verified": true,
+    "principle_id": "principle_005"
+  },
+  {
+    "prompt": "Question: What is the principle of medical evidence - confirmatory nature in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Medical evidence is confirmatory or explanatory of direct or circumstantial evidence. It cannot override trustworthy ocular evidence unless it renders the ocular account impossible or highly improbable. Medical evidence alone cannot connect the accused with the crime or support prosecution story. It only confirms injuries and their nature.\n\nApplication: Courts give primacy to reliable eyewitness testimony over medical evidence in most cases, unless medical evidence shows occurrence as described is impossible.\n\nCitations: PLJ 1994 S.C. 87 Abdul Subhan, 1997 SCMR 866 Muhammad Sharif, NLR 1986 Cr. 773",
+    "source": "principle_based",
+    "category": "medical_evidence",
+    "verified": true,
+    "principle_id": "principle_006"
+  },
+  {
+    "prompt": "Question: What is the principle of medical evidence contradiction - effect in Pakistani criminal law?\n\nAnswer:",
+    "completion": " When ocular evidence is directly in conflict with medical evidence, and medical evidence shows the described occurrence is impossible, benefit of doubt goes to accused. However, minor discrepancies between ocular and medical evidence may be explained by confusion in observation and do not necessarily destroy prosecution case. Courts must distinguish between fundamental contradictions and minor variances.\n\nApplication: Assess whether medical contradiction makes occurrence impossible (fundamental) or merely shows minor variance (not fatal).\n\nCitations: 1981 SCMR 132 Nawaz Ali, 1986 SCMR 1027 Saeed Ullah Khan, PLD 1974 Lah. 306",
+    "source": "principle_based",
+    "category": "medical_evidence",
+    "verified": true,
+    "principle_id": "principle_007"
+  },
+  {
+    "prompt": "Question: What is the principle of fir delay - not automatically fatal in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Delay in filing FIR is not always fatal to prosecution. The delay must be taken into consideration when assessing evidence, but if properly explained, it does not necessarily destroy the case. Legitimate reasons include: taking victim to hospital, waiting for family members, funeral arrangements in murder cases, honor considerations in abduction/rape cases, or shock after traumatic incident.\n\nApplication: Courts examine reason for delay and assess whether explanation is reasonable in the circumstances.\n\nCitations: 1976 P.Cr.LJ 40 Abbas Shah, PLJ 1995 FSC 118 Bali Khan, 2020 SCMR 178",
+    "source": "principle_based",
+    "category": "FIR_principles",
+    "verified": true,
+    "principle_id": "principle_008"
+  },
+  {
+    "prompt": "Question: What is the principle of prompt fir - value and limitations in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Prompt FIR rules out possibility of consultation to concoct false case and eliminates chances of fabrication. However, promptness alone does not guarantee correctness of facts mentioned in FIR or prove that innocent persons have not been implicated. Promptitude in lodging FIR is not enough if on analysis prosecution fails to prove case beyond reasonable doubt.\n\nApplication: Prompt FIR is a positive factor but not conclusive proof. All evidence must still be assessed.\n\nCitations: 1975 P.Cr.LJ 44 Moharram, PLJ 1974 SC 134, PLJ 1981 Cr.C. (Pesh.) 74",
+    "source": "principle_based",
+    "category": "FIR_principles",
+    "verified": true,
+    "principle_id": "principle_009"
+  },
+  {
+    "prompt": "Question: What is the principle of fir unexplained delay - inference in Pakistani criminal law?\n\nAnswer:",
+    "completion": " When FIR is delayed by several hours without explanation given in the FIR itself, inference is that the FIR was recorded after preliminary investigation, consultation, and calculated preparation. Delay beyond 3 months without satisfactory explanation may indicate mala fide intent. Such delay can be basis for pre-arrest bail or questioning prosecution credibility.\n\nApplication: Unexplained delay raises suspicion of afterthought, consultation, and false implication.\n\nCitations: PLJ 1996 Cr.C. (Pesh) 1752 Mashal Khan, PLD 1986 SC 53",
+    "source": "principle_based",
+    "category": "FIR_principles",
+    "verified": true,
+    "principle_id": "principle_010"
+  },
+  {
+    "prompt": "Question: What is the principle of related witness vs interested witness in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Related witness cannot be automatically termed interested witness. If offense is committed in presence of family members, they are natural witnesses. Their evidence can be accepted if reliable, cogent and clear. Related witness becomes interested witness only when evidence is tainted with malice and shows desire to falsely implicate accused through fabrication. Evidence of related witness who is near relative of victim should be closely scrutinized but not rejected solely due to relationship.\n\nApplication: Courts must distinguish between natural witnesses (related but credible) and interested witnesses (related with malice).\n\nCitations: 2023 SCMR 1375",
+    "source": "principle_based",
+    "category": "witness_testimony",
+    "verified": true,
+    "principle_id": "principle_011"
+  },
+  {
+    "prompt": "Question: What is the principle of contradiction vs minor discrepancy in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Contradiction in witness statement is fatal for prosecution case, whereas minor discrepancy or variance in evidence will not make case doubtful. In normal course of human conduct, minor discrepancies occur while narrating incidents. Parrot-like statements are discredited by courts. Whether discrepancy is minor or amounts to contradiction depends on case circumstances, social status of witnesses, and environment of statements. Such discrepancies are due to normal errors of observation, memory lapse, and mental disposition.\n\nApplication: Courts must distinguish material contradictions (fatal) from human variance in narration (acceptable).\n\nCitations: 2023 SCMR 1375",
+    "source": "principle_based",
+    "category": "evidence_assessment",
+    "verified": true,
+    "principle_id": "principle_012"
+  },
+  {
+    "prompt": "Question: What is the principle of bail in non-bailable offences - grounds in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Bail in non-bailable offences can be granted under Section 497(2) CrPC when: (1) Further inquiry needed and accused in custody for considerable time; (2) No reasonable grounds to believe accused committed offense; (3) Unreasonable delay in trial; (4) Accused is minor, woman, or infirm; (5) Mala fide prosecution or false implication evident. Bail is matter of right when grounds established, not discretionary favor.\n\nApplication: Courts must balance individual liberty against societal interests while assessing bail applications.\n\nCitations: Section 497(2) CrPC, PLD 1995 SC 34 Tariq Bashir, 2017 SCMR 733",
+    "source": "principle_based",
+    "category": "bail",
+    "verified": true,
+    "principle_id": "principle_013"
+  },
+  {
+    "prompt": "Question: What is the principle of pre-arrest bail - preventive protection in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Pre-arrest bail under Section 498 CrPC is preventive protection against arbitrary arrest and harassment. It safeguards fundamental right to personal liberty under Article 9 Constitution. Granted when: (1) Delay in FIR indicates mala fide; (2) False implication due to enmity/politics evident; (3) Absence of independent corroborative evidence; (4) Case shows harassment or vindictive litigation. It is essential instrument for protecting citizens against misuse of criminal laws.\n\nApplication: Courts protect personal liberty while maintaining balance with law enforcement objectives.\n\nCitations: Section 498 CrPC, Article 9 Constitution, Chaudhry Zahoor Elahi v. State",
+    "source": "principle_based",
+    "category": "bail",
+    "verified": true,
+    "principle_id": "principle_014"
+  },
+  {
+    "prompt": "Question: What is the principle of expert evidence - weight and limitations in Pakistani criminal law?\n\nAnswer:",
+    "completion": " Expert opinion (medical, ballistics, forensic) is entitled to great weight but cannot override factual observations by equally competent witnesses. Expert evidence is confirmatory or explanatory of direct or circumstantial evidence. When experts give contradictory opinions, benefit of doubt goes to accused. Non-production of available expert can be adverse to prosecution under Section 114 illustration (g) Evidence Act.\n\nApplication: Courts consider expert evidence carefully but do not treat it as conclusive if contradictory or if factual evidence conflicts.\n\nCitations: 1973 SCMR 162 Samano, PLJ 1974 Cr. C. (Lah.) 600, 1976 P.Cr.LJ 28",
+    "source": "principle_based",
+    "category": "expert_evidence",
+    "verified": true,
+    "principle_id": "principle_015"
+  },
+  {
+    "prompt": "Question: When does medical evidence override ocular testimony in Pakistan criminal law?\n\nAnswer:",
+    "completion": " Medical evidence overrides ocular testimony only when it renders the ocular account impossible or highly doubtful. Otherwise, ocular evidence prevails if it is trustworthy and above suspicion. Courts prefer ocular evidence when medical evidence merely contradicts minor details but the occurrence itself remains plausible.\n\nCitations: PLD 2009 SC 45, 2020 SCMR 316, Bagh Ali v. Muhammad Anwar 1983 SCMR 1292",
+    "source": "structured_qa",
+    "category": "medical_evidence",
+    "verified": true,
+    "qa_id": "qa_001"
+  },
+  {
+    "prompt": "Question: What is the golden rule of benefit of doubt in Pakistan criminal law?\n\nAnswer:",
+    "completion": " The golden rule states that finding of guilt cannot be based merely on high probabilities. The finding must rest surely and firmly on evidence produced. Mere conjectures and probabilities cannot replace proof. It is better that ten guilty persons be acquitted rather than one innocent be convicted. This rule is based on the Islamic principle that a judge's mistake in releasing a criminal is better than punishing an innocent.\n\nCitations: PLD 1970 SC 10 Muhammad Luqman, PLD 1963 SC 17 Sikandar",
+    "source": "structured_qa",
+    "category": "benefit_of_doubt",
+    "verified": true,
+    "qa_id": "qa_002"
+  },
+  {
+    "prompt": "Question: How many circumstances are needed to create reasonable doubt for acquittal?\n\nAnswer:",
+    "completion": " A single circumstance creating reasonable doubt in a prudent mind about the guilt of the accused is sufficient to entitle him to benefit of doubt as a matter of right, not grace. Multiple circumstances are not required; even one reasonable doubt is enough for acquittal.\n\nCitations: 2022 SCMR 1954, 2022 SCMR 1540, 2024 SCMR 51",
+    "source": "structured_qa",
+    "category": "benefit_of_doubt",
+    "verified": true,
+    "qa_id": "qa_003"
+  },
+  {
+    "prompt": "Question: Can medical evidence alone connect the accused with the crime?\n\nAnswer:",
+    "completion": " No, medical evidence cannot connect the accused with the crime, nor can it support the prosecution story independently. Medical evidence only confirms injuries and their nature, but does not have corroborative value regarding the identity or involvement of the accused.\n\nCitations: NLR 1986 Cr. 773 Saifullah Khan, 1997 SCMR 866 Muhammad Sharif",
+    "source": "structured_qa",
+    "category": "medical_evidence",
+    "verified": true,
+    "qa_id": "qa_004"
+  },
+  {
+    "prompt": "Question: What happens when ocular evidence conflicts with medical evidence regarding injuries?\n\nAnswer:",
+    "completion": " When ocular evidence is directly in conflict with medical evidence, the benefit of doubt must go to the accused. Medical evidence is preferred when the conflict makes the occurrence impossible or highly improbable. However, minor discrepancies may be attributed to confusion in observation.\n\nCitations: 1981 SCMR 132 Nawaz Ali, PLD 1974 Lah. 306 Gharib Alam, 1986 SCMR 1027 Saeed Ullah Khan",
+    "source": "structured_qa",
+    "category": "medical_evidence",
+    "verified": true,
+    "qa_id": "qa_005"
+  },
+  {
+    "prompt": "Question: Is delay in filing FIR always fatal to the prosecution case?\n\nAnswer:",
+    "completion": " No, delay in filing FIR is not always fatal to prosecution. The delay must be taken into consideration when assessing evidence, but if properly explained, it does not necessarily destroy the case. Factors like taking victim to hospital, waiting for family members, or honor considerations in abduction cases may justify delay.\n\nCitations: 1976 P.Cr.LJ 40 Abbas Shah, PLJ 1995 FSC 118 Bali Khan, PLJ 1997 Cr.C. (Lah.) 61 Muhammad Sarwar",
+    "source": "structured_qa",
+    "category": "FIR_delay",
+    "verified": true,
+    "qa_id": "qa_006"
+  },
+  {
+    "prompt": "Question: What is the effect of prompt FIR in criminal cases?\n\nAnswer:",
+    "completion": " Prompt FIR rules out possibility of consultation to concoct a false case and eliminates chances of fabrication. However, promptness alone does not guarantee correctness of facts or that innocent persons have not been implicated. The FIR must still be assessed with all other evidence.\n\nCitations: 1975 P.Cr.LJ 44 Moharram, PLJ 1974 SC 134 Abdul Sattar, PLD 1977 Kar. 235 Tariq",
+    "source": "structured_qa",
+    "category": "FIR_delay",
+    "verified": true,
+    "qa_id": "qa_007"
+  },
+  {
+    "prompt": "Question: When does delay in FIR indicate mala fide intent?\n\nAnswer:",
+    "completion": " Delay of several hours without explanation in the FIR itself suggests the report was recorded after preliminary investigation, consultation, and calculation. Delay beyond 3 months without satisfactory explanation may indicate mala fide intent and can be grounds for pre-arrest bail or questioning the prosecution's case.\n\nCitations: PLJ 1996 Cr.C. (Pesh) 1752 Mashal Khan, PLD 1986 SC 53 Syed Zafar Ali Shah",
+    "source": "structured_qa",
+    "category": "FIR_delay",
+    "verified": true,
+    "qa_id": "qa_008"
+  },
+  {
+    "prompt": "Question: What are the main grounds for granting bail in non-bailable offences?\n\nAnswer:",
+    "completion": " Bail in non-bailable offences is granted when: (1) Further inquiry is needed and accused has been in custody for considerable time; (2) No reasonable grounds exist to believe accused committed the offense; (3) Unreasonable delay in trial; (4) Accused is a minor, woman, or infirm; (5) Case shows mala fide prosecution or false implication.\n\nCitations: Section 497(2) CrPC, PLD 1995 SC 34 Tariq Bashir, 2017 SCMR 733",
+    "source": "structured_qa",
+    "category": "bail",
+    "verified": true,
+    "qa_id": "qa_009"
+  },
+  {
+    "prompt": "Question: When is pre-arrest bail granted in Pakistan?\n\nAnswer:",
+    "completion": " Pre-arrest bail is granted as preventive protection when: (1) Delay in filing FIR indicates mala fide intent; (2) False implication due to personal enmity or political pressure is evident; (3) Absence of independent or corroborative evidence; (4) Case shows harassment or vindictive litigation; (5) Accused has good social/professional standing with no flight risk.\n\nCitations: Section 498 CrPC, PLD 1986 SC 53 Syed Zafar Ali Shah, Chaudhry Zahoor Elahi v. The State",
+    "source": "structured_qa",
+    "category": "bail",
+    "verified": true,
+    "qa_id": "qa_010"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Muhammad Luqman (PLD 1970 SC 10)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_001"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Recent Murder Appeal (2022 SCMR 1954)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_002"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Related Witness and Evidence Discrepancies (2023 SCMR 1375)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_003"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in State v. Respondent No.1 (2024 SCMR 51 (2024 SCLR 9))?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_004"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Bagh Ali v. Muhammad Anwar (1983 SCMR 1292)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_005"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Tariq Bashir Case (PLD 1995 SC 34)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_006"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Syed Zafar Ali Shah v. The State (PLD 1986 SC 53)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_007"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Abdul Majeed v. The State (2011 SCMR 941)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_008"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Darya Khan etc. (1972 SCMR 578)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_009"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Abdul Khalique v. The State (2020 SCMR 178)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_010"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Fundamental Burden of Proof Case (PLD 1953 F.C 93)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_011"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Bali Khan (PLJ 1995 FSC 118)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_012"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Nawaz Ali (1981 SCMR 132)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_013"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Sikandar (PLD 1963 SC 17)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_014"
+  },
+  {
+    "prompt": "Question: What is the legal principle established in Muhammad Sarwar (PLJ 1997 Cr.C. (Lah.) 61)?\n\nAnswer:",
+    "completion": " ",
+    "source": "case_summary",
+    "category": "case_law",
+    "verified": true,
+    "case_id": "case_015"
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding medical_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Medical evidence always overrides ocular evidence.\n\nThis is incorrect because: Assumes automatic priority of medical evidence ignoring the established principle that ocular evidence from credible witnesses prevails.\n\nCORRECT: This is incorrect. Pakistani courts prioritize trustworthy ocular evidence over medical evidence unless the medical evidence renders the occurrence as described impossible or highly improbable. Medical evidence is confirmatory, not superior.\n\nCitations: PLJ 1994 S.C. 87 Abdul Subhan, PLD 2009 SC 45",
+    "source": "negative_example",
+    "category": "medical_evidence",
+    "verified": true,
+    "negative_id": "negative_001",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding medical_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Medical evidence can identify who committed the crime.\n\nThis is incorrect because: Confuses injury documentation with perpetrator identification.\n\nCORRECT: This is incorrect. Medical evidence cannot connect the accused with the crime or identify the perpetrator. Medical evidence only confirms the nature, location, and characteristics of injuries. It has no corroborative value regarding identity or involvement of the accused.\n\nCitations: NLR 1986 Cr. 773 Saifullah Khan, 1997 SCMR 866 Muhammad Sharif",
+    "source": "negative_example",
+    "category": "medical_evidence",
+    "verified": true,
+    "negative_id": "negative_002",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding benefit_of_doubt in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Benefit of doubt is a favor granted by the court at its discretion.\n\nThis is incorrect because: Treats constitutional right as discretionary judicial favor.\n\nCORRECT: This is incorrect. Benefit of doubt is a right of the accused, not a matter of grace, favor, or concession. When reasonable doubt exists, the accused is entitled to acquittal as a matter of right under fundamental principles of criminal justice.\n\nCitations: PLD 1970 SC 10 Muhammad Luqman, 2022 SCMR 1954",
+    "source": "negative_example",
+    "category": "benefit_of_doubt",
+    "verified": true,
+    "negative_id": "negative_003",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding benefit_of_doubt in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Multiple doubts are needed before granting benefit of doubt to the accused.\n\nThis is incorrect because: Creates non-existent requirement for multiple doubts.\n\nCORRECT: This is incorrect. A single circumstance creating reasonable doubt in a prudent mind about the guilt of the accused is sufficient to entitle him to benefit of doubt. Multiple circumstances or cumulative defects are NOT required.\n\nCitations: 2022 SCMR 1954, 2022 SCMR 1540, 2024 SCMR 51",
+    "source": "negative_example",
+    "category": "benefit_of_doubt",
+    "verified": true,
+    "negative_id": "negative_004",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding benefit_of_doubt in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: The accused can be convicted based on high probability and strong suspicion.\n\nThis is incorrect because: Lowers standard of proof from 'beyond reasonable doubt' to 'probability'.\n\nCORRECT: This is incorrect. Finding of guilt cannot be based merely on high probabilities inferred from evidence. The finding must rest surely and firmly on evidence produced. Mere conjectures, probabilities, and suspicions cannot replace proof beyond reasonable doubt.\n\nCitations: PLD 1970 SC 10, 2024 SCMR 51",
+    "source": "negative_example",
+    "category": "benefit_of_doubt",
+    "verified": true,
+    "negative_id": "negative_005",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding burden_of_proof in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If the accused's defense is weak or unbelievable, he must be convicted.\n\nThis is incorrect because: Shifts burden of proof to accused and confuses defense failure with prosecution success.\n\nCORRECT: This is incorrect. Even if the accused's special pleading fails or his defense is not accepted, he must be acquitted if he succeeds in raising reasonable doubt about the prosecution's case. The burden of proof never shifts to the accused. Prosecution must independently prove its case beyond reasonable doubt.\n\nCitations: PLD 1953 F.C 93, Section 105 Evidence Act",
+    "source": "negative_example",
+    "category": "burden_of_proof",
+    "verified": true,
+    "negative_id": "negative_006",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding burden_of_proof in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: The accused must prove his innocence.\n\nThis is incorrect because: Reverses fundamental principle of presumption of innocence.\n\nCORRECT: This is incorrect. The accused is presumed innocent and is NOT required to prove his innocence. The prosecution bears the burden to prove guilt beyond reasonable doubt. This burden never shifts to the accused.\n\nCitations: Article 10-A Constitution, PLD 1953 F.C 93",
+    "source": "negative_example",
+    "category": "burden_of_proof",
+    "verified": true,
+    "negative_id": "negative_007",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding FIR_delay in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Any delay in filing FIR automatically makes the case false and prosecution must fail.\n\nThis is incorrect because: Creates absolute rule where law requires contextual assessment.\n\nCORRECT: This is incorrect. Delay in filing FIR is not automatically fatal to prosecution. The delay must be considered when assessing evidence, but if properly explained (hospital visit, waiting for family, funeral arrangements, trauma, honor considerations), the case can proceed. Each case is judged on its specific circumstances.\n\nCitations: 1976 P.Cr.LJ 40 Abbas Shah, PLJ 1995 FSC 118, 2020 SCMR 178",
+    "source": "negative_example",
+    "category": "FIR_delay",
+    "verified": true,
+    "negative_id": "negative_008",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding FIR_delay in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Prompt FIR proves the case is true and the accused is guilty.\n\nThis is incorrect because: Treats promptness as proof of guilt rather than as one factor in assessment.\n\nCORRECT: This is incorrect. While prompt FIR rules out consultation to concoct a false case, promptness alone does not guarantee correctness of facts or prove guilt. Innocent persons can still be falsely implicated in a promptly filed FIR. All evidence must be assessed independently.\n\nCitations: 1975 P.Cr.LJ 44 Moharram, PLJ 1974 SC 134",
+    "source": "negative_example",
+    "category": "FIR_delay",
+    "verified": true,
+    "negative_id": "negative_009",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding witness_testimony in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Related witnesses must be rejected because they are interested in the outcome.\n\nThis is incorrect because: Automatically disqualifies natural witnesses based solely on relationship.\n\nCORRECT: This is incorrect. Related witnesses cannot be automatically termed interested witnesses. If the offense is committed in the presence of family members, they are natural witnesses. Their evidence can be accepted if reliable, cogent, and clear. They become interested witnesses only when evidence shows malice and desire to falsely implicate the accused.\n\nCitations: 2023 SCMR 1375",
+    "source": "negative_example",
+    "category": "witness_testimony",
+    "verified": true,
+    "negative_id": "negative_010",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding witness_testimony in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If witnesses give exactly identical statements, this proves they are telling the truth.\n\nThis is incorrect because: Mistakes unnatural uniformity for credibility.\n\nCORRECT: This is incorrect. Parrot-like statements that are word-for-word identical are actually discredited by courts as they suggest tutoring, consultation, or fabrication. Natural witnesses have minor variations due to different perspectives, memory, and manner of expression. Identical statements raise suspicion.\n\nCitations: 2023 SCMR 1375, Multiple precedents on tutored witnesses",
+    "source": "negative_example",
+    "category": "witness_testimony",
+    "verified": true,
+    "negative_id": "negative_011",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding witness_testimony in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Any discrepancy between witnesses means they are lying and case must fail.\n\nThis is incorrect because: Treats normal human variance as proof of fabrication.\n\nCORRECT: This is incorrect. Minor discrepancies in witness statements do not make the case doubtful. In normal human conduct, minor discrepancies occur while narrating incidents due to errors of observation, memory lapse, and mental disposition. Only material contradictions on fundamental aspects are fatal. Minor variances actually add credibility.\n\nCitations: 2023 SCMR 1375",
+    "source": "negative_example",
+    "category": "witness_testimony",
+    "verified": true,
+    "negative_id": "negative_012",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding bail in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Bail cannot be granted in murder cases because they are serious offenses.\n\nThis is incorrect because: Creates absolute prohibition where law provides for bail even in serious cases.\n\nCORRECT: This is incorrect. Bail can be granted even in murder and other serious non-bailable offenses under Section 497(2) CrPC when: further inquiry is needed, no reasonable grounds exist to believe accused committed offense, unreasonable trial delay occurs, accused is minor/woman/infirm, or mala fide prosecution is evident. Seriousness of offense is not absolute bar.\n\nCitations: Section 497(2) CrPC, PLD 1995 SC 34 Tariq Bashir",
+    "source": "negative_example",
+    "category": "bail",
+    "verified": true,
+    "negative_id": "negative_013",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding bail in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Pre-arrest bail is only for influential people and should be rarely granted.\n\nThis is incorrect because: Treats constitutional right as privilege for elite rather than fundamental protection.\n\nCORRECT: This is incorrect. Pre-arrest bail is a fundamental right under Article 9 Constitution protecting personal liberty. It is preventive protection against arbitrary arrest and harassment. It should be granted when FIR delay indicates mala fide, false implication is evident, lack of independent evidence exists, or harassment is shown. It is not reserved for any particular class.\n\nCitations: Article 9 Constitution, Section 498 CrPC, PLD 1986 SC 53",
+    "source": "negative_example",
+    "category": "bail",
+    "verified": true,
+    "negative_id": "negative_014",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding circumstantial_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: In spousal murder cases occurring at home, the husband is presumed guilty and must explain what happened.\n\nThis is incorrect because: Shifts burden of proof and creates guilt by presumption.\n\nCORRECT: This is incorrect. In absence of direct or substantial evidence, conviction cannot be maintained merely because husband is bound to explain wife's murder inside their room. Prosecution must prove guilt through positive evidence beyond reasonable doubt. Presumption alone is insufficient. The burden of proof never shifts to the accused.\n\nCitations: 2011 SCMR 941 Abdul Majeed, 2013 MLD 665",
+    "source": "negative_example",
+    "category": "circumstantial_evidence",
+    "verified": true,
+    "negative_id": "negative_015",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding circumstantial_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Circumstantial evidence is weak and unreliable, so it cannot support conviction.\n\nThis is incorrect because: Dismisses valid form of evidence recognized in law.\n\nCORRECT: This is incorrect. Circumstantial evidence can be sufficient for conviction if it forms a complete chain pointing unequivocally to guilt of the accused. The chain must be complete, and no link can be missing. Each circumstance must be proved, and the combined effect must exclude every reasonable hypothesis of innocence.\n\nCitations: Established jurisprudence on circumstantial evidence",
+    "source": "negative_example",
+    "category": "circumstantial_evidence",
+    "verified": true,
+    "negative_id": "negative_016",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding expert_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Expert opinion must always be accepted because experts know better than courts.\n\nThis is incorrect because: Makes expert opinion conclusive and binding on courts.\n\nCORRECT: This is incorrect. Expert opinion is entitled to great weight but is not binding on the court. Expert evidence is confirmatory or explanatory and cannot override factual observations by competent witnesses. When experts give contradictory opinions, benefit of doubt goes to accused. Courts can reject expert opinion if inconsistent with proven facts.\n\nCitations: 1973 SCMR 162 Samano, PLJ 1974 Cr. C. (Lah.) 600",
+    "source": "negative_example",
+    "category": "expert_evidence",
+    "verified": true,
+    "negative_id": "negative_017",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding expert_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If the prosecution's expert and defense expert disagree, the prosecution expert should be believed.\n\nThis is incorrect because: Creates automatic preference for prosecution without merit-based assessment.\n\nCORRECT: This is incorrect. When experts give contradictory opinions and there is no clear basis to prefer one over the other, benefit of doubt must be given to the accused. Mere fact that expert is prosecution witness does not make their opinion more credible. The court must assess the reasoning and basis of each opinion.\n\nCitations: PLJ 1974 Cr. C. (Lah.) 600 Faiz Muhammad",
+    "source": "negative_example",
+    "category": "expert_evidence",
+    "verified": true,
+    "negative_id": "negative_018",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding recovery in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Recovery of weapon from the accused proves he committed the crime.\n\nThis is incorrect because: Treats single piece of evidence as conclusive proof.\n\nCORRECT: This is incorrect. Recovery of weapon alone is insufficient to prove guilt. The prosecution must establish: (1) The weapon caused the injuries; (2) The accused possessed it at time of offense; (3) Recovery was made lawfully and without manipulation; (4) Chain of custody is established. Recovery must be corroborated by other evidence linking accused to the crime.\n\nCitations: Multiple precedents on recovery evidence requirements",
+    "source": "negative_example",
+    "category": "recovery",
+    "verified": true,
+    "negative_id": "negative_019",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding recovery in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If crime empties are not recovered, the prosecution case automatically fails.\n\nThis is incorrect because: Creates absolute requirement where law recognizes practical realities.\n\nCORRECT: This is incorrect. Non-recovery of crime empties is not fatal if explained and other evidence establishes guilt beyond reasonable doubt. The empties may have been removed, thrown away, or lost at the scene. However, non-recovery combined with other weaknesses can raise doubt about the prosecution case.\n\nCitations: Various precedents on crime empty recovery",
+    "source": "negative_example",
+    "category": "recovery",
+    "verified": true,
+    "negative_id": "negative_020",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding confession in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If the accused confessed, even informally or in a video, he must be convicted.\n\nThis is incorrect because: Ignores strict legal requirements for confession admissibility and reliability.\n\nCORRECT: This is incorrect. Extra-judicial confessions and confessional videos have no evidentiary value unless: (1) Properly produced before court; (2) Genuineness established through forensic examination; (3) Proved in accordance with law; (4) Made voluntarily without coercion; (5) Corroborated by independent evidence. Confession alone is insufficient.\n\nCitations: 2022 SCMR 1954, Established law on confessions",
+    "source": "negative_example",
+    "category": "confession",
+    "verified": true,
+    "negative_id": "negative_021",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding motive in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Without proving motive, the prosecution case must fail.\n\nThis is incorrect because: Makes non-essential element mandatory for conviction.\n\nCORRECT: This is incorrect. Motive is not an essential element that must be proved in every case. While motive strengthens the prosecution case and helps explain why crime was committed, absence of proven motive is not fatal if other evidence establishes guilt beyond reasonable doubt. However, absence of motive is a factor favoring the accused.\n\nCitations: Established law on motive",
+    "source": "negative_example",
+    "category": "motive",
+    "verified": true,
+    "negative_id": "negative_022",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding motive in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Since the accused had a strong motive, he must have committed the crime.\n\nThis is incorrect because: Confuses possible reason with actual proof of commission.\n\nCORRECT: This is incorrect. Motive alone cannot establish guilt. Many people may have motive but only the actual perpetrator is guilty. Prosecution must prove through direct or circumstantial evidence that the accused actually committed the offense. Motive is relevant but not sufficient for conviction.\n\nCitations: Established principles on motive",
+    "source": "negative_example",
+    "category": "motive",
+    "verified": true,
+    "negative_id": "negative_023",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding common_intention in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If multiple accused were present at the scene, all must be convicted equally.\n\nThis is incorrect because: Makes presence equivalent to participation and guilt.\n\nCORRECT: This is incorrect. Mere presence at the scene does not establish guilt. For conviction, prosecution must prove: (1) Each accused participated in the criminal act; (2) Common intention existed (Section 34 PPC); or (3) Unlawful assembly with common object (Section 149 PPC). Passive presence or being nearby is insufficient. Each accused's role must be established.\n\nCitations: Section 34 PPC, Section 149 PPC, Multiple precedents",
+    "source": "negative_example",
+    "category": "common_intention",
+    "verified": true,
+    "negative_id": "negative_024",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding common_intention in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Common intention under Section 34 PPC is automatically proved if accused are friends or relatives.\n\nThis is incorrect because: Presumes criminal conspiracy from relationship.\n\nCORRECT: This is incorrect. Common intention must be proved through evidence showing pre-arranged plan or conduct indicating shared criminal purpose. Relationship, friendship, or family ties do not prove common intention. There must be evidence of meeting of minds before or during the offense to commit the criminal act together.\n\nCitations: Section 34 PPC interpretation cases",
+    "source": "negative_example",
+    "category": "common_intention",
+    "verified": true,
+    "negative_id": "negative_025",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding dying_declaration in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Dying declaration alone is always sufficient for conviction without corroboration.\n\nThis is incorrect because: Treats dying declaration as automatically reliable without scrutiny.\n\nCORRECT: This is partially incorrect. While dying declaration can form basis of conviction without corroboration if it inspires confidence, courts must scrutinize it carefully. It must be: (1) Voluntary and truthful; (2) Made when person expected death; (3) Concerning cause of death; (4) Maker was in fit mental condition; (5) Free from tutoring. Suspicious or inconsistent dying declaration requires corroboration.\n\nCitations: Article 46 QSO, Multiple precedents on dying declaration",
+    "source": "negative_example",
+    "category": "dying_declaration",
+    "verified": true,
+    "negative_id": "negative_026",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding dying_declaration in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If there is any delay in recording dying declaration, it must be rejected.\n\nThis is incorrect because: Creates rigid rule ignoring practical circumstances.\n\nCORRECT: This is incorrect. Delay in recording dying declaration does not automatically make it unreliable. The delay must be assessed in context: (1) Was deceased in condition to give statement earlier? (2) Was medical treatment priority? (3) Is delay satisfactorily explained? Reasonable delay for medical care or waiting for magistrate is acceptable if declaration otherwise reliable.\n\nCitations: Precedents on dying declaration timing",
+    "source": "negative_example",
+    "category": "dying_declaration",
+    "verified": true,
+    "negative_id": "negative_027",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding identification in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Test Identification Parade (TIP) is mandatory in every case of disputed identity.\n\nThis is incorrect because: Makes TIP mandatory even when unnecessary.\n\nCORRECT: This is incorrect. TIP is not mandatory if: (1) Accused was known to witnesses before incident; (2) Witnesses had no difficulty identifying accused; (3) Identification not seriously challenged. TIP is required only when identity is genuinely disputed and accused was not previously known to prosecution witnesses.\n\nCitations: Precedents on TIP requirements",
+    "source": "negative_example",
+    "category": "identification",
+    "verified": true,
+    "negative_id": "negative_028",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding identification in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If TIP was not conducted properly, the accused must be acquitted.\n\nThis is incorrect because: Makes procedural defect automatically dispositive.\n\nCORRECT: This is incorrect. Defective TIP is not fatal if: (1) Witnesses' identification in court is confident and consistent; (2) Other evidence corroborates identity; (3) No prejudice caused to accused. Defective TIP is one factor in assessing identification evidence but not automatically fatal. However, it weakens prosecution case.\n\nCitations: Precedents on defective TIP",
+    "source": "negative_example",
+    "category": "identification",
+    "verified": true,
+    "negative_id": "negative_029",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding night_occurrence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Crimes occurring at night can be proved with same standard as daytime occurrences.\n\nThis is incorrect because: Ignores visibility and identification challenges at night.\n\nCORRECT: This is incorrect. When occurrence takes place at night, possibility of mistaken identity or doubtful identification increases. Courts require: (1) Clear evidence of lighting conditions; (2) Strong corroboration of identity; (3) Careful scrutiny of witness testimony. Night occurrence raises doubt requiring additional safeguards.\n\nCitations: PLJ 1995 S.C. 576 Umar Hayat",
+    "source": "negative_example",
+    "category": "night_occurrence",
+    "verified": true,
+    "negative_id": "negative_030",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding last_seen_together in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Last seen together evidence proves the accused killed the deceased.\n\nThis is incorrect because: Treats one circumstance as conclusive proof.\n\nCORRECT: This is incorrect. Last seen together is only a circumstantial link that must be combined with other evidence. By itself, it does not prove guilt. There must be close proximity in time and place, and other circumstances must exclude reasonable possibility that someone else committed the crime. This principle alone is insufficient for conviction.\n\nCitations: Established law on circumstantial evidence",
+    "source": "negative_example",
+    "category": "last_seen_together",
+    "verified": true,
+    "negative_id": "negative_031",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding forensic_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: DNA evidence automatically proves guilt and cannot be questioned.\n\nThis is incorrect because: Makes scientific evidence infallible and unchallenged.\n\nCORRECT: This is incorrect. While DNA evidence is highly reliable, it must be: (1) Collected properly; (2) Chain of custody maintained; (3) Analyzed by accredited lab; (4) Matched correctly to accused; (5) Explained in context. DNA proves presence/contact but does not necessarily prove commission of crime. It can be challenged on procedural grounds.\n\nCitations: Modern forensic evidence standards",
+    "source": "negative_example",
+    "category": "forensic_evidence",
+    "verified": true,
+    "negative_id": "negative_032",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding forensic_evidence in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Fingerprint evidence alone is sufficient to convict without any other proof.\n\nThis is incorrect because: Overestimates fingerprint evidence and ignores need for context.\n\nCORRECT: This is incorrect. Fingerprint evidence must be: (1) Clear and identifiable; (2) Properly lifted and preserved; (3) Matched by qualified expert; (4) Explained in context of crime. Finding fingerprints at scene proves presence but not necessarily criminal act, especially if legitimate access is claimed. Corroboration is needed.\n\nCitations: Forensic evidence precedents",
+    "source": "negative_example",
+    "category": "forensic_evidence",
+    "verified": true,
+    "negative_id": "negative_033",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding prosecution_witnesses in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: All prosecution witnesses must be believed unless specifically contradicted.\n\nThis is incorrect because: Reverses burden and creates presumption favoring prosecution.\n\nCORRECT: This is incorrect. Courts must scrutinize all witness testimony for: (1) Internal consistency; (2) External corroboration; (3) Credibility and demeanor; (4) Interest or bias; (5) Material contradictions. Prosecution witnesses are not presumed truthful. Each witness must be assessed independently. Uncorroborated testimony of single witness requires careful evaluation.\n\nCitations: General principles of evidence appreciation",
+    "source": "negative_example",
+    "category": "prosecution_witnesses",
+    "verified": true,
+    "negative_id": "negative_034",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding defense_witnesses in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Defense witnesses are unreliable and should be rejected because they support the accused.\n\nThis is incorrect because: Creates bias against defense evidence.\n\nCORRECT: This is incorrect. Defense witnesses must be assessed with same standard as prosecution witnesses. If their testimony is credible, consistent, and cogent, it must be accepted. They cannot be rejected merely because they testify for defense. However, defense witnesses may be more closely scrutinized if they have obvious interest in outcome.\n\nCitations: Principles of fair trial and evidence assessment",
+    "source": "negative_example",
+    "category": "defense_witnesses",
+    "verified": true,
+    "negative_id": "negative_035",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding hostile_witness in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If a witness turns hostile, his entire testimony must be rejected.\n\nThis is incorrect because: Creates automatic rejection where law allows selective acceptance.\n\nCORRECT: This is incorrect. When witness is declared hostile under Section 154 QSO, his testimony is not automatically rejected. The court can: (1) Accept parts that inspire confidence; (2) Rely on portions corroborated by other evidence; (3) Consider earlier statements under Section 147 QSO. Entire testimony is not discarded; only treated with caution.\n\nCitations: Section 154 QSO, Precedents on hostile witnesses",
+    "source": "negative_example",
+    "category": "hostile_witness",
+    "verified": true,
+    "negative_id": "negative_036",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding cross_examination in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: If the defense does not cross-examine a witness, his testimony is automatically accepted as truth.\n\nThis is incorrect because: Makes procedural matter equivalent to proof of facts.\n\nCORRECT: This is incorrect. While failure to cross-examine gives weight to witness testimony, it does not make it conclusive or automatically true. The court still must assess: (1) Internal consistency; (2) Compatibility with other evidence; (3) Inherent plausibility. Non-cross-examination is one factor but not conclusive proof of truthfulness.\n\nCitations: Evidence law principles",
+    "source": "negative_example",
+    "category": "cross_examination",
+    "verified": true,
+    "negative_id": "negative_037",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding contradictions in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Any contradiction between FIR and testimony proves the case is fabricated.\n\nThis is incorrect because: Treats natural human variance as proof of fabrication.\n\nCORRECT: This is incorrect. Minor contradictions between FIR and court testimony are natural due to: (1) Time lapse; (2) Stress during FIR registration; (3) Memory fading; (4) Different contexts. Only material contradictions on fundamental facts are fatal. Minor variances in details like exact time, number of people, or sequence of events are acceptable.\n\nCitations: 2023 SCMR 1375, Evidence assessment principles",
+    "source": "negative_example",
+    "category": "contradictions",
+    "verified": true,
+    "negative_id": "negative_038",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding omissions in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Any omission in the FIR compared to court testimony means the entire case is false.\n\nThis is incorrect because: Expects FIR to contain all details of subsequent investigation and testimony.\n\nCORRECT: This is incorrect. Omission of details in FIR is not necessarily fatal. FIR is first information, not comprehensive evidence. Courts consider: (1) Why was detail omitted; (2) Is it material or merely elaborative; (3) Was omission explained; (4) Is overall narrative consistent. Omissions of minor details due to stress, rush, or later realization are acceptable.\n\nCitations: FIR assessment precedents",
+    "source": "negative_example",
+    "category": "omissions",
+    "verified": true,
+    "negative_id": "negative_039",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding improvement in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Any improvement or addition in testimony compared to FIR is acceptable development of evidence.\n\nThis is incorrect because: Fails to distinguish between natural elaboration and suspicious material improvement.\n\nCORRECT: This is incorrect. Material improvement in testimony that changes fundamental nature of case is suspicious and fatal. While natural elaboration is acceptable, deliberate improvements regarding: (1) Identity of accused; (2) Role of accused; (3) Weapon used; (4) Manner of occurrence are treated as afterthought and raise serious doubt about prosecution case.\n\nCitations: Precedents on material improvement",
+    "source": "negative_example",
+    "category": "improvement",
+    "verified": true,
+    "negative_id": "negative_040",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding delay_in_trial in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Delay in trial is the defense's problem and does not affect prosecution's case.\n\nThis is incorrect because: Ignores constitutional right to speedy trial and practical effects of delay.\n\nCORRECT: This is incorrect. Unreasonable delay in trial is: (1) Ground for bail even in non-bailable offenses; (2) Violation of right to speedy trial under Article 10-A Constitution; (3) Factor affecting reliability of witness memory; (4) Can be ground for benefit of doubt if witnesses appear uncertain due to passage of time. Justice delayed is justice denied.\n\nCitations: Article 10-A Constitution, 2017 SCMR 733",
+    "source": "negative_example",
+    "category": "delay_in_trial",
+    "verified": true,
+    "negative_id": "negative_041",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding appellate_review in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: Appellate court must accept all factual findings of trial court and cannot reassess evidence.\n\nThis is incorrect because: Limits appellate jurisdiction contrary to law.\n\nCORRECT: This is incorrect. Appellate court has full power to: (1) Reassess evidence; (2) Differ from trial court findings; (3) Reverse factual findings if unsupported by evidence; (4) Consider points not raised at trial affecting merits. However, appellate court gives weight to trial court's advantage of seeing witnesses but is not bound by findings if they are unreasonable or perverse.\n\nCitations: Section 417 CrPC, Appellate jurisdiction precedents",
+    "source": "negative_example",
+    "category": "appellate_review",
+    "verified": true,
+    "negative_id": "negative_042",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: What is the correct rule regarding appellate_review in Pakistani criminal law?\n\nAnswer:",
+    "completion": " INCORRECT: High Court can only set aside conviction if there is no evidence at all.\n\nThis is incorrect because: Restricts appellate powers beyond legal limits.\n\nCORRECT: This is incorrect. High Court can interfere when: (1) Finding is based on no evidence; (2) Material evidence is ignored; (3) Inadmissible evidence is relied upon; (4) Finding is perverse or unreasonable; (5) Legal principles are wrongly applied; (6) Benefit of doubt not given when required. 'No evidence' is not the only ground for interference.\n\nCitations: Appellate review standards",
+    "source": "negative_example",
+    "category": "appellate_review",
+    "verified": true,
+    "negative_id": "negative_043",
+    "is_negative_example": true
+  },
+  {
+    "prompt": "Question: If all eyewitnesses support the prosecution but medical evidence contradicts the time of death, what is the rule of priority in Pakistani law?\n\nAnswer:",
+    "completion": " In Pakistani criminal law, trustworthy ocular (eyewitness) evidence has primacy over medical evidence. Medical evidence is corroborative and cannot override reliable eyewitness testimony unless it makes the prosecution story impossible. The Supreme Court has consistently held that where ocular evidence is confidence-inspiring and trustworthy, it prevails over medical evidence. Only when medical evidence completely destroys the possibility of the prosecution version should the benefit of doubt go to the accused. This principle is established in cases like 2020 SCMR 316, 2019 SCMR 1362, and PLD 2009 SC 45.\n\nCitations: 2020 SCMR 316, 2019 SCMR 1362, PLD 2009 SC 45",
+    "source": "scenario_based",
+    "category": "evidence_priority",
+    "verified": true
+  },
+  {
+    "prompt": "Question: When does medical evidence override ocular testimony in Pakistan?\n\nAnswer:",
+    "completion": " Medical evidence overrides ocular testimony only when it renders the ocular account impossible or highly doubtful. Otherwise, ocular evidence prevails if it is trustworthy and above suspicion. Courts prefer ocular evidence when medical evidence merely contradicts minor details but the occurrence itself remains plausible.\n\nCitations: PLD 2009 SC 45, 2020 SCMR 316",
+    "source": "scenario_based",
+    "category": "medical_evidence",
+    "verified": true
+  },
+  {
+    "prompt": "Question: What is the primary test for assessing witness credibility?\nAnswer:",
+    "completion": " The court evaluates whether the witness is truthful, consistent, unbiased, and confidence-inspiring. The testimony must stand the test of cross-examination and align with medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "credibility",
+      "test",
+      "witness",
+      "assessment"
+    ]
+  },
+  {
+    "prompt": "Question: Do minor contradictions affect witness credibility?\nAnswer:",
+    "completion": " No. Minor discrepancies occur due to lapse of memory and natural variations. Only material contradictions weaken credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "minor contradictions",
+      "credibility",
+      "material"
+    ]
+  },
+  {
+    "prompt": "Question: What is a material contradiction?\nAnswer:",
+    "completion": " A contradiction that affects the core of the prosecution case, such as identification of the accused, weapon used, motive, presence at scene, or sequence of events.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "material contradiction",
+      "prosecution case",
+      "core facts"
+    ]
+  },
+  {
+    "prompt": "Question: What is an interested witness?\nAnswer:",
+    "completion": " A witness with a direct personal stake in the conviction (e.g., enmity, relationship, monetary incentive). Courts scrutinize such witnesses more strictly.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "interested witness",
+      "bias",
+      "scrutiny"
+    ]
+  },
+  {
+    "prompt": "Question: What is a related witness?\nAnswer:",
+    "completion": " A witness related by blood or family to the victim. Their testimony is admissible but must pass strict scrutiny due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "family",
+      "bias",
+      "admissible"
+    ]
+  },
+  {
+    "prompt": "Question: Does being a related witness make testimony unreliable?\nAnswer:",
+    "completion": " No. Relationship alone does not disqualify a witness. Courts evaluate consistency and corroboration.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "reliability",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: When does the court declare a witness \"unreliable\"?\nAnswer:",
+    "completion": " When contradictions are material, testimony conflicts with medical evidence, or the witness shows clear bias or false implication.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "unreliable",
+      "material contradictions",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: Can a single witness be enough to convict?\nAnswer:",
+    "completion": " Yes — if the witness is wholly reliable and corroborated by surrounding circumstances.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "single witness",
+      "conviction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What happens when a witness improves their statement?\nAnswer:",
+    "completion": " Material improvement → witness becomes untrustworthy. Minor improvement → tolerated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "improvement",
+      "statement",
+      "untrustworthy"
+    ]
+  },
+  {
+    "prompt": "Question: What is the test for chance witnesses?\nAnswer:",
+    "completion": " The court checks if the witness's presence at the scene is natural, expected, and explained.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "chance witness",
+      "presence",
+      "natural"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court deal with a hostile witness?\nAnswer:",
+    "completion": " His testimony is not discarded entirely. Portions consistent with other evidence may still be considered.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "hostile witness",
+      "testimony",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does delay in FIR impact witness credibility?\nAnswer:",
+    "completion": " Yes — an unexplained delay suggests manipulation, tutoring, or afterthought.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR delay",
+      "credibility",
+      "manipulation"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictions between ocular and medical evidence destroy credibility?\nAnswer:",
+    "completion": " Yes — if contradictions are irreconcilable. No — if medical evidence is general, non-specific, or silent on the disputed point.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "ocular evidence",
+      "medical evidence",
+      "contradictions"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess testimony of child witnesses?\nAnswer:",
+    "completion": " Court ensures the child understands truth/falsehood and is not under tutoring. Courts apply heightened caution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "child witness",
+      "tutoring",
+      "caution"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts judge credibility of police witnesses?\nAnswer:",
+    "completion": " No presumption of falsehood or truth. Their testimony must pass independent corroboration, especially in recovery matters.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "police witness",
+      "corroboration",
+      "recovery"
+    ]
+  },
+  {
+    "prompt": "Question: Can an illiterate witness be disbelieved for lack of details?\nAnswer:",
+    "completion": " No — testimony is judged based on substance, not technical precision.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "illiterate witness",
+      "details",
+      "substance"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts treat contradictions in motive?\nAnswer:",
+    "completion": " Weak motive does not destroy ocular evidence. False motive harms prosecution's credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "motive",
+      "contradictions",
+      "ocular evidence"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts his earlier 161 CrPC statement?\nAnswer:",
+    "completion": " Material contradictions → credibility drops. Minor variations → irrelevant.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "161 CrPC",
+      "contradictions",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: How is credibility judged in night-time identification?\nAnswer:",
+    "completion": " Court checks source of light, duration, distance, and familiarity with accused.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "night-time",
+      "identification",
+      "light",
+      "distance"
+    ]
+  },
+  {
+    "prompt": "Question: What if only one eyewitness contradicts multiple eyewitnesses?\nAnswer:",
+    "completion": " Courts prefer the version supported by majority unless the minority witness is more consistent and independent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "contradiction",
+      "majority",
+      "minority"
+    ]
+  },
+  {
+    "prompt": "Question: How should courts evaluate enmity between witness and accused?\nAnswer:",
+    "completion": " Enmity cuts both ways — it can motivate false implication OR make witness more committed to truth. Corroboration decides.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "enmity",
+      "false implication",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What is \"confidence-inspiring testimony\"?\nAnswer:",
+    "completion": " Testimony that appears natural, internally consistent, and aligned with circumstantial evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confidence-inspiring",
+      "natural",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does contradictory cross-examination automatically destroy credibility?\nAnswer:",
+    "completion": " Not unless contradictions relate to material facts.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "cross-examination",
+      "contradictions",
+      "material facts"
+    ]
+  },
+  {
+    "prompt": "Question: What if the prosecution hides independent witnesses?\nAnswer:",
+    "completion": " Non-production of natural witnesses raises suspicion and weakens credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "independent witnesses",
+      "non-production",
+      "suspicion"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess trauma-affected witnesses?\nAnswer:",
+    "completion": " Courts expect emotional distress and allow some inconsistency, as long as core events remain consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "trauma",
+      "emotional distress",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: If two eyewitnesses strongly contradict each other, what should the court do?\nAnswer:",
+    "completion": " The court accepts the version supported by medical evidence, physical evidence, and probabilities. If doubt remains, accused gets benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "medical evidence",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: If an eyewitness contradicts medical evidence, who prevails?\nAnswer:",
+    "completion": " Material medical contradictions prevail. If medical evidence is silent/non-specific → ocular prevails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "medical evidence",
+      "contradictions",
+      "ocular"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness says the accused shot with pistol and another says with rifle?\nAnswer:",
+    "completion": " This is a material contradiction. Court requires corroboration; otherwise the prosecution version becomes doubtful.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "weapon",
+      "contradiction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictory witnesses BOTH be disbelieved?\nAnswer:",
+    "completion": " Yes — if both create reasonable doubt, the prosecution fails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradictory witnesses",
+      "reasonable doubt",
+      "prosecution"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat partial truth?\nAnswer:",
+    "completion": " Court applies doctrine of falsus in uno NOT applicable in Pakistan → Even if a witness lies about one detail, he is not rejected entirely; credible parts are accepted.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "partial truth",
+      "falsus in uno",
+      "credible parts"
+    ]
+  },
+  {
+    "prompt": "Question: What if eyewitness says firing from 5 feet but medical says 20 feet?\nAnswer:",
+    "completion": " Material inconsistency → credibility collapses unless reconciled.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "distance",
+      "medical evidence",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness hears accused confess but has enmity with him?\nAnswer:",
+    "completion": " Court requires corroboration due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confession",
+      "enmity",
+      "corroboration",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness changes his version during trial?\nAnswer:",
+    "completion": " Material change → witness becomes unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "version change",
+      "trial",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: How does court assess a tutored witness?\nAnswer:",
+    "completion": " Courts look for mechanical, unnatural replies; such testimony is rejected unless corroborated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "tutored witness",
+      "mechanical",
+      "unnatural"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness describes impossible timings?\nAnswer:",
+    "completion": " Witness becomes unreliable since courts judge testimony against human probabilities.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "timings",
+      "impossible",
+      "probabilities"
+    ]
+  },
+  {
+    "prompt": "Question: If a witness contradicts himself on seeing the accused, what happens?\nAnswer:",
+    "completion": " Identification becomes doubtful → prosecution weakens.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "identification",
+      "contradiction",
+      "doubtful"
+    ]
+  },
+  {
+    "prompt": "Question: What if injured witness contradicts healthy witness?\nAnswer:",
+    "completion": " Injured witness is generally more reliable due to presence at crime scene.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "injured witness",
+      "healthy witness",
+      "reliability"
+    ]
+  },
+  {
+    "prompt": "Question: Can a witness who flees the scene be credible?\nAnswer:",
+    "completion": " Yes — flight is natural human reaction, not mistrust.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "flight",
+      "scene",
+      "natural reaction"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat exaggerated testimony?\nAnswer:",
+    "completion": " Exaggeration on material points damages credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "exaggeration",
+      "material points",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear due to stress/trauma?\nAnswer:",
+    "completion": " Court tolerates non-material inconsistencies caused by trauma.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "stress",
+      "trauma",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: If prosecution witnesses disagree on the actual presence of accused, what happens?\nAnswer:",
+    "completion": " This is a fundamental contradiction → credibility collapses → benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "presence",
+      "fundamental contradiction",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: How does court choose between two believable but conflicting versions?\nAnswer:",
+    "completion": " Court prefers the version matching independent evidence (medical, ballistic, recovery, forensic).",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "conflicting versions",
+      "independent evidence",
+      "preference"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is truthful but his version is unsupported?\nAnswer:",
+    "completion": " Unsupported testimony cannot be the basis of conviction in cases of contradiction.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "truthful",
+      "unsupported",
+      "conviction"
+    ]
+  },
+  {
+    "prompt": "Question: How does court judge credibility when all witnesses are related?\nAnswer:",
+    "completion": " Court scrutinizes for exaggeration and requires consistency + circumstantial support.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witnesses",
+      "exaggeration",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradiction shows deliberate improvement?\nAnswer:",
+    "completion": " Deliberate improvement indicates tutoring → witness unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "deliberate improvement",
+      "tutoring",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts FIR but matches medical evidence?\nAnswer:",
+    "completion": " Court accepts version supported by medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR",
+      "medical evidence",
+      "contradiction"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear only after 10 years delay in trial?\nAnswer:",
+    "completion": " Court considers memory fading and tolerates minor inconsistencies.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "delay",
+      "memory fading",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is neutral and another is interested?\nAnswer:",
+    "completion": " Neutral witness testimony prevails if consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "neutral witness",
+      "interested witness",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: What if witnesses contradict but both show possibility of false implication?\nAnswer:",
+    "completion": " Court acquits on benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "false implication",
+      "benefit of doubt",
+      "acquittal"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions are due to police investigation defects?\nAnswer:",
+    "completion": " Court focuses on reliability of witnesses, not investigation errors. If witness testimony is credible, defects do not destroy prosecution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "investigation defects",
+      "witness reliability",
+      "credible"
+    ]
+  },
+  {
+    "prompt": "Question: If two witnesses contradict each other, how should the court decide credibility?\nAnswer:",
+    "completion": " The court applies a credibility test based on settled judicial principles: (1) Distinguish material vs. minor contradictions - only material contradictions affect credibility. (2) Seek independent corroboration from medical evidence, recovery, forensic evidence, FIR contents, or surrounding circumstances. (3) Evaluate interest, enmity, or motive to falsely implicate - biased witnesses given less weight. (4) Check consistency with natural human conduct and probabilities. (5) Apply benefit of doubt if contradictions create reasonable doubt. Ocular evidence has primacy only when trustworthy, consistent, and confidence-inspiring. The court does NOT accept a contradictory witness unless his version is independently confirmed.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "credibility test",
+      "material contradictions",
+      "corroboration",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: What is the primary test for assessing witness credibility?\nAnswer:",
+    "completion": " The court evaluates whether the witness is truthful, consistent, unbiased, and confidence-inspiring. The testimony must stand the test of cross-examination and align with medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "credibility",
+      "test",
+      "witness",
+      "assessment"
+    ]
+  },
+  {
+    "prompt": "Question: Do minor contradictions affect witness credibility?\nAnswer:",
+    "completion": " No. Minor discrepancies occur due to lapse of memory and natural variations. Only material contradictions weaken credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "minor contradictions",
+      "credibility",
+      "material"
+    ]
+  },
+  {
+    "prompt": "Question: What is a material contradiction?\nAnswer:",
+    "completion": " A contradiction that affects the core of the prosecution case, such as identification of the accused, weapon used, motive, presence at scene, or sequence of events.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "material contradiction",
+      "prosecution case",
+      "core facts"
+    ]
+  },
+  {
+    "prompt": "Question: What is an interested witness?\nAnswer:",
+    "completion": " A witness with a direct personal stake in the conviction (e.g., enmity, relationship, monetary incentive). Courts scrutinize such witnesses more strictly.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "interested witness",
+      "bias",
+      "scrutiny"
+    ]
+  },
+  {
+    "prompt": "Question: What is a related witness?\nAnswer:",
+    "completion": " A witness related by blood or family to the victim. Their testimony is admissible but must pass strict scrutiny due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "family",
+      "bias",
+      "admissible"
+    ]
+  },
+  {
+    "prompt": "Question: Does being a related witness make testimony unreliable?\nAnswer:",
+    "completion": " No. Relationship alone does not disqualify a witness. Courts evaluate consistency and corroboration.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "reliability",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: When does the court declare a witness \"unreliable\"?\nAnswer:",
+    "completion": " When contradictions are material, testimony conflicts with medical evidence, or the witness shows clear bias or false implication.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "unreliable",
+      "material contradictions",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: Can a single witness be enough to convict?\nAnswer:",
+    "completion": " Yes — if the witness is wholly reliable and corroborated by surrounding circumstances.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "single witness",
+      "conviction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What happens when a witness improves their statement?\nAnswer:",
+    "completion": " Material improvement → witness becomes untrustworthy. Minor improvement → tolerated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "improvement",
+      "statement",
+      "untrustworthy"
+    ]
+  },
+  {
+    "prompt": "Question: What is the test for chance witnesses?\nAnswer:",
+    "completion": " The court checks if the witness's presence at the scene is natural, expected, and explained.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "chance witness",
+      "presence",
+      "natural"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court deal with a hostile witness?\nAnswer:",
+    "completion": " His testimony is not discarded entirely. Portions consistent with other evidence may still be considered.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "hostile witness",
+      "testimony",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does delay in FIR impact witness credibility?\nAnswer:",
+    "completion": " Yes — an unexplained delay suggests manipulation, tutoring, or afterthought.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR delay",
+      "credibility",
+      "manipulation"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictions between ocular and medical evidence destroy credibility?\nAnswer:",
+    "completion": " Yes — if contradictions are irreconcilable. No — if medical evidence is general, non-specific, or silent on the disputed point.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "ocular evidence",
+      "medical evidence",
+      "contradictions"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess testimony of child witnesses?\nAnswer:",
+    "completion": " Court ensures the child understands truth/falsehood and is not under tutoring. Courts apply heightened caution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "child witness",
+      "tutoring",
+      "caution"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts judge credibility of police witnesses?\nAnswer:",
+    "completion": " No presumption of falsehood or truth. Their testimony must pass independent corroboration, especially in recovery matters.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "police witness",
+      "corroboration",
+      "recovery"
+    ]
+  },
+  {
+    "prompt": "Question: Can an illiterate witness be disbelieved for lack of details?\nAnswer:",
+    "completion": " No — testimony is judged based on substance, not technical precision.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "illiterate witness",
+      "details",
+      "substance"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts treat contradictions in motive?\nAnswer:",
+    "completion": " Weak motive does not destroy ocular evidence. False motive harms prosecution's credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "motive",
+      "contradictions",
+      "ocular evidence"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts his earlier 161 CrPC statement?\nAnswer:",
+    "completion": " Material contradictions → credibility drops. Minor variations → irrelevant.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "161 CrPC",
+      "contradictions",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: How is credibility judged in night-time identification?\nAnswer:",
+    "completion": " Court checks source of light, duration, distance, and familiarity with accused.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "night-time",
+      "identification",
+      "light",
+      "distance"
+    ]
+  },
+  {
+    "prompt": "Question: What if only one eyewitness contradicts multiple eyewitnesses?\nAnswer:",
+    "completion": " Courts prefer the version supported by majority unless the minority witness is more consistent and independent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "contradiction",
+      "majority",
+      "minority"
+    ]
+  },
+  {
+    "prompt": "Question: How should courts evaluate enmity between witness and accused?\nAnswer:",
+    "completion": " Enmity cuts both ways — it can motivate false implication OR make witness more committed to truth. Corroboration decides.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "enmity",
+      "false implication",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What is \"confidence-inspiring testimony\"?\nAnswer:",
+    "completion": " Testimony that appears natural, internally consistent, and aligned with circumstantial evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confidence-inspiring",
+      "natural",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does contradictory cross-examination automatically destroy credibility?\nAnswer:",
+    "completion": " Not unless contradictions relate to material facts.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "cross-examination",
+      "contradictions",
+      "material facts"
+    ]
+  },
+  {
+    "prompt": "Question: What if the prosecution hides independent witnesses?\nAnswer:",
+    "completion": " Non-production of natural witnesses raises suspicion and weakens credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "independent witnesses",
+      "non-production",
+      "suspicion"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess trauma-affected witnesses?\nAnswer:",
+    "completion": " Courts expect emotional distress and allow some inconsistency, as long as core events remain consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "trauma",
+      "emotional distress",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: If two eyewitnesses strongly contradict each other, what should the court do?\nAnswer:",
+    "completion": " The court accepts the version supported by medical evidence, physical evidence, and probabilities. If doubt remains, accused gets benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "medical evidence",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: If an eyewitness contradicts medical evidence, who prevails?\nAnswer:",
+    "completion": " Material medical contradictions prevail. If medical evidence is silent/non-specific → ocular prevails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "medical evidence",
+      "contradictions",
+      "ocular"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness says the accused shot with pistol and another says with rifle?\nAnswer:",
+    "completion": " This is a material contradiction. Court requires corroboration; otherwise the prosecution version becomes doubtful.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "weapon",
+      "contradiction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictory witnesses BOTH be disbelieved?\nAnswer:",
+    "completion": " Yes — if both create reasonable doubt, the prosecution fails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradictory witnesses",
+      "reasonable doubt",
+      "prosecution"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat partial truth?\nAnswer:",
+    "completion": " Court applies doctrine of falsus in uno NOT applicable in Pakistan → Even if a witness lies about one detail, he is not rejected entirely; credible parts are accepted.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "partial truth",
+      "falsus in uno",
+      "credible parts"
+    ]
+  },
+  {
+    "prompt": "Question: What if eyewitness says firing from 5 feet but medical says 20 feet?\nAnswer:",
+    "completion": " Material inconsistency → credibility collapses unless reconciled.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "distance",
+      "medical evidence",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness hears accused confess but has enmity with him?\nAnswer:",
+    "completion": " Court requires corroboration due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confession",
+      "enmity",
+      "corroboration",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness changes his version during trial?\nAnswer:",
+    "completion": " Material change → witness becomes unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "version change",
+      "trial",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: How does court assess a tutored witness?\nAnswer:",
+    "completion": " Courts look for mechanical, unnatural replies; such testimony is rejected unless corroborated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "tutored witness",
+      "mechanical",
+      "unnatural"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness describes impossible timings?\nAnswer:",
+    "completion": " Witness becomes unreliable since courts judge testimony against human probabilities.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "timings",
+      "impossible",
+      "probabilities"
+    ]
+  },
+  {
+    "prompt": "Question: If a witness contradicts himself on seeing the accused, what happens?\nAnswer:",
+    "completion": " Identification becomes doubtful → prosecution weakens.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "identification",
+      "contradiction",
+      "doubtful"
+    ]
+  },
+  {
+    "prompt": "Question: What if injured witness contradicts healthy witness?\nAnswer:",
+    "completion": " Injured witness is generally more reliable due to presence at crime scene.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "injured witness",
+      "healthy witness",
+      "reliability"
+    ]
+  },
+  {
+    "prompt": "Question: Can a witness who flees the scene be credible?\nAnswer:",
+    "completion": " Yes — flight is natural human reaction, not mistrust.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "flight",
+      "scene",
+      "natural reaction"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat exaggerated testimony?\nAnswer:",
+    "completion": " Exaggeration on material points damages credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "exaggeration",
+      "material points",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear due to stress/trauma?\nAnswer:",
+    "completion": " Court tolerates non-material inconsistencies caused by trauma.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "stress",
+      "trauma",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: If prosecution witnesses disagree on the actual presence of accused, what happens?\nAnswer:",
+    "completion": " This is a fundamental contradiction → credibility collapses → benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "presence",
+      "fundamental contradiction",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: How does court choose between two believable but conflicting versions?\nAnswer:",
+    "completion": " Court prefers the version matching independent evidence (medical, ballistic, recovery, forensic).",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "conflicting versions",
+      "independent evidence",
+      "preference"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is truthful but his version is unsupported?\nAnswer:",
+    "completion": " Unsupported testimony cannot be the basis of conviction in cases of contradiction.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "truthful",
+      "unsupported",
+      "conviction"
+    ]
+  },
+  {
+    "prompt": "Question: How does court judge credibility when all witnesses are related?\nAnswer:",
+    "completion": " Court scrutinizes for exaggeration and requires consistency + circumstantial support.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witnesses",
+      "exaggeration",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradiction shows deliberate improvement?\nAnswer:",
+    "completion": " Deliberate improvement indicates tutoring → witness unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "deliberate improvement",
+      "tutoring",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts FIR but matches medical evidence?\nAnswer:",
+    "completion": " Court accepts version supported by medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR",
+      "medical evidence",
+      "contradiction"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear only after 10 years delay in trial?\nAnswer:",
+    "completion": " Court considers memory fading and tolerates minor inconsistencies.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "delay",
+      "memory fading",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is neutral and another is interested?\nAnswer:",
+    "completion": " Neutral witness testimony prevails if consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "neutral witness",
+      "interested witness",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: What if witnesses contradict but both show possibility of false implication?\nAnswer:",
+    "completion": " Court acquits on benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "false implication",
+      "benefit of doubt",
+      "acquittal"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions are due to police investigation defects?\nAnswer:",
+    "completion": " Court focuses on reliability of witnesses, not investigation errors. If witness testimony is credible, defects do not destroy prosecution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "investigation defects",
+      "witness reliability",
+      "credible"
+    ]
+  },
+  {
+    "prompt": "Question: If two witnesses contradict each other, how should the court decide credibility?\nAnswer:",
+    "completion": " The court applies a credibility test based on settled judicial principles: (1) Distinguish material vs. minor contradictions - only material contradictions affect credibility. (2) Seek independent corroboration from medical evidence, recovery, forensic evidence, FIR contents, or surrounding circumstances. (3) Evaluate interest, enmity, or motive to falsely implicate - biased witnesses given less weight. (4) Check consistency with natural human conduct and probabilities. (5) Apply benefit of doubt if contradictions create reasonable doubt. Ocular evidence has primacy only when trustworthy, consistent, and confidence-inspiring. The court does NOT accept a contradictory witness unless his version is independently confirmed.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "credibility test",
+      "material contradictions",
+      "corroboration",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: What is the primary test for assessing witness credibility?\nAnswer:",
+    "completion": " The court evaluates whether the witness is truthful, consistent, unbiased, and confidence-inspiring. The testimony must stand the test of cross-examination and align with medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "credibility",
+      "test",
+      "witness",
+      "assessment"
+    ]
+  },
+  {
+    "prompt": "Question: Do minor contradictions affect witness credibility?\nAnswer:",
+    "completion": " No. Minor discrepancies occur due to lapse of memory and natural variations. Only material contradictions weaken credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "minor contradictions",
+      "credibility",
+      "material"
+    ]
+  },
+  {
+    "prompt": "Question: What is a material contradiction?\nAnswer:",
+    "completion": " A contradiction that affects the core of the prosecution case, such as identification of the accused, weapon used, motive, presence at scene, or sequence of events.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "material contradiction",
+      "prosecution case",
+      "core facts"
+    ]
+  },
+  {
+    "prompt": "Question: What is an interested witness?\nAnswer:",
+    "completion": " A witness with a direct personal stake in the conviction (e.g., enmity, relationship, monetary incentive). Courts scrutinize such witnesses more strictly.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "interested witness",
+      "bias",
+      "scrutiny"
+    ]
+  },
+  {
+    "prompt": "Question: What is a related witness?\nAnswer:",
+    "completion": " A witness related by blood or family to the victim. Their testimony is admissible but must pass strict scrutiny due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "family",
+      "bias",
+      "admissible"
+    ]
+  },
+  {
+    "prompt": "Question: Does being a related witness make testimony unreliable?\nAnswer:",
+    "completion": " No. Relationship alone does not disqualify a witness. Courts evaluate consistency and corroboration.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "reliability",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: When does the court declare a witness \"unreliable\"?\nAnswer:",
+    "completion": " When contradictions are material, testimony conflicts with medical evidence, or the witness shows clear bias or false implication.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "unreliable",
+      "material contradictions",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: Can a single witness be enough to convict?\nAnswer:",
+    "completion": " Yes — if the witness is wholly reliable and corroborated by surrounding circumstances.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "single witness",
+      "conviction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What happens when a witness improves their statement?\nAnswer:",
+    "completion": " Material improvement → witness becomes untrustworthy. Minor improvement → tolerated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "improvement",
+      "statement",
+      "untrustworthy"
+    ]
+  },
+  {
+    "prompt": "Question: What is the test for chance witnesses?\nAnswer:",
+    "completion": " The court checks if the witness's presence at the scene is natural, expected, and explained.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "chance witness",
+      "presence",
+      "natural"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court deal with a hostile witness?\nAnswer:",
+    "completion": " His testimony is not discarded entirely. Portions consistent with other evidence may still be considered.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "hostile witness",
+      "testimony",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does delay in FIR impact witness credibility?\nAnswer:",
+    "completion": " Yes — an unexplained delay suggests manipulation, tutoring, or afterthought.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR delay",
+      "credibility",
+      "manipulation"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictions between ocular and medical evidence destroy credibility?\nAnswer:",
+    "completion": " Yes — if contradictions are irreconcilable. No — if medical evidence is general, non-specific, or silent on the disputed point.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "ocular evidence",
+      "medical evidence",
+      "contradictions"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess testimony of child witnesses?\nAnswer:",
+    "completion": " Court ensures the child understands truth/falsehood and is not under tutoring. Courts apply heightened caution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "child witness",
+      "tutoring",
+      "caution"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts judge credibility of police witnesses?\nAnswer:",
+    "completion": " No presumption of falsehood or truth. Their testimony must pass independent corroboration, especially in recovery matters.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "police witness",
+      "corroboration",
+      "recovery"
+    ]
+  },
+  {
+    "prompt": "Question: Can an illiterate witness be disbelieved for lack of details?\nAnswer:",
+    "completion": " No — testimony is judged based on substance, not technical precision.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "illiterate witness",
+      "details",
+      "substance"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts treat contradictions in motive?\nAnswer:",
+    "completion": " Weak motive does not destroy ocular evidence. False motive harms prosecution's credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "motive",
+      "contradictions",
+      "ocular evidence"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts his earlier 161 CrPC statement?\nAnswer:",
+    "completion": " Material contradictions → credibility drops. Minor variations → irrelevant.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "161 CrPC",
+      "contradictions",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: How is credibility judged in night-time identification?\nAnswer:",
+    "completion": " Court checks source of light, duration, distance, and familiarity with accused.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "night-time",
+      "identification",
+      "light",
+      "distance"
+    ]
+  },
+  {
+    "prompt": "Question: What if only one eyewitness contradicts multiple eyewitnesses?\nAnswer:",
+    "completion": " Courts prefer the version supported by majority unless the minority witness is more consistent and independent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "contradiction",
+      "majority",
+      "minority"
+    ]
+  },
+  {
+    "prompt": "Question: How should courts evaluate enmity between witness and accused?\nAnswer:",
+    "completion": " Enmity cuts both ways — it can motivate false implication OR make witness more committed to truth. Corroboration decides.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "enmity",
+      "false implication",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What is \"confidence-inspiring testimony\"?\nAnswer:",
+    "completion": " Testimony that appears natural, internally consistent, and aligned with circumstantial evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confidence-inspiring",
+      "natural",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does contradictory cross-examination automatically destroy credibility?\nAnswer:",
+    "completion": " Not unless contradictions relate to material facts.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "cross-examination",
+      "contradictions",
+      "material facts"
+    ]
+  },
+  {
+    "prompt": "Question: What if the prosecution hides independent witnesses?\nAnswer:",
+    "completion": " Non-production of natural witnesses raises suspicion and weakens credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "independent witnesses",
+      "non-production",
+      "suspicion"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess trauma-affected witnesses?\nAnswer:",
+    "completion": " Courts expect emotional distress and allow some inconsistency, as long as core events remain consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "trauma",
+      "emotional distress",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: If two eyewitnesses strongly contradict each other, what should the court do?\nAnswer:",
+    "completion": " The court accepts the version supported by medical evidence, physical evidence, and probabilities. If doubt remains, accused gets benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "medical evidence",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: If an eyewitness contradicts medical evidence, who prevails?\nAnswer:",
+    "completion": " Material medical contradictions prevail. If medical evidence is silent/non-specific → ocular prevails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "medical evidence",
+      "contradictions",
+      "ocular"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness says the accused shot with pistol and another says with rifle?\nAnswer:",
+    "completion": " This is a material contradiction. Court requires corroboration; otherwise the prosecution version becomes doubtful.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "weapon",
+      "contradiction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictory witnesses BOTH be disbelieved?\nAnswer:",
+    "completion": " Yes — if both create reasonable doubt, the prosecution fails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradictory witnesses",
+      "reasonable doubt",
+      "prosecution"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat partial truth?\nAnswer:",
+    "completion": " Court applies doctrine of falsus in uno NOT applicable in Pakistan → Even if a witness lies about one detail, he is not rejected entirely; credible parts are accepted.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "partial truth",
+      "falsus in uno",
+      "credible parts"
+    ]
+  },
+  {
+    "prompt": "Question: What if eyewitness says firing from 5 feet but medical says 20 feet?\nAnswer:",
+    "completion": " Material inconsistency → credibility collapses unless reconciled.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "distance",
+      "medical evidence",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness hears accused confess but has enmity with him?\nAnswer:",
+    "completion": " Court requires corroboration due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confession",
+      "enmity",
+      "corroboration",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness changes his version during trial?\nAnswer:",
+    "completion": " Material change → witness becomes unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "version change",
+      "trial",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: How does court assess a tutored witness?\nAnswer:",
+    "completion": " Courts look for mechanical, unnatural replies; such testimony is rejected unless corroborated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "tutored witness",
+      "mechanical",
+      "unnatural"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness describes impossible timings?\nAnswer:",
+    "completion": " Witness becomes unreliable since courts judge testimony against human probabilities.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "timings",
+      "impossible",
+      "probabilities"
+    ]
+  },
+  {
+    "prompt": "Question: If a witness contradicts himself on seeing the accused, what happens?\nAnswer:",
+    "completion": " Identification becomes doubtful → prosecution weakens.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "identification",
+      "contradiction",
+      "doubtful"
+    ]
+  },
+  {
+    "prompt": "Question: What if injured witness contradicts healthy witness?\nAnswer:",
+    "completion": " Injured witness is generally more reliable due to presence at crime scene.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "injured witness",
+      "healthy witness",
+      "reliability"
+    ]
+  },
+  {
+    "prompt": "Question: Can a witness who flees the scene be credible?\nAnswer:",
+    "completion": " Yes — flight is natural human reaction, not mistrust.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "flight",
+      "scene",
+      "natural reaction"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat exaggerated testimony?\nAnswer:",
+    "completion": " Exaggeration on material points damages credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "exaggeration",
+      "material points",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear due to stress/trauma?\nAnswer:",
+    "completion": " Court tolerates non-material inconsistencies caused by trauma.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "stress",
+      "trauma",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: If prosecution witnesses disagree on the actual presence of accused, what happens?\nAnswer:",
+    "completion": " This is a fundamental contradiction → credibility collapses → benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "presence",
+      "fundamental contradiction",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: How does court choose between two believable but conflicting versions?\nAnswer:",
+    "completion": " Court prefers the version matching independent evidence (medical, ballistic, recovery, forensic).",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "conflicting versions",
+      "independent evidence",
+      "preference"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is truthful but his version is unsupported?\nAnswer:",
+    "completion": " Unsupported testimony cannot be the basis of conviction in cases of contradiction.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "truthful",
+      "unsupported",
+      "conviction"
+    ]
+  },
+  {
+    "prompt": "Question: How does court judge credibility when all witnesses are related?\nAnswer:",
+    "completion": " Court scrutinizes for exaggeration and requires consistency + circumstantial support.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witnesses",
+      "exaggeration",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradiction shows deliberate improvement?\nAnswer:",
+    "completion": " Deliberate improvement indicates tutoring → witness unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "deliberate improvement",
+      "tutoring",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts FIR but matches medical evidence?\nAnswer:",
+    "completion": " Court accepts version supported by medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR",
+      "medical evidence",
+      "contradiction"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear only after 10 years delay in trial?\nAnswer:",
+    "completion": " Court considers memory fading and tolerates minor inconsistencies.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "delay",
+      "memory fading",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is neutral and another is interested?\nAnswer:",
+    "completion": " Neutral witness testimony prevails if consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "neutral witness",
+      "interested witness",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: What if witnesses contradict but both show possibility of false implication?\nAnswer:",
+    "completion": " Court acquits on benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "false implication",
+      "benefit of doubt",
+      "acquittal"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions are due to police investigation defects?\nAnswer:",
+    "completion": " Court focuses on reliability of witnesses, not investigation errors. If witness testimony is credible, defects do not destroy prosecution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "investigation defects",
+      "witness reliability",
+      "credible"
+    ]
+  },
+  {
+    "prompt": "Question: If two witnesses contradict each other, how should the court decide credibility?\nAnswer:",
+    "completion": " The court applies a credibility test based on settled judicial principles: (1) Distinguish material vs. minor contradictions - only material contradictions affect credibility. (2) Seek independent corroboration from medical evidence, recovery, forensic evidence, FIR contents, or surrounding circumstances. (3) Evaluate interest, enmity, or motive to falsely implicate - biased witnesses given less weight. (4) Check consistency with natural human conduct and probabilities. (5) Apply benefit of doubt if contradictions create reasonable doubt. Ocular evidence has primacy only when trustworthy, consistent, and confidence-inspiring. The court does NOT accept a contradictory witness unless his version is independently confirmed.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "credibility test",
+      "material contradictions",
+      "corroboration",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: What is the primary test for assessing witness credibility?\nAnswer:",
+    "completion": " The court evaluates whether the witness is truthful, consistent, unbiased, and confidence-inspiring. The testimony must stand the test of cross-examination and align with medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "credibility",
+      "test",
+      "witness",
+      "assessment"
+    ]
+  },
+  {
+    "prompt": "Question: Do minor contradictions affect witness credibility?\nAnswer:",
+    "completion": " No. Minor discrepancies occur due to lapse of memory and natural variations. Only material contradictions weaken credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "minor contradictions",
+      "credibility",
+      "material"
+    ]
+  },
+  {
+    "prompt": "Question: What is a material contradiction?\nAnswer:",
+    "completion": " A contradiction that affects the core of the prosecution case, such as identification of the accused, weapon used, motive, presence at scene, or sequence of events.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "material contradiction",
+      "prosecution case",
+      "core facts"
+    ]
+  },
+  {
+    "prompt": "Question: What is an interested witness?\nAnswer:",
+    "completion": " A witness with a direct personal stake in the conviction (e.g., enmity, relationship, monetary incentive). Courts scrutinize such witnesses more strictly.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "interested witness",
+      "bias",
+      "scrutiny"
+    ]
+  },
+  {
+    "prompt": "Question: What is a related witness?\nAnswer:",
+    "completion": " A witness related by blood or family to the victim. Their testimony is admissible but must pass strict scrutiny due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "family",
+      "bias",
+      "admissible"
+    ]
+  },
+  {
+    "prompt": "Question: Does being a related witness make testimony unreliable?\nAnswer:",
+    "completion": " No. Relationship alone does not disqualify a witness. Courts evaluate consistency and corroboration.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witness",
+      "reliability",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: When does the court declare a witness \"unreliable\"?\nAnswer:",
+    "completion": " When contradictions are material, testimony conflicts with medical evidence, or the witness shows clear bias or false implication.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "unreliable",
+      "material contradictions",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: Can a single witness be enough to convict?\nAnswer:",
+    "completion": " Yes — if the witness is wholly reliable and corroborated by surrounding circumstances.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "single witness",
+      "conviction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What happens when a witness improves their statement?\nAnswer:",
+    "completion": " Material improvement → witness becomes untrustworthy. Minor improvement → tolerated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "improvement",
+      "statement",
+      "untrustworthy"
+    ]
+  },
+  {
+    "prompt": "Question: What is the test for chance witnesses?\nAnswer:",
+    "completion": " The court checks if the witness's presence at the scene is natural, expected, and explained.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "chance witness",
+      "presence",
+      "natural"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court deal with a hostile witness?\nAnswer:",
+    "completion": " His testimony is not discarded entirely. Portions consistent with other evidence may still be considered.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "hostile witness",
+      "testimony",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does delay in FIR impact witness credibility?\nAnswer:",
+    "completion": " Yes — an unexplained delay suggests manipulation, tutoring, or afterthought.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR delay",
+      "credibility",
+      "manipulation"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictions between ocular and medical evidence destroy credibility?\nAnswer:",
+    "completion": " Yes — if contradictions are irreconcilable. No — if medical evidence is general, non-specific, or silent on the disputed point.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "ocular evidence",
+      "medical evidence",
+      "contradictions"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess testimony of child witnesses?\nAnswer:",
+    "completion": " Court ensures the child understands truth/falsehood and is not under tutoring. Courts apply heightened caution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "child witness",
+      "tutoring",
+      "caution"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts judge credibility of police witnesses?\nAnswer:",
+    "completion": " No presumption of falsehood or truth. Their testimony must pass independent corroboration, especially in recovery matters.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "police witness",
+      "corroboration",
+      "recovery"
+    ]
+  },
+  {
+    "prompt": "Question: Can an illiterate witness be disbelieved for lack of details?\nAnswer:",
+    "completion": " No — testimony is judged based on substance, not technical precision.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "illiterate witness",
+      "details",
+      "substance"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts treat contradictions in motive?\nAnswer:",
+    "completion": " Weak motive does not destroy ocular evidence. False motive harms prosecution's credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "motive",
+      "contradictions",
+      "ocular evidence"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts his earlier 161 CrPC statement?\nAnswer:",
+    "completion": " Material contradictions → credibility drops. Minor variations → irrelevant.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "161 CrPC",
+      "contradictions",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: How is credibility judged in night-time identification?\nAnswer:",
+    "completion": " Court checks source of light, duration, distance, and familiarity with accused.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "night-time",
+      "identification",
+      "light",
+      "distance"
+    ]
+  },
+  {
+    "prompt": "Question: What if only one eyewitness contradicts multiple eyewitnesses?\nAnswer:",
+    "completion": " Courts prefer the version supported by majority unless the minority witness is more consistent and independent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "contradiction",
+      "majority",
+      "minority"
+    ]
+  },
+  {
+    "prompt": "Question: How should courts evaluate enmity between witness and accused?\nAnswer:",
+    "completion": " Enmity cuts both ways — it can motivate false implication OR make witness more committed to truth. Corroboration decides.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "enmity",
+      "false implication",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: What is \"confidence-inspiring testimony\"?\nAnswer:",
+    "completion": " Testimony that appears natural, internally consistent, and aligned with circumstantial evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confidence-inspiring",
+      "natural",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: Does contradictory cross-examination automatically destroy credibility?\nAnswer:",
+    "completion": " Not unless contradictions relate to material facts.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "cross-examination",
+      "contradictions",
+      "material facts"
+    ]
+  },
+  {
+    "prompt": "Question: What if the prosecution hides independent witnesses?\nAnswer:",
+    "completion": " Non-production of natural witnesses raises suspicion and weakens credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "independent witnesses",
+      "non-production",
+      "suspicion"
+    ]
+  },
+  {
+    "prompt": "Question: How do courts assess trauma-affected witnesses?\nAnswer:",
+    "completion": " Courts expect emotional distress and allow some inconsistency, as long as core events remain consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "trauma",
+      "emotional distress",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: If two eyewitnesses strongly contradict each other, what should the court do?\nAnswer:",
+    "completion": " The court accepts the version supported by medical evidence, physical evidence, and probabilities. If doubt remains, accused gets benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "medical evidence",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: If an eyewitness contradicts medical evidence, who prevails?\nAnswer:",
+    "completion": " Material medical contradictions prevail. If medical evidence is silent/non-specific → ocular prevails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "eyewitness",
+      "medical evidence",
+      "contradictions",
+      "ocular"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness says the accused shot with pistol and another says with rifle?\nAnswer:",
+    "completion": " This is a material contradiction. Court requires corroboration; otherwise the prosecution version becomes doubtful.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "weapon",
+      "contradiction",
+      "corroboration"
+    ]
+  },
+  {
+    "prompt": "Question: Can contradictory witnesses BOTH be disbelieved?\nAnswer:",
+    "completion": " Yes — if both create reasonable doubt, the prosecution fails.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradictory witnesses",
+      "reasonable doubt",
+      "prosecution"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat partial truth?\nAnswer:",
+    "completion": " Court applies doctrine of falsus in uno NOT applicable in Pakistan → Even if a witness lies about one detail, he is not rejected entirely; credible parts are accepted.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "partial truth",
+      "falsus in uno",
+      "credible parts"
+    ]
+  },
+  {
+    "prompt": "Question: What if eyewitness says firing from 5 feet but medical says 20 feet?\nAnswer:",
+    "completion": " Material inconsistency → credibility collapses unless reconciled.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "distance",
+      "medical evidence",
+      "inconsistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness hears accused confess but has enmity with him?\nAnswer:",
+    "completion": " Court requires corroboration due to possible bias.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "confession",
+      "enmity",
+      "corroboration",
+      "bias"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness changes his version during trial?\nAnswer:",
+    "completion": " Material change → witness becomes unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "version change",
+      "trial",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: How does court assess a tutored witness?\nAnswer:",
+    "completion": " Courts look for mechanical, unnatural replies; such testimony is rejected unless corroborated.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "tutored witness",
+      "mechanical",
+      "unnatural"
+    ]
+  },
+  {
+    "prompt": "Question: What if witness describes impossible timings?\nAnswer:",
+    "completion": " Witness becomes unreliable since courts judge testimony against human probabilities.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "timings",
+      "impossible",
+      "probabilities"
+    ]
+  },
+  {
+    "prompt": "Question: If a witness contradicts himself on seeing the accused, what happens?\nAnswer:",
+    "completion": " Identification becomes doubtful → prosecution weakens.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "identification",
+      "contradiction",
+      "doubtful"
+    ]
+  },
+  {
+    "prompt": "Question: What if injured witness contradicts healthy witness?\nAnswer:",
+    "completion": " Injured witness is generally more reliable due to presence at crime scene.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "injured witness",
+      "healthy witness",
+      "reliability"
+    ]
+  },
+  {
+    "prompt": "Question: Can a witness who flees the scene be credible?\nAnswer:",
+    "completion": " Yes — flight is natural human reaction, not mistrust.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "flight",
+      "scene",
+      "natural reaction"
+    ]
+  },
+  {
+    "prompt": "Question: How does the court treat exaggerated testimony?\nAnswer:",
+    "completion": " Exaggeration on material points damages credibility.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "exaggeration",
+      "material points",
+      "credibility"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear due to stress/trauma?\nAnswer:",
+    "completion": " Court tolerates non-material inconsistencies caused by trauma.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "stress",
+      "trauma",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: If prosecution witnesses disagree on the actual presence of accused, what happens?\nAnswer:",
+    "completion": " This is a fundamental contradiction → credibility collapses → benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "presence",
+      "fundamental contradiction",
+      "benefit of doubt"
+    ]
+  },
+  {
+    "prompt": "Question: How does court choose between two believable but conflicting versions?\nAnswer:",
+    "completion": " Court prefers the version matching independent evidence (medical, ballistic, recovery, forensic).",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "conflicting versions",
+      "independent evidence",
+      "preference"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is truthful but his version is unsupported?\nAnswer:",
+    "completion": " Unsupported testimony cannot be the basis of conviction in cases of contradiction.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "truthful",
+      "unsupported",
+      "conviction"
+    ]
+  },
+  {
+    "prompt": "Question: How does court judge credibility when all witnesses are related?\nAnswer:",
+    "completion": " Court scrutinizes for exaggeration and requires consistency + circumstantial support.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "related witnesses",
+      "exaggeration",
+      "consistency"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradiction shows deliberate improvement?\nAnswer:",
+    "completion": " Deliberate improvement indicates tutoring → witness unreliable.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "deliberate improvement",
+      "tutoring",
+      "unreliable"
+    ]
+  },
+  {
+    "prompt": "Question: What if a witness contradicts FIR but matches medical evidence?\nAnswer:",
+    "completion": " Court accepts version supported by medical/physical evidence.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "FIR",
+      "medical evidence",
+      "contradiction"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions appear only after 10 years delay in trial?\nAnswer:",
+    "completion": " Court considers memory fading and tolerates minor inconsistencies.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "delay",
+      "memory fading",
+      "inconsistencies"
+    ]
+  },
+  {
+    "prompt": "Question: What if one witness is neutral and another is interested?\nAnswer:",
+    "completion": " Neutral witness testimony prevails if consistent.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "neutral witness",
+      "interested witness",
+      "consistent"
+    ]
+  },
+  {
+    "prompt": "Question: What if witnesses contradict but both show possibility of false implication?\nAnswer:",
+    "completion": " Court acquits on benefit of doubt.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "false implication",
+      "benefit of doubt",
+      "acquittal"
+    ]
+  },
+  {
+    "prompt": "Question: What if contradictions are due to police investigation defects?\nAnswer:",
+    "completion": " Court focuses on reliability of witnesses, not investigation errors. If witness testimony is credible, defects do not destroy prosecution.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "investigation defects",
+      "witness reliability",
+      "credible"
+    ]
+  },
+  {
+    "prompt": "Question: If two witnesses contradict each other, how should the court decide credibility?\nAnswer:",
+    "completion": " The court applies a credibility test based on settled judicial principles: (1) Distinguish material vs. minor contradictions - only material contradictions affect credibility. (2) Seek independent corroboration from medical evidence, recovery, forensic evidence, FIR contents, or surrounding circumstances. (3) Evaluate interest, enmity, or motive to falsely implicate - biased witnesses given less weight. (4) Check consistency with natural human conduct and probabilities. (5) Apply benefit of doubt if contradictions create reasonable doubt. Ocular evidence has primacy only when trustworthy, consistent, and confidence-inspiring. The court does NOT accept a contradictory witness unless his version is independently confirmed.",
+    "source": "witness_credibility",
+    "category": "witness_credibility",
+    "keywords": [
+      "contradicting witnesses",
+      "credibility test",
+      "material contradictions",
+      "corroboration",
+      "benefit of doubt"
+    ]
+  }
+]

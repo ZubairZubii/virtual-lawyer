@@ -1,0 +1,21 @@
+{
+  "base_model_name_or_path": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "bias": "none",
+  "fan_in_fan_out": false,
+  "init_lora_weights": true,
+  "lora_alpha": 32,
+  "lora_bias": false,
+  "lora_dropout": 0.05,
+  "peft_type": "LORA",
+  "r": 16,
+  "target_modules": [
+    "up_proj",
+    "k_proj",
+    "gate_proj",
+    "down_proj",
+    "v_proj",
+    "q_proj",
+    "o_proj"
+  ],
+  "task_type": "CAUSAL_LM"
+}
