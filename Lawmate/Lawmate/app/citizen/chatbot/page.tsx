@@ -1,0 +1,348 @@
+"use client"
+
+import type React from "react"
+
+import { useState, useRef, useEffect } from "react"
+import { Sidebar } from "@/components/sidebar"
+import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Send,
+  Loader2,
+  MessageCircle,
+  Lightbulb,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+  Sparkles,
+  BookOpen,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react"
+import { sendChat } from "@/lib/services/chat"
+
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: Date
+  helpful?: boolean
+  sources?: string[]
+}
+
+export default function ChatbotPage() {
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      role: "assistant",
+      content:
+        "I'm here to help with criminal law matters! I can assist you with:\n\n1) FIR (First Information Report) - Filing and procedures\n2) Bail - Types, conditions, and application process\n3) Appeals - Criminal appeals and procedures\n4) Remand - Custody and bail remand procedures\n5) Constitutional Rights - Fundamental rights in criminal cases\n6) Court Procedures - Criminal trial procedures\n7) Sections of Law - IPC, CrPC, and other relevant laws\n\nPlease ask me about any specific legal concern you have. I can also help with document generation and case analysis.",
+      timestamp: new Date(),
+      sources: [],
+    },
+  ])
+
+  const [input, setInput] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [copied, setCopied] = useState<string | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim()) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input,
+      timestamp: new Date(),
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setLoading(true)
+
+    try {
+      const res = await sendChat(input)
+
+      // Convert reference objects to display strings
+      const formatReference = (ref: any): string => {
+        if (typeof ref === 'string') return ref
+        if (typeof ref === 'object' && ref !== null) {
+          if (ref.type === 'PPC' && ref.section) {
+            return `PPC Section ${ref.section}`
+          }
+          if (ref.type === 'Case Law' && ref.case_no) {
+            return `Case ${ref.case_no}`
+          }
+          if (ref.type === 'CrPC' && ref.title) {
+            return `CrPC: ${ref.title}`
+          }
+          if (ref.type === 'Constitution' && ref.title) {
+            return `Constitution: ${ref.title}`
+          }
+          if (ref.title) {
+            return ref.title
+          }
+          if (ref.source) {
+            return ref.source
+          }
+          return `${ref.type || 'Reference'}`
+        }
+        return String(ref)
+      }
+
+      // Format references properly
+      const sources = res.references && Array.isArray(res.references) && res.references.length > 0
+        ? res.references.map(formatReference).filter(Boolean)
+        : (res.context_used && res.retrieved_sources ? [`${res.retrieved_sources} source(s) used`] : [])
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: res.answer || "Sorry, I could not generate a response right now.",
+        timestamp: new Date(),
+        sources: sources,
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch (err: unknown) {
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content:
+          err instanceof Error
+            ? `Error contacting server: ${err.message}`
+            : "Error contacting server.",
+        timestamp: new Date(),
+      }
+      setMessages((prev) => [...prev, assistantMessage])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCopyMessage = (content: string, messageId: string) => {
+    navigator.clipboard.writeText(content)
+    setCopied(messageId)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  const handleSuggestion = (suggestion: string) => {
+    setInput(suggestion)
+  }
+
+  return (
+    <div className="flex">
+      <Sidebar userType="citizen" />
+
+      <main className="ml-64 w-[calc(100%-256px)] min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
+        {/* Header - Premium design */}
+        <div className="border-b border-border/50 p-6 bg-gradient-to-r from-card/60 to-card/40 backdrop-blur sticky top-0 z-40 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg animate-pulse-glow">
+              <MessageCircle className="w-7 h-7 text-primary-foreground" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold text-foreground">Legal AI Assistant</h1>
+                <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/30">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  <span className="text-xs font-medium text-primary">AI Powered</span>
+                </div>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                24/7 Criminal Law Guidance • Instant Answers • Expert Sources
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Chat Area - Enhanced with background elements */}
+        <div className="flex-1 overflow-y-auto p-8 space-y-6 relative">
+          {/* Background Animation */}
+          <div className="absolute inset-0 -z-10">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-primary/8 rounded-full blur-3xl animate-float"></div>
+            <div
+              className="absolute bottom-0 left-0 w-96 h-96 bg-accent/8 rounded-full blur-3xl animate-float"
+              style={{ animationDelay: "2s" }}
+            ></div>
+            <div className="absolute inset-0 bg-grid-pattern opacity-2"></div>
+          </div>
+
+          {messages.map((message, idx) => (
+            <div
+              key={message.id}
+              className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} animate-fadeInUp`}
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
+              <div className={`flex gap-3 max-w-2xl`}>
+                {message.role === "assistant" && (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 mt-1 shadow-lg">
+                    <MessageCircle className="w-4 h-4 text-white" />
+                  </div>
+                )}
+                <div className="group w-full">
+                  <Card
+                    className={`px-6 py-4 border transition-all duration-300 ${message.role === "user" ? "bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary/50 rounded-3xl" : "bg-card border-border/50 hover:border-primary/30 rounded-2xl"}`}
+                  >
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+
+                    {/* Sources for assistant messages */}
+                    {message.role === "assistant" && message.sources && message.sources.length > 0 && (
+                      <div className="mt-4 pt-4 border-t border-border/50">
+                        <p className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" />
+                          Sources
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {message.sources.map((source, i) => (
+                            <span
+                              key={i}
+                              className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full border border-primary/20"
+                            >
+                              {source}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <p className={`text-xs mt-3 ${message.role === "user" ? "opacity-70" : "text-muted-foreground"}`}>
+                      {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                    </p>
+                  </Card>
+
+                  {/* Action buttons for assistant messages */}
+                  {message.role === "assistant" && (
+                    <div className="flex gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-primary/10"
+                        onClick={() => handleCopyMessage(message.content, message.id)}
+                        title="Copy message"
+                      >
+                        {copied === message.id ? (
+                          <CheckCircle2 className="w-3 h-3 text-primary" />
+                        ) : (
+                          <Copy className="w-3 h-3" />
+                        )}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-green-500/10"
+                        onClick={() =>
+                          setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, helpful: true } : m)))
+                        }
+                        title="Helpful"
+                      >
+                        <ThumbsUp className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 w-7 p-0 hover:bg-red-500/10"
+                        onClick={() =>
+                          setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, helpful: false } : m)))
+                        }
+                        title="Not helpful"
+                      >
+                        <ThumbsDown className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Loading state */}
+          {loading && (
+            <div className="flex justify-start animate-fadeInUp">
+              <div className="flex gap-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <Loader2 className="w-4 h-4 text-white animate-spin" />
+                </div>
+                <Card className="px-6 py-4 border border-border/50 rounded-2xl">
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-1">
+                      {[0, 1, 2].map((i) => (
+                        <div
+                          key={i}
+                          className="w-2 h-2 bg-primary rounded-full animate-pulse"
+                          style={{ animationDelay: `${i * 0.2}s` }}
+                        ></div>
+                      ))}
+                    </div>
+                    <span className="text-sm text-muted-foreground">Thinking...</span>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* Suggested Questions */}
+        {messages.length === 1 && !loading && (
+          <div className="px-8 py-6 bg-gradient-to-t from-card/40 to-transparent border-t border-border/30">
+            <p className="text-xs font-semibold text-muted-foreground mb-4 flex items-center gap-1">
+              <Lightbulb className="w-4 h-4" />
+              Suggested Questions
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { text: "What is FIR?", icon: AlertCircle },
+                { text: "How to get bail?", icon: CheckCircle2 },
+                { text: "Appeal process", icon: BookOpen },
+                { text: "My constitutional rights", icon: Sparkles },
+              ].map((suggestion, i) => (
+                <Button
+                  key={i}
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-auto py-2 px-3 bg-card/50 hover:bg-primary/10 border-border/50 hover:border-primary/50 transition-all group"
+                  onClick={() => handleSuggestion(suggestion.text)}
+                >
+                  <suggestion.icon className="w-3 h-3 mr-1.5 group-hover:text-primary" />
+                  {suggestion.text}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Input Area - Premium design */}
+        <div className="border-t border-border/50 bg-gradient-to-t from-card/80 to-card/40 backdrop-blur p-6 sticky bottom-0">
+          <form onSubmit={handleSendMessage} className="flex gap-3">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Ask about FIR, bail, appeals, remand, constitutional rights, court procedures..."
+              disabled={loading}
+              className="flex-1 bg-background/50 border-border/50 focus:border-primary/50 rounded-full"
+            />
+            <Button
+              type="submit"
+              disabled={loading}
+              className="px-6 bg-gradient-to-r from-primary to-accent text-primary-foreground border-0 hover:shadow-lg transition-all rounded-full"
+            >
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            </Button>
+          </form>
+          <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            AI responses are informational. Consult qualified lawyers for legal advice.
+          </p>
+        </div>
+      </main>
+    </div>
+  )
+}

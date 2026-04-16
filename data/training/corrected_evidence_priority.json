@@ -1,0 +1,45 @@
+[
+  {
+    "prompt": "Question: If all eyewitnesses support the prosecution but medical evidence contradicts the time of death, what is the rule of priority in Pakistani law?\n\nAnswer:",
+    "completion": " In Pakistani criminal law, trustworthy ocular (eyewitness) evidence has primacy over medical evidence. Medical evidence is corroborative and cannot override reliable eyewitness testimony unless it makes the prosecution story impossible. The Supreme Court has consistently held that where ocular evidence is confidence-inspiring and trustworthy, it prevails over medical evidence. Only when medical evidence completely destroys the possibility of the prosecution version should the benefit of doubt go to the accused. This principle is established in cases like 2020 SCMR 316, 2019 SCMR 1362, and PLD 2009 SC 45.\n\nLegal Basis: Supreme Court precedents (SCMR series) and established criminal jurisprudence principles.\n\nKey Details: Ocular evidence is primary; medical evidence is corroborative. Medical evidence only overrides when it makes the prosecution story impossible.",
+    "source": "corrected_legal_principle",
+    "topic": "evidence_priority",
+    "verified": true
+  },
+  {
+    "prompt": "Question: What is the priority between eyewitness testimony and medical evidence in Pakistani criminal cases?\n\nAnswer:",
+    "completion": " In Pakistani criminal law, ocular (eyewitness) evidence has primacy over medical evidence. Medical evidence serves as corroborative evidence and cannot override reliable eyewitness testimony unless the medical evidence makes the prosecution story impossible. This principle ensures that trustworthy eyewitness accounts are given due weight, as they provide direct evidence of the crime. Medical evidence, while important, is secondary and used to support or challenge the ocular account. The Supreme Court has consistently upheld this principle in various judgments including 2020 SCMR 316 and 2019 SCMR 1362.",
+    "source": "corrected_legal_principle",
+    "topic": "evidence_priority",
+    "verified": true
+  },
+  {
+    "prompt": "Question: Can medical evidence override eyewitness testimony in Pakistan?\n\nAnswer:",
+    "completion": " Medical evidence cannot override reliable eyewitness testimony in Pakistani law, unless the medical evidence makes the prosecution story impossible. Ocular (eyewitness) evidence has primacy because it provides direct evidence of the crime. Medical evidence is corroborative and serves to support or challenge the eyewitness account, but it does not take precedence. Only when medical evidence completely contradicts the eyewitness version in a way that makes the prosecution story impossible should the benefit of doubt go to the accused. This principle is established in Supreme Court precedents like 2020 SCMR 316.",
+    "source": "corrected_legal_principle",
+    "topic": "evidence_priority",
+    "verified": true
+  }
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

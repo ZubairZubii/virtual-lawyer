@@ -1,0 +1,329 @@
+[
+  {
+    "question": "What is the primary test for assessing witness credibility?",
+    "answer": "The court evaluates whether the witness is truthful, consistent, unbiased, and confidence-inspiring. The testimony must stand the test of cross-examination and align with medical/physical evidence.",
+    "category": "witness_credibility",
+    "keywords": ["credibility", "test", "witness", "assessment"]
+  },
+  {
+    "question": "Do minor contradictions affect witness credibility?",
+    "answer": "No. Minor discrepancies occur due to lapse of memory and natural variations. Only material contradictions weaken credibility.",
+    "category": "witness_credibility",
+    "keywords": ["minor contradictions", "credibility", "material"]
+  },
+  {
+    "question": "What is a material contradiction?",
+    "answer": "A contradiction that affects the core of the prosecution case, such as identification of the accused, weapon used, motive, presence at scene, or sequence of events.",
+    "category": "witness_credibility",
+    "keywords": ["material contradiction", "prosecution case", "core facts"]
+  },
+  {
+    "question": "What is an interested witness?",
+    "answer": "A witness with a direct personal stake in the conviction (e.g., enmity, relationship, monetary incentive). Courts scrutinize such witnesses more strictly.",
+    "category": "witness_credibility",
+    "keywords": ["interested witness", "bias", "scrutiny"]
+  },
+  {
+    "question": "What is a related witness?",
+    "answer": "A witness related by blood or family to the victim. Their testimony is admissible but must pass strict scrutiny due to possible bias.",
+    "category": "witness_credibility",
+    "keywords": ["related witness", "family", "bias", "admissible"]
+  },
+  {
+    "question": "Does being a related witness make testimony unreliable?",
+    "answer": "No. Relationship alone does not disqualify a witness. Courts evaluate consistency and corroboration.",
+    "category": "witness_credibility",
+    "keywords": ["related witness", "reliability", "consistency"]
+  },
+  {
+    "question": "When does the court declare a witness \"unreliable\"?",
+    "answer": "When contradictions are material, testimony conflicts with medical evidence, or the witness shows clear bias or false implication.",
+    "category": "witness_credibility",
+    "keywords": ["unreliable", "material contradictions", "bias"]
+  },
+  {
+    "question": "Can a single witness be enough to convict?",
+    "answer": "Yes — if the witness is wholly reliable and corroborated by surrounding circumstances.",
+    "category": "witness_credibility",
+    "keywords": ["single witness", "conviction", "corroboration"]
+  },
+  {
+    "question": "What happens when a witness improves their statement?",
+    "answer": "Material improvement → witness becomes untrustworthy. Minor improvement → tolerated.",
+    "category": "witness_credibility",
+    "keywords": ["improvement", "statement", "untrustworthy"]
+  },
+  {
+    "question": "What is the test for chance witnesses?",
+    "answer": "The court checks if the witness's presence at the scene is natural, expected, and explained.",
+    "category": "witness_credibility",
+    "keywords": ["chance witness", "presence", "natural"]
+  },
+  {
+    "question": "How does the court deal with a hostile witness?",
+    "answer": "His testimony is not discarded entirely. Portions consistent with other evidence may still be considered.",
+    "category": "witness_credibility",
+    "keywords": ["hostile witness", "testimony", "consistent"]
+  },
+  {
+    "question": "Does delay in FIR impact witness credibility?",
+    "answer": "Yes — an unexplained delay suggests manipulation, tutoring, or afterthought.",
+    "category": "witness_credibility",
+    "keywords": ["FIR delay", "credibility", "manipulation"]
+  },
+  {
+    "question": "Can contradictions between ocular and medical evidence destroy credibility?",
+    "answer": "Yes — if contradictions are irreconcilable. No — if medical evidence is general, non-specific, or silent on the disputed point.",
+    "category": "witness_credibility",
+    "keywords": ["ocular evidence", "medical evidence", "contradictions"]
+  },
+  {
+    "question": "How do courts assess testimony of child witnesses?",
+    "answer": "Court ensures the child understands truth/falsehood and is not under tutoring. Courts apply heightened caution.",
+    "category": "witness_credibility",
+    "keywords": ["child witness", "tutoring", "caution"]
+  },
+  {
+    "question": "How do courts judge credibility of police witnesses?",
+    "answer": "No presumption of falsehood or truth. Their testimony must pass independent corroboration, especially in recovery matters.",
+    "category": "witness_credibility",
+    "keywords": ["police witness", "corroboration", "recovery"]
+  },
+  {
+    "question": "Can an illiterate witness be disbelieved for lack of details?",
+    "answer": "No — testimony is judged based on substance, not technical precision.",
+    "category": "witness_credibility",
+    "keywords": ["illiterate witness", "details", "substance"]
+  },
+  {
+    "question": "How do courts treat contradictions in motive?",
+    "answer": "Weak motive does not destroy ocular evidence. False motive harms prosecution's credibility.",
+    "category": "witness_credibility",
+    "keywords": ["motive", "contradictions", "ocular evidence"]
+  },
+  {
+    "question": "What if a witness contradicts his earlier 161 CrPC statement?",
+    "answer": "Material contradictions → credibility drops. Minor variations → irrelevant.",
+    "category": "witness_credibility",
+    "keywords": ["161 CrPC", "contradictions", "credibility"]
+  },
+  {
+    "question": "How is credibility judged in night-time identification?",
+    "answer": "Court checks source of light, duration, distance, and familiarity with accused.",
+    "category": "witness_credibility",
+    "keywords": ["night-time", "identification", "light", "distance"]
+  },
+  {
+    "question": "What if only one eyewitness contradicts multiple eyewitnesses?",
+    "answer": "Courts prefer the version supported by majority unless the minority witness is more consistent and independent.",
+    "category": "witness_credibility",
+    "keywords": ["eyewitness", "contradiction", "majority", "minority"]
+  },
+  {
+    "question": "How should courts evaluate enmity between witness and accused?",
+    "answer": "Enmity cuts both ways — it can motivate false implication OR make witness more committed to truth. Corroboration decides.",
+    "category": "witness_credibility",
+    "keywords": ["enmity", "false implication", "corroboration"]
+  },
+  {
+    "question": "What is \"confidence-inspiring testimony\"?",
+    "answer": "Testimony that appears natural, internally consistent, and aligned with circumstantial evidence.",
+    "category": "witness_credibility",
+    "keywords": ["confidence-inspiring", "natural", "consistent"]
+  },
+  {
+    "question": "Does contradictory cross-examination automatically destroy credibility?",
+    "answer": "Not unless contradictions relate to material facts.",
+    "category": "witness_credibility",
+    "keywords": ["cross-examination", "contradictions", "material facts"]
+  },
+  {
+    "question": "What if the prosecution hides independent witnesses?",
+    "answer": "Non-production of natural witnesses raises suspicion and weakens credibility.",
+    "category": "witness_credibility",
+    "keywords": ["independent witnesses", "non-production", "suspicion"]
+  },
+  {
+    "question": "How do courts assess trauma-affected witnesses?",
+    "answer": "Courts expect emotional distress and allow some inconsistency, as long as core events remain consistent.",
+    "category": "witness_credibility",
+    "keywords": ["trauma", "emotional distress", "inconsistency"]
+  },
+  {
+    "question": "If two eyewitnesses strongly contradict each other, what should the court do?",
+    "answer": "The court accepts the version supported by medical evidence, physical evidence, and probabilities. If doubt remains, accused gets benefit of doubt.",
+    "category": "witness_credibility",
+    "keywords": ["contradicting witnesses", "medical evidence", "benefit of doubt"]
+  },
+  {
+    "question": "If an eyewitness contradicts medical evidence, who prevails?",
+    "answer": "Material medical contradictions prevail. If medical evidence is silent/non-specific → ocular prevails.",
+    "category": "witness_credibility",
+    "keywords": ["eyewitness", "medical evidence", "contradictions", "ocular"]
+  },
+  {
+    "question": "What if one witness says the accused shot with pistol and another says with rifle?",
+    "answer": "This is a material contradiction. Court requires corroboration; otherwise the prosecution version becomes doubtful.",
+    "category": "witness_credibility",
+    "keywords": ["weapon", "contradiction", "corroboration"]
+  },
+  {
+    "question": "Can contradictory witnesses BOTH be disbelieved?",
+    "answer": "Yes — if both create reasonable doubt, the prosecution fails.",
+    "category": "witness_credibility",
+    "keywords": ["contradictory witnesses", "reasonable doubt", "prosecution"]
+  },
+  {
+    "question": "How does the court treat partial truth?",
+    "answer": "Court applies doctrine of falsus in uno NOT applicable in Pakistan → Even if a witness lies about one detail, he is not rejected entirely; credible parts are accepted.",
+    "category": "witness_credibility",
+    "keywords": ["partial truth", "falsus in uno", "credible parts"]
+  },
+  {
+    "question": "What if eyewitness says firing from 5 feet but medical says 20 feet?",
+    "answer": "Material inconsistency → credibility collapses unless reconciled.",
+    "category": "witness_credibility",
+    "keywords": ["distance", "medical evidence", "inconsistency"]
+  },
+  {
+    "question": "What if witness hears accused confess but has enmity with him?",
+    "answer": "Court requires corroboration due to possible bias.",
+    "category": "witness_credibility",
+    "keywords": ["confession", "enmity", "corroboration", "bias"]
+  },
+  {
+    "question": "What if witness changes his version during trial?",
+    "answer": "Material change → witness becomes unreliable.",
+    "category": "witness_credibility",
+    "keywords": ["version change", "trial", "unreliable"]
+  },
+  {
+    "question": "How does court assess a tutored witness?",
+    "answer": "Courts look for mechanical, unnatural replies; such testimony is rejected unless corroborated.",
+    "category": "witness_credibility",
+    "keywords": ["tutored witness", "mechanical", "unnatural"]
+  },
+  {
+    "question": "What if witness describes impossible timings?",
+    "answer": "Witness becomes unreliable since courts judge testimony against human probabilities.",
+    "category": "witness_credibility",
+    "keywords": ["timings", "impossible", "probabilities"]
+  },
+  {
+    "question": "If a witness contradicts himself on seeing the accused, what happens?",
+    "answer": "Identification becomes doubtful → prosecution weakens.",
+    "category": "witness_credibility",
+    "keywords": ["identification", "contradiction", "doubtful"]
+  },
+  {
+    "question": "What if injured witness contradicts healthy witness?",
+    "answer": "Injured witness is generally more reliable due to presence at crime scene.",
+    "category": "witness_credibility",
+    "keywords": ["injured witness", "healthy witness", "reliability"]
+  },
+  {
+    "question": "Can a witness who flees the scene be credible?",
+    "answer": "Yes — flight is natural human reaction, not mistrust.",
+    "category": "witness_credibility",
+    "keywords": ["flight", "scene", "natural reaction"]
+  },
+  {
+    "question": "How does the court treat exaggerated testimony?",
+    "answer": "Exaggeration on material points damages credibility.",
+    "category": "witness_credibility",
+    "keywords": ["exaggeration", "material points", "credibility"]
+  },
+  {
+    "question": "What if contradictions appear due to stress/trauma?",
+    "answer": "Court tolerates non-material inconsistencies caused by trauma.",
+    "category": "witness_credibility",
+    "keywords": ["stress", "trauma", "inconsistencies"]
+  },
+  {
+    "question": "If prosecution witnesses disagree on the actual presence of accused, what happens?",
+    "answer": "This is a fundamental contradiction → credibility collapses → benefit of doubt.",
+    "category": "witness_credibility",
+    "keywords": ["presence", "fundamental contradiction", "benefit of doubt"]
+  },
+  {
+    "question": "How does court choose between two believable but conflicting versions?",
+    "answer": "Court prefers the version matching independent evidence (medical, ballistic, recovery, forensic).",
+    "category": "witness_credibility",
+    "keywords": ["conflicting versions", "independent evidence", "preference"]
+  },
+  {
+    "question": "What if one witness is truthful but his version is unsupported?",
+    "answer": "Unsupported testimony cannot be the basis of conviction in cases of contradiction.",
+    "category": "witness_credibility",
+    "keywords": ["truthful", "unsupported", "conviction"]
+  },
+  {
+    "question": "How does court judge credibility when all witnesses are related?",
+    "answer": "Court scrutinizes for exaggeration and requires consistency + circumstantial support.",
+    "category": "witness_credibility",
+    "keywords": ["related witnesses", "exaggeration", "consistency"]
+  },
+  {
+    "question": "What if contradiction shows deliberate improvement?",
+    "answer": "Deliberate improvement indicates tutoring → witness unreliable.",
+    "category": "witness_credibility",
+    "keywords": ["deliberate improvement", "tutoring", "unreliable"]
+  },
+  {
+    "question": "What if a witness contradicts FIR but matches medical evidence?",
+    "answer": "Court accepts version supported by medical/physical evidence.",
+    "category": "witness_credibility",
+    "keywords": ["FIR", "medical evidence", "contradiction"]
+  },
+  {
+    "question": "What if contradictions appear only after 10 years delay in trial?",
+    "answer": "Court considers memory fading and tolerates minor inconsistencies.",
+    "category": "witness_credibility",
+    "keywords": ["delay", "memory fading", "inconsistencies"]
+  },
+  {
+    "question": "What if one witness is neutral and another is interested?",
+    "answer": "Neutral witness testimony prevails if consistent.",
+    "category": "witness_credibility",
+    "keywords": ["neutral witness", "interested witness", "consistent"]
+  },
+  {
+    "question": "What if witnesses contradict but both show possibility of false implication?",
+    "answer": "Court acquits on benefit of doubt.",
+    "category": "witness_credibility",
+    "keywords": ["false implication", "benefit of doubt", "acquittal"]
+  },
+  {
+    "question": "What if contradictions are due to police investigation defects?",
+    "answer": "Court focuses on reliability of witnesses, not investigation errors. If witness testimony is credible, defects do not destroy prosecution.",
+    "category": "witness_credibility",
+    "keywords": ["investigation defects", "witness reliability", "credible"]
+  },
+  {
+    "question": "If two witnesses contradict each other, how should the court decide credibility?",
+    "answer": "The court applies a credibility test based on settled judicial principles: (1) Distinguish material vs. minor contradictions - only material contradictions affect credibility. (2) Seek independent corroboration from medical evidence, recovery, forensic evidence, FIR contents, or surrounding circumstances. (3) Evaluate interest, enmity, or motive to falsely implicate - biased witnesses given less weight. (4) Check consistency with natural human conduct and probabilities. (5) Apply benefit of doubt if contradictions create reasonable doubt. Ocular evidence has primacy only when trustworthy, consistent, and confidence-inspiring. The court does NOT accept a contradictory witness unless his version is independently confirmed.",
+    "category": "witness_credibility",
+    "keywords": ["contradicting witnesses", "credibility test", "material contradictions", "corroboration", "benefit of doubt"]
+  }
+]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

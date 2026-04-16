@@ -1,0 +1,10 @@
+﻿.venv/
+node_modules/
+Lawmate/Lawmate/node_modules/
+.env
+*.log
+__pycache__/
+.next/
+dist/
+build/
+data/lawyer_images/

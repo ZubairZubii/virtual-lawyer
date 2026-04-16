@@ -1,0 +1,389 @@
+[
+  {
+    "id": "negative_001",
+    "category": "medical_evidence",
+    "wrong_answer": "Medical evidence always overrides ocular evidence.",
+    "correct_answer": "This is incorrect. Pakistani courts prioritize trustworthy ocular evidence over medical evidence unless the medical evidence renders the occurrence as described impossible or highly improbable. Medical evidence is confirmatory, not superior.",
+    "why_wrong": "Assumes automatic priority of medical evidence ignoring the established principle that ocular evidence from credible witnesses prevails.",
+    "citations": [ "PLJ 1994 S.C. 87 Abdul Subhan", "PLD 2009 SC 45" ],
+    "correct_principle": "primacy_of_ocular_evidence"
+  },
+  {
+    "id": "negative_002",
+    "category": "medical_evidence",
+    "wrong_answer": "Medical evidence can identify who committed the crime.",
+    "correct_answer": "This is incorrect. Medical evidence cannot connect the accused with the crime or identify the perpetrator. Medical evidence only confirms the nature, location, and characteristics of injuries. It has no corroborative value regarding identity or involvement of the accused.",
+    "why_wrong": "Confuses injury documentation with perpetrator identification.",
+    "citations": [ "NLR 1986 Cr. 773 Saifullah Khan", "1997 SCMR 866 Muhammad Sharif" ],
+    "correct_principle": "medical_evidence_limitations"
+  },
+  {
+    "id": "negative_003",
+    "category": "benefit_of_doubt",
+    "wrong_answer": "Benefit of doubt is a favor granted by the court at its discretion.",
+    "correct_answer": "This is incorrect. Benefit of doubt is a right of the accused, not a matter of grace, favor, or concession. When reasonable doubt exists, the accused is entitled to acquittal as a matter of right under fundamental principles of criminal justice.",
+    "why_wrong": "Treats constitutional right as discretionary judicial favor.",
+    "citations": [ "PLD 1970 SC 10 Muhammad Luqman", "2022 SCMR 1954" ],
+    "correct_principle": "benefit_as_right_not_grace"
+  },
+  {
+    "id": "negative_004",
+    "category": "benefit_of_doubt",
+    "wrong_answer": "Multiple doubts are needed before granting benefit of doubt to the accused.",
+    "correct_answer": "This is incorrect. A single circumstance creating reasonable doubt in a prudent mind about the guilt of the accused is sufficient to entitle him to benefit of doubt. Multiple circumstances or cumulative defects are NOT required.",
+    "why_wrong": "Creates non-existent requirement for multiple doubts.",
+    "citations": [ "2022 SCMR 1954", "2022 SCMR 1540", "2024 SCMR 51" ],
+    "correct_principle": "single_doubt_sufficient"
+  },
+  {
+    "id": "negative_005",
+    "category": "benefit_of_doubt",
+    "wrong_answer": "The accused can be convicted based on high probability and strong suspicion.",
+    "correct_answer": "This is incorrect. Finding of guilt cannot be based merely on high probabilities inferred from evidence. The finding must rest surely and firmly on evidence produced. Mere conjectures, probabilities, and suspicions cannot replace proof beyond reasonable doubt.",
+    "why_wrong": "Lowers standard of proof from 'beyond reasonable doubt' to 'probability'.",
+    "citations": [ "PLD 1970 SC 10", "2024 SCMR 51" ],
+    "correct_principle": "beyond_reasonable_doubt_standard"
+  },
+  {
+    "id": "negative_006",
+    "category": "burden_of_proof",
+    "wrong_answer": "If the accused's defense is weak or unbelievable, he must be convicted.",
+    "correct_answer": "This is incorrect. Even if the accused's special pleading fails or his defense is not accepted, he must be acquitted if he succeeds in raising reasonable doubt about the prosecution's case. The burden of proof never shifts to the accused. Prosecution must independently prove its case beyond reasonable doubt.",
+    "why_wrong": "Shifts burden of proof to accused and confuses defense failure with prosecution success.",
+    "citations": [ "PLD 1953 F.C 93", "Section 105 Evidence Act" ],
+    "correct_principle": "burden_never_shifts"
+  },
+  {
+    "id": "negative_007",
+    "category": "burden_of_proof",
+    "wrong_answer": "The accused must prove his innocence.",
+    "correct_answer": "This is incorrect. The accused is presumed innocent and is NOT required to prove his innocence. The prosecution bears the burden to prove guilt beyond reasonable doubt. This burden never shifts to the accused.",
+    "why_wrong": "Reverses fundamental principle of presumption of innocence.",
+    "citations": [ "Article 10-A Constitution", "PLD 1953 F.C 93" ],
+    "correct_principle": "presumption_of_innocence"
+  },
+  {
+    "id": "negative_008",
+    "category": "FIR_delay",
+    "wrong_answer": "Any delay in filing FIR automatically makes the case false and prosecution must fail.",
+    "correct_answer": "This is incorrect. Delay in filing FIR is not automatically fatal to prosecution. The delay must be considered when assessing evidence, but if properly explained (hospital visit, waiting for family, funeral arrangements, trauma, honor considerations), the case can proceed. Each case is judged on its specific circumstances.",
+    "why_wrong": "Creates absolute rule where law requires contextual assessment.",
+    "citations": [ "1976 P.Cr.LJ 40 Abbas Shah", "PLJ 1995 FSC 118", "2020 SCMR 178" ],
+    "correct_principle": "explained_delay_acceptable"
+  },
+  {
+    "id": "negative_009",
+    "category": "FIR_delay",
+    "wrong_answer": "Prompt FIR proves the case is true and the accused is guilty.",
+    "correct_answer": "This is incorrect. While prompt FIR rules out consultation to concoct a false case, promptness alone does not guarantee correctness of facts or prove guilt. Innocent persons can still be falsely implicated in a promptly filed FIR. All evidence must be assessed independently.",
+    "why_wrong": "Treats promptness as proof of guilt rather than as one factor in assessment.",
+    "citations": [ "1975 P.Cr.LJ 44 Moharram", "PLJ 1974 SC 134" ],
+    "correct_principle": "prompt_FIR_not_conclusive"
+  },
+  {
+    "id": "negative_010",
+    "category": "witness_testimony",
+    "wrong_answer": "Related witnesses must be rejected because they are interested in the outcome.",
+    "correct_answer": "This is incorrect. Related witnesses cannot be automatically termed interested witnesses. If the offense is committed in the presence of family members, they are natural witnesses. Their evidence can be accepted if reliable, cogent, and clear. They become interested witnesses only when evidence shows malice and desire to falsely implicate the accused.",
+    "why_wrong": "Automatically disqualifies natural witnesses based solely on relationship.",
+    "citations": [ "2023 SCMR 1375" ],
+    "correct_principle": "natural_witness_doctrine"
+  },
+  {
+    "id": "negative_011",
+    "category": "witness_testimony",
+    "wrong_answer": "If witnesses give exactly identical statements, this proves they are telling the truth.",
+    "correct_answer": "This is incorrect. Parrot-like statements that are word-for-word identical are actually discredited by courts as they suggest tutoring, consultation, or fabrication. Natural witnesses have minor variations due to different perspectives, memory, and manner of expression. Identical statements raise suspicion.",
+    "why_wrong": "Mistakes unnatural uniformity for credibility.",
+    "citations": [ "2023 SCMR 1375", "Multiple precedents on tutored witnesses" ],
+    "correct_principle": "natural_variance_expected"
+  },
+  {
+    "id": "negative_012",
+    "category": "witness_testimony",
+    "wrong_answer": "Any discrepancy between witnesses means they are lying and case must fail.",
+    "correct_answer": "This is incorrect. Minor discrepancies in witness statements do not make the case doubtful. In normal human conduct, minor discrepancies occur while narrating incidents due to errors of observation, memory lapse, and mental disposition. Only material contradictions on fundamental aspects are fatal. Minor variances actually add credibility.",
+    "why_wrong": "Treats normal human variance as proof of fabrication.",
+    "citations": [ "2023 SCMR 1375" ],
+    "correct_principle": "minor_discrepancy_vs_contradiction"
+  },
+  {
+    "id": "negative_013",
+    "category": "bail",
+    "wrong_answer": "Bail cannot be granted in murder cases because they are serious offenses.",
+    "correct_answer": "This is incorrect. Bail can be granted even in murder and other serious non-bailable offenses under Section 497(2) CrPC when: further inquiry is needed, no reasonable grounds exist to believe accused committed offense, unreasonable trial delay occurs, accused is minor/woman/infirm, or mala fide prosecution is evident. Seriousness of offense is not absolute bar.",
+    "why_wrong": "Creates absolute prohibition where law provides for bail even in serious cases.",
+    "citations": [ "Section 497(2) CrPC", "PLD 1995 SC 34 Tariq Bashir" ],
+    "correct_principle": "bail_in_serious_offenses_possible"
+  },
+  {
+    "id": "negative_014",
+    "category": "bail",
+    "wrong_answer": "Pre-arrest bail is only for influential people and should be rarely granted.",
+    "correct_answer": "This is incorrect. Pre-arrest bail is a fundamental right under Article 9 Constitution protecting personal liberty. It is preventive protection against arbitrary arrest and harassment. It should be granted when FIR delay indicates mala fide, false implication is evident, lack of independent evidence exists, or harassment is shown. It is not reserved for any particular class.",
+    "why_wrong": "Treats constitutional right as privilege for elite rather than fundamental protection.",
+    "citations": [ "Article 9 Constitution", "Section 498 CrPC", "PLD 1986 SC 53" ],
+    "correct_principle": "pre_arrest_bail_as_right"
+  },
+  {
+    "id": "negative_015",
+    "category": "circumstantial_evidence",
+    "wrong_answer": "In spousal murder cases occurring at home, the husband is presumed guilty and must explain what happened.",
+    "correct_answer": "This is incorrect. In absence of direct or substantial evidence, conviction cannot be maintained merely because husband is bound to explain wife's murder inside their room. Prosecution must prove guilt through positive evidence beyond reasonable doubt. Presumption alone is insufficient. The burden of proof never shifts to the accused.",
+    "why_wrong": "Shifts burden of proof and creates guilt by presumption.",
+    "citations": [ "2011 SCMR 941 Abdul Majeed", "2013 MLD 665" ],
+    "correct_principle": "no_conviction_on_presumption"
+  },
+  {
+    "id": "negative_016",
+    "category": "circumstantial_evidence",
+    "wrong_answer": "Circumstantial evidence is weak and unreliable, so it cannot support conviction.",
+    "correct_answer": "This is incorrect. Circumstantial evidence can be sufficient for conviction if it forms a complete chain pointing unequivocally to guilt of the accused. The chain must be complete, and no link can be missing. Each circumstance must be proved, and the combined effect must exclude every reasonable hypothesis of innocence.",
+    "why_wrong": "Dismisses valid form of evidence recognized in law.",
+    "citations": [ "Established jurisprudence on circumstantial evidence" ],
+    "correct_principle": "circumstantial_evidence_validity"
+  },
+  {
+    "id": "negative_017",
+    "category": "expert_evidence",
+    "wrong_answer": "Expert opinion must always be accepted because experts know better than courts.",
+    "correct_answer": "This is incorrect. Expert opinion is entitled to great weight but is not binding on the court. Expert evidence is confirmatory or explanatory and cannot override factual observations by competent witnesses. When experts give contradictory opinions, benefit of doubt goes to accused. Courts can reject expert opinion if inconsistent with proven facts.",
+    "why_wrong": "Makes expert opinion conclusive and binding on courts.",
+    "citations": [ "1973 SCMR 162 Samano", "PLJ 1974 Cr. C. (Lah.) 600" ],
+    "correct_principle": "expert_opinion_not_binding"
+  },
+  {
+    "id": "negative_018",
+    "category": "expert_evidence",
+    "wrong_answer": "If the prosecution's expert and defense expert disagree, the prosecution expert should be believed.",
+    "correct_answer": "This is incorrect. When experts give contradictory opinions and there is no clear basis to prefer one over the other, benefit of doubt must be given to the accused. Mere fact that expert is prosecution witness does not make their opinion more credible. The court must assess the reasoning and basis of each opinion.",
+    "why_wrong": "Creates automatic preference for prosecution without merit-based assessment.",
+    "citations": [ "PLJ 1974 Cr. C. (Lah.) 600 Faiz Muhammad" ],
+    "correct_principle": "expert_contradiction_favors_accused"
+  },
+  {
+    "id": "negative_019",
+    "category": "recovery",
+    "wrong_answer": "Recovery of weapon from the accused proves he committed the crime.",
+    "correct_answer": "This is incorrect. Recovery of weapon alone is insufficient to prove guilt. The prosecution must establish: (1) The weapon caused the injuries; (2) The accused possessed it at time of offense; (3) Recovery was made lawfully and without manipulation; (4) Chain of custody is established. Recovery must be corroborated by other evidence linking accused to the crime.",
+    "why_wrong": "Treats single piece of evidence as conclusive proof.",
+    "citations": [ "Multiple precedents on recovery evidence requirements" ],
+    "correct_principle": "recovery_requires_corroboration"
+  },
+  {
+    "id": "negative_020",
+    "category": "recovery",
+    "wrong_answer": "If crime empties are not recovered, the prosecution case automatically fails.",
+    "correct_answer": "This is incorrect. Non-recovery of crime empties is not fatal if explained and other evidence establishes guilt beyond reasonable doubt. The empties may have been removed, thrown away, or lost at the scene. However, non-recovery combined with other weaknesses can raise doubt about the prosecution case.",
+    "why_wrong": "Creates absolute requirement where law recognizes practical realities.",
+    "citations": [ "Various precedents on crime empty recovery" ],
+    "correct_principle": "non_recovery_context_dependent"
+  },
+  {
+    "id": "negative_021",
+    "category": "confession",
+    "wrong_answer": "If the accused confessed, even informally or in a video, he must be convicted.",
+    "correct_answer": "This is incorrect. Extra-judicial confessions and confessional videos have no evidentiary value unless: (1) Properly produced before court; (2) Genuineness established through forensic examination; (3) Proved in accordance with law; (4) Made voluntarily without coercion; (5) Corroborated by independent evidence. Confession alone is insufficient.",
+    "why_wrong": "Ignores strict legal requirements for confession admissibility and reliability.",
+    "citations": [ "2022 SCMR 1954", "Established law on confessions" ],
+    "correct_principle": "confession_strict_requirements"
+  },
+  {
+    "id": "negative_022",
+    "category": "motive",
+    "wrong_answer": "Without proving motive, the prosecution case must fail.",
+    "correct_answer": "This is incorrect. Motive is not an essential element that must be proved in every case. While motive strengthens the prosecution case and helps explain why crime was committed, absence of proven motive is not fatal if other evidence establishes guilt beyond reasonable doubt. However, absence of motive is a factor favoring the accused.",
+    "why_wrong": "Makes non-essential element mandatory for conviction.",
+    "citations": [ "Established law on motive" ],
+    "correct_principle": "motive_not_essential"
+  },
+  {
+    "id": "negative_023",
+    "category": "motive",
+    "wrong_answer": "Since the accused had a strong motive, he must have committed the crime.",
+    "correct_answer": "This is incorrect. Motive alone cannot establish guilt. Many people may have motive but only the actual perpetrator is guilty. Prosecution must prove through direct or circumstantial evidence that the accused actually committed the offense. Motive is relevant but not sufficient for conviction.",
+    "why_wrong": "Confuses possible reason with actual proof of commission.",
+    "citations": [ "Established principles on motive" ],
+    "correct_principle": "motive_alone_insufficient"
+  },
+  {
+    "id": "negative_024",
+    "category": "common_intention",
+    "wrong_answer": "If multiple accused were present at the scene, all must be convicted equally.",
+    "correct_answer": "This is incorrect. Mere presence at the scene does not establish guilt. For conviction, prosecution must prove: (1) Each accused participated in the criminal act; (2) Common intention existed (Section 34 PPC); or (3) Unlawful assembly with common object (Section 149 PPC). Passive presence or being nearby is insufficient. Each accused's role must be established.",
+    "why_wrong": "Makes presence equivalent to participation and guilt.",
+    "citations": [ "Section 34 PPC", "Section 149 PPC", "Multiple precedents" ],
+    "correct_principle": "presence_not_proof_of_guilt"
+  },
+  {
+    "id": "negative_025",
+    "category": "common_intention",
+    "wrong_answer": "Common intention under Section 34 PPC is automatically proved if accused are friends or relatives.",
+    "correct_answer": "This is incorrect. Common intention must be proved through evidence showing pre-arranged plan or conduct indicating shared criminal purpose. Relationship, friendship, or family ties do not prove common intention. There must be evidence of meeting of minds before or during the offense to commit the criminal act together.",
+    "why_wrong": "Presumes criminal conspiracy from relationship.",
+    "citations": [ "Section 34 PPC interpretation cases" ],
+    "correct_principle": "common_intention_requires_proof"
+  },
+  {
+    "id": "negative_026",
+    "category": "dying_declaration",
+    "wrong_answer": "Dying declaration alone is always sufficient for conviction without corroboration.",
+    "correct_answer": "This is partially incorrect. While dying declaration can form basis of conviction without corroboration if it inspires confidence, courts must scrutinize it carefully. It must be: (1) Voluntary and truthful; (2) Made when person expected death; (3) Concerning cause of death; (4) Maker was in fit mental condition; (5) Free from tutoring. Suspicious or inconsistent dying declaration requires corroboration.",
+    "why_wrong": "Treats dying declaration as automatically reliable without scrutiny.",
+    "citations": [ "Article 46 QSO", "Multiple precedents on dying declaration" ],
+    "correct_principle": "dying_declaration_scrutiny_required"
+  },
+  {
+    "id": "negative_027",
+    "category": "dying_declaration",
+    "wrong_answer": "If there is any delay in recording dying declaration, it must be rejected.",
+    "correct_answer": "This is incorrect. Delay in recording dying declaration does not automatically make it unreliable. The delay must be assessed in context: (1) Was deceased in condition to give statement earlier? (2) Was medical treatment priority? (3) Is delay satisfactorily explained? Reasonable delay for medical care or waiting for magistrate is acceptable if declaration otherwise reliable.",
+    "why_wrong": "Creates rigid rule ignoring practical circumstances.",
+    "citations": [ "Precedents on dying declaration timing" ],
+    "correct_principle": "delay_context_assessment"
+  },
+  {
+    "id": "negative_028",
+    "category": "identification",
+    "wrong_answer": "Test Identification Parade (TIP) is mandatory in every case of disputed identity.",
+    "correct_answer": "This is incorrect. TIP is not mandatory if: (1) Accused was known to witnesses before incident; (2) Witnesses had no difficulty identifying accused; (3) Identification not seriously challenged. TIP is required only when identity is genuinely disputed and accused was not previously known to prosecution witnesses.",
+    "why_wrong": "Makes TIP mandatory even when unnecessary.",
+    "citations": [ "Precedents on TIP requirements" ],
+    "correct_principle": "TIP_not_always_required"
+  },
+  {
+    "id": "negative_029",
+    "category": "identification",
+    "wrong_answer": "If TIP was not conducted properly, the accused must be acquitted.",
+    "correct_answer": "This is incorrect. Defective TIP is not fatal if: (1) Witnesses' identification in court is confident and consistent; (2) Other evidence corroborates identity; (3) No prejudice caused to accused. Defective TIP is one factor in assessing identification evidence but not automatically fatal. However, it weakens prosecution case.",
+    "why_wrong": "Makes procedural defect automatically dispositive.",
+    "citations": [ "Precedents on defective TIP" ],
+    "correct_principle": "defective_TIP_not_automatically_fatal"
+  },
+  {
+    "id": "negative_030",
+    "category": "night_occurrence",
+    "wrong_answer": "Crimes occurring at night can be proved with same standard as daytime occurrences.",
+    "correct_answer": "This is incorrect. When occurrence takes place at night, possibility of mistaken identity or doubtful identification increases. Courts require: (1) Clear evidence of lighting conditions; (2) Strong corroboration of identity; (3) Careful scrutiny of witness testimony. Night occurrence raises doubt requiring additional safeguards.",
+    "why_wrong": "Ignores visibility and identification challenges at night.",
+    "citations": [ "PLJ 1995 S.C. 576 Umar Hayat" ],
+    "correct_principle": "night_occurrence_scrutiny"
+  },
+  {
+    "id": "negative_031",
+    "category": "last_seen_together",
+    "wrong_answer": "Last seen together evidence proves the accused killed the deceased.",
+    "correct_answer": "This is incorrect. Last seen together is only a circumstantial link that must be combined with other evidence. By itself, it does not prove guilt. There must be close proximity in time and place, and other circumstances must exclude reasonable possibility that someone else committed the crime. This principle alone is insufficient for conviction.",
+    "why_wrong": "Treats one circumstance as conclusive proof.",
+    "citations": [ "Established law on circumstantial evidence" ],
+    "correct_principle": "last_seen_insufficient_alone"
+  },
+  {
+    "id": "negative_032",
+    "category": "forensic_evidence",
+    "wrong_answer": "DNA evidence automatically proves guilt and cannot be questioned.",
+    "correct_answer": "This is incorrect. While DNA evidence is highly reliable, it must be: (1) Collected properly; (2) Chain of custody maintained; (3) Analyzed by accredited lab; (4) Matched correctly to accused; (5) Explained in context. DNA proves presence/contact but does not necessarily prove commission of crime. It can be challenged on procedural grounds.",
+    "why_wrong": "Makes scientific evidence infallible and unchallenged.",
+    "citations": [ "Modern forensic evidence standards" ],
+    "correct_principle": "forensic_evidence_requirements"
+  },
+  {
+    "id": "negative_033",
+    "category": "forensic_evidence",
+    "wrong_answer": "Fingerprint evidence alone is sufficient to convict without any other proof.",
+    "correct_answer": "This is incorrect. Fingerprint evidence must be: (1) Clear and identifiable; (2) Properly lifted and preserved; (3) Matched by qualified expert; (4) Explained in context of crime. Finding fingerprints at scene proves presence but not necessarily criminal act, especially if legitimate access is claimed. Corroboration is needed.",
+    "why_wrong": "Overestimates fingerprint evidence and ignores need for context.",
+    "citations": [ "Forensic evidence precedents" ],
+    "correct_principle": "fingerprint_requires_context"
+  },
+  {
+    "id": "negative_034",
+    "category": "prosecution_witnesses",
+    "wrong_answer": "All prosecution witnesses must be believed unless specifically contradicted.",
+    "correct_answer": "This is incorrect. Courts must scrutinize all witness testimony for: (1) Internal consistency; (2) External corroboration; (3) Credibility and demeanor; (4) Interest or bias; (5) Material contradictions. Prosecution witnesses are not presumed truthful. Each witness must be assessed independently. Uncorroborated testimony of single witness requires careful evaluation.",
+    "why_wrong": "Reverses burden and creates presumption favoring prosecution.",
+    "citations": [ "General principles of evidence appreciation" ],
+    "correct_principle": "all_witnesses_require_scrutiny"
+  },
+  {
+    "id": "negative_035",
+    "category": "defense_witnesses",
+    "wrong_answer": "Defense witnesses are unreliable and should be rejected because they support the accused.",
+    "correct_answer": "This is incorrect. Defense witnesses must be assessed with same standard as prosecution witnesses. If their testimony is credible, consistent, and cogent, it must be accepted. They cannot be rejected merely because they testify for defense. However, defense witnesses may be more closely scrutinized if they have obvious interest in outcome.",
+    "why_wrong": "Creates bias against defense evidence.",
+    "citations": [ "Principles of fair trial and evidence assessment" ],
+    "correct_principle": "defense_witnesses_equal_consideration"
+  },
+  {
+    "id": "negative_036",
+    "category": "hostile_witness",
+    "wrong_answer": "If a witness turns hostile, his entire testimony must be rejected.",
+    "correct_answer": "This is incorrect. When witness is declared hostile under Section 154 QSO, his testimony is not automatically rejected. The court can: (1) Accept parts that inspire confidence; (2) Rely on portions corroborated by other evidence; (3) Consider earlier statements under Section 147 QSO. Entire testimony is not discarded; only treated with caution.",
+    "why_wrong": "Creates automatic rejection where law allows selective acceptance.",
+    "citations": [ "Section 154 QSO", "Precedents on hostile witnesses" ],
+    "correct_principle": "hostile_witness_partial_acceptance"
+  },
+  {
+    "id": "negative_037",
+    "category": "cross_examination",
+    "wrong_answer": "If the defense does not cross-examine a witness, his testimony is automatically accepted as truth.",
+    "correct_answer": "This is incorrect. While failure to cross-examine gives weight to witness testimony, it does not make it conclusive or automatically true. The court still must assess: (1) Internal consistency; (2) Compatibility with other evidence; (3) Inherent plausibility. Non-cross-examination is one factor but not conclusive proof of truthfulness.",
+    "why_wrong": "Makes procedural matter equivalent to proof of facts.",
+    "citations": [ "Evidence law principles" ],
+    "correct_principle": "non_cross_examination_one_factor"
+  },
+  {
+    "id": "negative_038",
+    "category": "contradictions",
+    "wrong_answer": "Any contradiction between FIR and testimony proves the case is fabricated.",
+    "correct_answer": "This is incorrect. Minor contradictions between FIR and court testimony are natural due to: (1) Time lapse; (2) Stress during FIR registration; (3) Memory fading; (4) Different contexts. Only material contradictions on fundamental facts are fatal. Minor variances in details like exact time, number of people, or sequence of events are acceptable.",
+    "why_wrong": "Treats natural human variance as proof of fabrication.",
+    "citations": [ "2023 SCMR 1375", "Evidence assessment principles" ],
+    "correct_principle": "material_vs_minor_contradictions"
+  },
+  {
+    "id": "negative_039",
+    "category": "omissions",
+    "wrong_answer": "Any omission in the FIR compared to court testimony means the entire case is false.",
+    "correct_answer": "This is incorrect. Omission of details in FIR is not necessarily fatal. FIR is first information, not comprehensive evidence. Courts consider: (1) Why was detail omitted; (2) Is it material or merely elaborative; (3) Was omission explained; (4) Is overall narrative consistent. Omissions of minor details due to stress, rush, or later realization are acceptable.",
+    "why_wrong": "Expects FIR to contain all details of subsequent investigation and testimony.",
+    "citations": [ "FIR assessment precedents" ],
+    "correct_principle": "omission_context_assessment"
+  },
+  {
+    "id": "negative_040",
+    "category": "improvement",
+    "wrong_answer": "Any improvement or addition in testimony compared to FIR is acceptable development of evidence.",
+    "correct_answer": "This is incorrect. Material improvement in testimony that changes fundamental nature of case is suspicious and fatal. While natural elaboration is acceptable, deliberate improvements regarding: (1) Identity of accused; (2) Role of accused; (3) Weapon used; (4) Manner of occurrence are treated as afterthought and raise serious doubt about prosecution case.",
+    "why_wrong": "Fails to distinguish between natural elaboration and suspicious material improvement.",
+    "citations": [ "Precedents on material improvement" ],
+    "correct_principle": "material_improvement_suspicious"
+  },
+  {
+    "id": "negative_041",
+    "category": "delay_in_trial",
+    "wrong_answer": "Delay in trial is the defense's problem and does not affect prosecution's case.",
+    "correct_answer": "This is incorrect. Unreasonable delay in trial is: (1) Ground for bail even in non-bailable offenses; (2) Violation of right to speedy trial under Article 10-A Constitution; (3) Factor affecting reliability of witness memory; (4) Can be ground for benefit of doubt if witnesses appear uncertain due to passage of time. Justice delayed is justice denied.",
+    "why_wrong": "Ignores constitutional right to speedy trial and practical effects of delay.",
+    "citations": [ "Article 10-A Constitution", "2017 SCMR 733" ],
+    "correct_principle": "speedy_trial_right"
+  },
+  {
+    "id": "negative_042",
+    "category": "appellate_review",
+    "wrong_answer": "Appellate court must accept all factual findings of trial court and cannot reassess evidence.",
+    "correct_answer": "This is incorrect. Appellate court has full power to: (1) Reassess evidence; (2) Differ from trial court findings; (3) Reverse factual findings if unsupported by evidence; (4) Consider points not raised at trial affecting merits. However, appellate court gives weight to trial court's advantage of seeing witnesses but is not bound by findings if they are unreasonable or perverse.",
+    "why_wrong": "Limits appellate jurisdiction contrary to law.",
+    "citations": [ "Section 417 CrPC", "Appellate jurisdiction precedents" ],
+    "correct_principle": "full_appellate_review"
+  },
+  {
+    "id": "negative_043",
+    "category": "appellate_review",
+    "wrong_answer": "High Court can only set aside conviction if there is no evidence at all.",
+    "correct_answer": "This is incorrect. High Court can interfere when: (1) Finding is based on no evidence; (2) Material evidence is ignored; (3) Inadmissible evidence is relied upon; (4) Finding is perverse or unreasonable; (5) Legal principles are wrongly applied; (6) Benefit of doubt not given when required. 'No evidence' is not the only ground for interference.",
+    "why_wrong": "Restricts appellate powers beyond legal limits.",
+    "citations": [ "Appellate review standards" ],
+    "correct_principle": "multiple_grounds_interference"
+  }
+]
