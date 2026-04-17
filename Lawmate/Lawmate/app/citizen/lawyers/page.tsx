@@ -17,8 +17,13 @@ import {
   type LawyerRecommendationRequest,
 } from "@/lib/services/citizen-lawyers"
 import Link from "next/link"
+import { PremiumMarketplace } from "@/components/marketplace/premium-marketplace"
+import type { LawyerData } from "@/components/marketplace/lawyer-card-premium"
+import { useRouter } from "next/navigation"
+import { motion } from "framer-motion"
 
 export default function LawyerDirectoryPage() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [expertise, setExpertise] = useState("all")
   const [lawyers, setLawyers] = useState<Lawyer[]>([])
@@ -39,6 +44,28 @@ export default function LawyerDirectoryPage() {
     preferred_language: "English",
     hearing_court: "",
   })
+
+  // Convert Lawyer to LawyerData format for premium component
+  const convertToLawyerData = (lawyer: Lawyer): LawyerData => {
+    const specs = normalizeSpecs(lawyer)
+    return {
+      id: lawyer.id,
+      name: lawyer.name,
+      avatar: lawyer.profileImage ? resolveLawyerImageUrl(lawyer.profileImage) : undefined,
+      specialization: specs,
+      location: lawyer.location || "Pakistan",
+      rating: lawyer.rating || 0,
+      reviewCount: lawyer.reviews || 0,
+      casesWon: Math.floor((lawyer.cases || 0) * (lawyer.winRate || 0) / 100),
+      experience: lawyer.yearsExp || 0,
+      hourlyRate: lawyer.estimatedFee || 100,
+      languages: ["English", "Urdu"],
+      verified: true,
+      available: true,
+      responseTime: "< 4 hours",
+      successRate: lawyer.winRate || 0,
+    }
+  }
 
   useEffect(() => {
     loadLawyers()
@@ -270,32 +297,7 @@ export default function LawyerDirectoryPage() {
             )}
           </Card>
 
-          {/* Search and Filter */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div className="md:col-span-2">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name or expertise..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={expertise} onValueChange={setExpertise}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by expertise" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Specializations</SelectItem>
-                <SelectItem value="Bail">Bail Applications</SelectItem>
-                <SelectItem value="Constitutional">Constitutional Rights</SelectItem>
-                <SelectItem value="Remand">Remand Challenges</SelectItem>
-                <SelectItem value="Evidence">Evidence & FIR</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Note: Search and filtering is now handled by the Premium Marketplace component below */}
 
           {/* Error Message */}
           {error && (
@@ -313,88 +315,33 @@ export default function LawyerDirectoryPage() {
             </Card>
           )}
 
-          {/* Lawyers Grid */}
+          {/* Premium Lawyers Marketplace */}
           {loading ? (
-            <div className="flex items-center justify-center p-12">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center p-12"
+            >
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <span className="ml-3 text-muted-foreground">Loading lawyers...</span>
-            </div>
+            </motion.div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredLawyers.length === 0 ? (
-                <Card className="p-12 text-center border border-border col-span-2">
-                  <p className="text-muted-foreground">No lawyers found matching your criteria.</p>
-                </Card>
-              ) : (
-                filteredLawyers.map((lawyer) => (
-              <Card key={lawyer.id} className="p-6 border border-border hover:shadow-lg transition">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <div className="w-14 h-14 rounded-full overflow-hidden border border-border bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                      {lawyer.profileImage ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={resolveLawyerImageUrl(lawyer.profileImage)} alt={`${lawyer.name} profile`} className="w-full h-full object-cover" />
-                      ) : (
-                        "No Photo"
-                      )}
-                    </div>
-                    <div>
-                    <h3 className="text-lg font-semibold text-foreground">{lawyer.name}</h3>
-                    <div className="flex items-center gap-2 mt-1">
-                      <MapPin className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">{lawyer.location}</span>
-                    </div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="flex items-center gap-1 justify-end">
-                      <Star className="w-4 h-4 fill-primary text-primary" />
-                      <span className="font-semibold text-foreground">{lawyer.rating}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">{lawyer.reviews} reviews</span>
-                  </div>
-                </div>
-
-                <div className="flex gap-4 mb-4">
-                  <div>
-                    <span className="text-xs text-muted-foreground">Win Rate</span>
-                    <p className="text-lg font-semibold text-primary">{lawyer.winRate}%</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Cases Handled</span>
-                    <p className="text-lg font-semibold text-accent">{lawyer.cases}</p>
-                  </div>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Experience</span>
-                    <p className="text-lg font-semibold text-secondary">{lawyer.yearsExp} years</p>
-                  </div>
-                </div>
-
-                <div className="mb-4">
-                  <span className="text-xs text-muted-foreground">Specializations</span>
-                  <div className="flex gap-2 mt-2 flex-wrap">
-                    {normalizeSpecs(lawyer).map((spec) => (
-                      <Badge key={spec} variant="secondary">
-                        {spec}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button className="flex-1" disabled title="Coming soon">
-                    Contact Lawyer (Coming soon)
-                  </Button>
-                  <Link href={`/citizen/lawyers/${lawyer.id}`} className="flex-1">
-                    <Button variant="outline" className="w-full bg-transparent">
-                      View Profile
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-                ))
-              )}
-            </div>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <PremiumMarketplace
+                lawyers={filteredLawyers.map(convertToLawyerData)}
+                onConnect={(lawyerId) => {
+                  console.log("Connect with lawyer:", lawyerId)
+                  // TODO: Implement connection logic
+                }}
+                onViewProfile={(lawyerId) => {
+                  router.push(`/citizen/lawyers/${lawyerId}`)
+                }}
+              />
+            </motion.div>
           )}
         </div>
       </main>
