@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
 import { Star, MapPin, Search, Loader2, AlertCircle, Brain, Target, Scale, Building2 } from "lucide-react"
 import {
   getLawyers,
@@ -150,72 +151,113 @@ export default function LawyerDirectoryPage() {
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <Input
-                placeholder="Case Type (e.g., Bail, FIR, Appeal, Cyber Crime)"
-                value={form.case_type}
-                onChange={(e) => setForm((prev) => ({ ...prev, case_type: e.target.value }))}
-              />
-              <Input
-                placeholder="Charges/Sections (e.g., PPC 302, 420, CrPC 497)"
-                value={form.charges_or_sections}
-                onChange={(e) => setForm((prev) => ({ ...prev, charges_or_sections: e.target.value }))}
-              />
-              <Input
-                placeholder="City / Preferred Location"
-                value={form.city}
-                onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-              />
-              <Input
-                placeholder="Hearing Court (optional)"
-                value={form.hearing_court}
-                onChange={(e) => setForm((prev) => ({ ...prev, hearing_court: e.target.value }))}
-              />
-              <Select
-                value={form.urgency || "medium"}
-                onValueChange={(value) => setForm((prev) => ({ ...prev, urgency: value as "low" | "medium" | "high" }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Urgency" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low urgency</SelectItem>
-                  <SelectItem value="medium">Medium urgency</SelectItem>
-                  <SelectItem value="high">High urgency</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select
-                value={form.budget_range || "medium"}
-                onValueChange={(value) => setForm((prev) => ({ ...prev, budget_range: value as "low" | "medium" | "high" }))}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Budget Range" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Budget Sensitive</SelectItem>
-                  <SelectItem value="medium">Balanced Budget</SelectItem>
-                  <SelectItem value="high">Premium Counsel</SelectItem>
-                </SelectContent>
-              </Select>
-              <Input
-                type="number"
-                min={0}
-                placeholder="Preferred minimum experience (years)"
-                value={form.preferred_experience_years || 0}
-                onChange={(e) => setForm((prev) => ({ ...prev, preferred_experience_years: Number(e.target.value) || 0 }))}
-              />
-              <Input
-                placeholder="Preferred language (optional)"
-                value={form.preferred_language}
-                onChange={(e) => setForm((prev) => ({ ...prev, preferred_language: e.target.value }))}
-              />
+              <div>
+                <Label htmlFor="case-type">Case Type</Label>
+                <Input
+                  id="case-type"
+                  placeholder="e.g., Bail, FIR, Appeal, Cyber Crime"
+                  value={form.case_type}
+                  onChange={(e) => setForm((prev) => ({ ...prev, case_type: e.target.value }))}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="charges-sections">Charges/Sections (Optional)</Label>
+                <Input
+                  id="charges-sections"
+                  placeholder="e.g., PPC 302, 420, CrPC 497"
+                  value={form.charges_or_sections}
+                  onChange={(e) => setForm((prev) => ({ ...prev, charges_or_sections: e.target.value }))}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="city-location">City / Preferred Location</Label>
+                <Input
+                  id="city-location"
+                  placeholder="e.g., Lahore"
+                  value={form.city}
+                  onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="hearing-court">Hearing Court (Optional)</Label>
+                <Input
+                  id="hearing-court"
+                  placeholder="e.g., Sessions Court Lahore"
+                  value={form.hearing_court}
+                  onChange={(e) => setForm((prev) => ({ ...prev, hearing_court: e.target.value }))}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="urgency">Urgency</Label>
+                <Select
+                  value={form.urgency || "medium"}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, urgency: value as "low" | "medium" | "high" }))}
+                >
+                  <SelectTrigger id="urgency" className="mt-2">
+                    <SelectValue placeholder="Select urgency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low urgency</SelectItem>
+                    <SelectItem value="medium">Medium urgency</SelectItem>
+                    <SelectItem value="high">High urgency</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="budget-range">Budget Range</Label>
+                <Select
+                  value={form.budget_range || "medium"}
+                  onValueChange={(value) => setForm((prev) => ({ ...prev, budget_range: value as "low" | "medium" | "high" }))}
+                >
+                  <SelectTrigger id="budget-range" className="mt-2">
+                    <SelectValue placeholder="Select budget range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Budget Sensitive</SelectItem>
+                    <SelectItem value="medium">Balanced Budget</SelectItem>
+                    <SelectItem value="high">Premium Counsel</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="preferred-experience">Preferred minimum experience (years)</Label>
+                <Input
+                  id="preferred-experience"
+                  type="number"
+                  min={0}
+                  placeholder="e.g., 5"
+                  value={form.preferred_experience_years || 0}
+                  onChange={(e) => setForm((prev) => ({ ...prev, preferred_experience_years: Number(e.target.value) || 0 }))}
+                  className="mt-2"
+                />
+              </div>
+              <div>
+                <Label htmlFor="preferred-language">Preferred language (Optional)</Label>
+                <Input
+                  id="preferred-language"
+                  placeholder="e.g., English, Urdu"
+                  value={form.preferred_language}
+                  onChange={(e) => setForm((prev) => ({ ...prev, preferred_language: e.target.value }))}
+                  className="mt-2"
+                />
+              </div>
             </div>
 
             <div className="mt-3">
+              <Label htmlFor="case-description">
+                Case Description <span className="text-destructive">*</span>
+              </Label>
               <textarea
+                id="case-description"
                 className="w-full min-h-28 rounded-md border border-border bg-background px-3 py-2 text-sm"
                 placeholder="Describe your case facts, police stage, custody status, evidence concerns, and immediate legal objective..."
                 value={form.case_description}
                 onChange={(e) => setForm((prev) => ({ ...prev, case_description: e.target.value }))}
+                required
               />
             </div>
 

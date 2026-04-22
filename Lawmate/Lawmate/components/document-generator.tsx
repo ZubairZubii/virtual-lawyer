@@ -76,7 +76,7 @@ export function DocumentGenerator() {
             <Label htmlFor="court">Court Name</Label>
             <Input
               id="court"
-              placeholder="District Court, Delhi"
+              placeholder="Sessions Court, Lahore"
               value={formData.court}
               onChange={(e) => setFormData({ ...formData, court: e.target.value })}
               className="mt-1"

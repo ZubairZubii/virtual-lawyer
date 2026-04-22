@@ -124,7 +124,7 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, court: e.target.value })
                 }
-                placeholder="e.g., High Court, Delhi"
+                placeholder="e.g., Lahore High Court"
                 className="w-full border-2 border-border focus:border-primary"
                 required
               />
@@ -139,7 +139,7 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
                 onChange={(e) =>
                   setFormData({ ...formData, judge: e.target.value })
                 }
-                placeholder="e.g., Hon'ble Justice Reddy"
+                placeholder="e.g., Hon. Justice Ayesha Malik"
                 className="w-full border-2 border-border focus:border-primary"
               />
             </div>
@@ -168,7 +168,7 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
                     onChange={(e) =>
                       setFormData({ ...formData, police_station: e.target.value })
                     }
-                    placeholder="e.g., Central Police Station"
+                    placeholder="e.g., Civil Lines Police Station, Lahore"
                     className="w-full border-2 border-border focus:border-primary"
                   />
                 </div>
@@ -215,7 +215,7 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
                     onChange={(e) =>
                       setFormData({ ...formData, client_name: e.target.value })
                     }
-                    placeholder="e.g., John Doe"
+                    placeholder="e.g., Ahmed Khan"
                     className="w-full border-2 border-border focus:border-primary"
                   />
                 </div>
