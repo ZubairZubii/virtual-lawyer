@@ -39,7 +39,7 @@ export default function AdminDashboard() {
       value: dashboardData.metrics.total_users.toLocaleString(),
       icon: Users,
       color: "from-primary to-accent",
-      trend: "+120 this month",
+      trend: `${dashboardData.metrics.total_users} total`,
       desc: "Registered users",
     },
     {
@@ -47,7 +47,7 @@ export default function AdminDashboard() {
       value: dashboardData.metrics.verified_lawyers.toLocaleString(),
       icon: Shield,
       color: "from-accent to-secondary",
-      trend: "+45 new",
+      trend: `${dashboardData.metrics.verified_lawyers} verified`,
       desc: "Active lawyers",
     },
     {
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
       value: dashboardData.metrics.active_cases.toLocaleString(),
       icon: BarChart3,
       color: "from-secondary to-primary",
-      trend: "+78 active",
+      trend: `${dashboardData.metrics.active_cases} tracked`,
       desc: "Cases in progress",
     },
     {
@@ -63,7 +63,7 @@ export default function AdminDashboard() {
       value: dashboardData.metrics.pending_reviews.toLocaleString(),
       icon: AlertCircle,
       color: "from-destructive to-accent",
-      trend: "Urgent",
+      trend: `${dashboardData.metrics.pending_reviews} pending`,
       desc: "To be reviewed",
     },
   ] : []

@@ -47,14 +47,7 @@ export default function AdminAnalyticsPage() {
   const queryVolumeData = analytics?.trends?.query_volume?.map(v => ({
     month: new Date(v.date).toLocaleDateString('en-US', { month: 'short' }),
     queries: v.count
-  })) || [
-    { month: "Jan", queries: 150 },
-    { month: "Feb", queries: 280 },
-    { month: "Mar", queries: 420 },
-    { month: "Apr", queries: 580 },
-    { month: "May", queries: 890 },
-    { month: "Jun", queries: 1200 },
-  ]
+  })) || []
 
   // Quality trend data from backend
   const qualityTrendData = analytics?.trends?.quality_trend?.map(v => ({
@@ -67,24 +60,13 @@ export default function AdminAnalyticsPage() {
     name: `Section ${s.section}`,
     value: s.count,
     fill: i === 0 ? "var(--color-primary)" : i === 1 ? "var(--color-accent)" : i === 2 ? "var(--color-secondary)" : "var(--color-chart-4)"
-  })) || [
-    { name: "Bail Applications", value: 420, fill: "var(--color-primary)" },
-    { name: "Appeals", value: 280, fill: "var(--color-accent)" },
-    { name: "Evidence Review", value: 190, fill: "var(--color-secondary)" },
-    { name: "Remand Challenges", value: 165, fill: "var(--color-chart-4)" },
-  ]
+  })) || []
 
   // Most searched queries from backend
   const queryData = analytics?.popular_topics?.top_keywords?.slice(0, 5).map(k => ({
     query: k.keyword,
     count: k.count
-  })) || [
-    { query: "Bail process", count: 1240 },
-    { query: "Constitutional rights", count: 890 },
-    { query: "FIR procedures", count: 756 },
-    { query: "Appeal process", count: 634 },
-    { query: "Evidence submission", count: 542 },
-  ]
+  })) || []
 
   if (loading) {
     return (
@@ -164,7 +146,7 @@ export default function AdminAnalyticsPage() {
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) => `${name} ${(((percent ?? 0) * 100).toFixed(0))}%`}
                     outerRadius={80}
                     dataKey="value"
                   >

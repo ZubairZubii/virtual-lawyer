@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { getLawyers, verifyLawyer, createLawyer, uploadLawyerImage, updateLawyer, deleteLawyer, type Lawyer, type CreateLawyerRequest } from "@/lib/services/admin-lawyers"
 import { resolveLawyerImageUrl } from "@/lib/services/citizen-lawyers"
 

@@ -1,5 +1,17 @@
 import { api } from "../api";
 
+function getLoggedInUser(): { id?: string; userType?: string } {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as { id?: string; userType?: string };
+    return parsed || {};
+  } catch {
+    return {};
+  }
+}
+
 // Types for Citizen Dashboard
 export interface CitizenDashboardStats {
   active_cases: number;
@@ -84,9 +96,11 @@ export interface LawyerDashboardData {
 
 // API Functions
 export async function getCitizenDashboard(): Promise<CitizenDashboardData> {
-  console.log("📡 Calling /api/dashboard/citizen...")
+  const user = getLoggedInUser();
+  const params = user.id ? `?citizen_id=${encodeURIComponent(user.id)}` : "";
+  console.log(`📡 Calling /api/dashboard/citizen${params}...`)
   try {
-    const data = await api.get<CitizenDashboardData>("/api/dashboard/citizen");
+    const data = await api.get<CitizenDashboardData>(`/api/dashboard/citizen${params}`);
     console.log("✅ Citizen dashboard API response:", data)
     return data;
   } catch (error) {
@@ -96,9 +110,11 @@ export async function getCitizenDashboard(): Promise<CitizenDashboardData> {
 }
 
 export async function getLawyerDashboard(): Promise<LawyerDashboardData> {
-  console.log("📡 Calling /api/dashboard/lawyer...")
+  const user = getLoggedInUser();
+  const params = user.id ? `?lawyer_id=${encodeURIComponent(user.id)}` : "";
+  console.log(`📡 Calling /api/dashboard/lawyer${params}...`)
   try {
-    const data = await api.get<LawyerDashboardData>("/api/dashboard/lawyer");
+    const data = await api.get<LawyerDashboardData>(`/api/dashboard/lawyer${params}`);
     console.log("✅ Lawyer dashboard API response:", data)
     return data;
   } catch (error) {

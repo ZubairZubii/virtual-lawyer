@@ -10,10 +10,18 @@ import { useLawyerDashboard } from "@/lib/store/dashboardStore"
 
 export default function LawyerDashboard() {
   const [isLoaded, setIsLoaded] = useState(false)
+  const [displayName, setDisplayName] = useState("Lawyer")
   const { data: dashboardData, loading, error, refresh } = useLawyerDashboard()
 
   useEffect(() => {
     setIsLoaded(true)
+    try {
+      const raw = localStorage.getItem("user")
+      if (raw) {
+        const user = JSON.parse(raw) as { name?: string }
+        if (user?.name) setDisplayName(user.name)
+      }
+    } catch {}
   }, [])
 
   // Show error message if there's an error
@@ -118,7 +126,7 @@ export default function LawyerDashboard() {
           >
             <div className="flex items-start justify-between mb-6 flex-col md:flex-row gap-4">
               <div>
-                <h1 className="text-5xl font-bold text-foreground mb-2">Welcome, Adv. Sharma</h1>
+                <h1 className="text-5xl font-bold text-foreground mb-2">Welcome, {displayName}</h1>
                 <p className="text-lg text-muted-foreground">Manage cases, track performance, and grow your practice</p>
               </div>
               <div className="flex gap-3">

@@ -25,10 +25,18 @@ import { useCitizenDashboard } from "@/lib/store/dashboardStore"
 export default function CitizenDashboard() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState("active")
+  const [displayName, setDisplayName] = useState("Citizen")
   const { data: dashboardData, loading, error, refresh } = useCitizenDashboard()
 
   useEffect(() => {
     setIsLoaded(true)
+    try {
+      const raw = localStorage.getItem("user")
+      if (raw) {
+        const user = JSON.parse(raw) as { name?: string }
+        if (user?.name) setDisplayName(user.name)
+      }
+    } catch {}
   }, [])
 
   // Show error message if there's an error
@@ -135,7 +143,7 @@ export default function CitizenDashboard() {
           >
             <div className="flex items-start justify-between mb-6 flex-col md:flex-row gap-4">
               <div>
-                <h1 className="text-5xl font-bold text-foreground mb-2">Welcome back, Rajesh Kumar</h1>
+                <h1 className="text-5xl font-bold text-foreground mb-2">Welcome back, {displayName}</h1>
                 <p className="text-lg text-muted-foreground">
                   Your legal journey, powered by intelligent AI assistance
                 </p>
@@ -252,7 +260,7 @@ export default function CitizenDashboard() {
                               {case_.status}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">{case_.desc}</p>
+                          <p className="text-sm text-muted-foreground">{(case_ as any).desc || case_.type}</p>
                         </div>
                       </div>
                       <div className="space-y-2 mb-4">
@@ -281,7 +289,7 @@ export default function CitizenDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Next: {case_.nextAction}</span>
+                        <span className="text-xs text-muted-foreground">Next: {(case_ as any).nextAction || (case_ as any).next_action || "Follow up"}</span>
                         <CheckCircle2 className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>

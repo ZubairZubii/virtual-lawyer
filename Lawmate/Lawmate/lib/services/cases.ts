@@ -37,9 +37,25 @@ export interface CasesResponse {
   status_filter?: string;
 }
 
+function getLoggedInUser(): { id?: string; userType?: string } {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as { id?: string; userType?: string };
+    return parsed || {};
+  } catch {
+    return {};
+  }
+}
+
 // API Functions
 export async function getCitizenCases(status?: string): Promise<CasesResponse> {
-  const params = status ? `?status=${status}` : "";
+  const user = getLoggedInUser();
+  const query: string[] = [];
+  if (status) query.push(`status=${encodeURIComponent(status)}`);
+  if (user.id) query.push(`citizen_id=${encodeURIComponent(user.id)}`);
+  const params = query.length ? `?${query.join("&")}` : "";
   console.log(`📡 Calling /api/cases/citizen${params}...`);
   try {
     const data = await api.get<CasesResponse>(`/api/cases/citizen${params}`);
@@ -52,7 +68,11 @@ export async function getCitizenCases(status?: string): Promise<CasesResponse> {
 }
 
 export async function getLawyerCases(status?: string): Promise<CasesResponse> {
-  const params = status ? `?status=${status}` : "";
+  const user = getLoggedInUser();
+  const query: string[] = [];
+  if (status) query.push(`status=${encodeURIComponent(status)}`);
+  if (user.id) query.push(`lawyer_id=${encodeURIComponent(user.id)}`);
+  const params = query.length ? `?${query.join("&")}` : "";
   console.log(`📡 Calling /api/cases/lawyer${params}...`);
   try {
     const data = await api.get<CasesResponse>(`/api/cases/lawyer${params}`);
@@ -80,6 +100,8 @@ export interface CreateCaseRequest {
   filing_date?: string;
   next_hearing?: string;
   priority?: "High" | "Medium" | "Low"; // For lawyer cases
+  owner_citizen_id?: string;
+  owner_lawyer_id?: string;
 }
 
 export interface CreateCaseResponse {
@@ -94,9 +116,13 @@ export async function createCase(
 ): Promise<CreateCaseResponse> {
   console.log(`📡 Creating case (${userType})...`);
   try {
+    const user = getLoggedInUser();
+    const payload: CreateCaseRequest & { owner_citizen_id?: string; owner_lawyer_id?: string } = { ...data };
+    if (user.id && userType === "citizen") payload.owner_citizen_id = user.id;
+    if (user.id && userType === "lawyer") payload.owner_lawyer_id = user.id;
     const response = await api.post<CreateCaseResponse>(
       `/api/cases?user_type=${userType}`,
-      data
+      payload
     );
     console.log(`✅ Case created:`, response);
     return response;

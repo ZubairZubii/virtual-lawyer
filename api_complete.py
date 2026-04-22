@@ -11,6 +11,8 @@ import uvicorn
 import sys
 from pathlib import Path
 import shutil
+import re
+import requests
 from difflib import SequenceMatcher
 
 # Ensure UTF-8 console output so emojis in logs don't crash the server on Windows.
@@ -89,6 +91,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from db.bootstrap import init_app_database
+
+init_app_database()
+import db.repository as db_repo
 
 # Initialize components
 print("Initializing API components...")
@@ -218,6 +225,8 @@ class CreateCaseRequest(BaseModel):
     filing_date: Optional[str] = None
     next_hearing: Optional[str] = None
     priority: Optional[str] = None  # For lawyer cases: High, Medium, Low
+    owner_citizen_id: Optional[str] = None
+    owner_lawyer_id: Optional[str] = None
 
 class LawyerRecommendationRequest(BaseModel):
     """Citizen-provided case intake for lawyer recommendations"""
@@ -230,6 +239,15 @@ class LawyerRecommendationRequest(BaseModel):
     budget_range: Optional[str] = "medium"  # low, medium, high
     preferred_language: Optional[str] = ""
     hearing_court: Optional[str] = ""
+
+
+class CitizenQuickCaseRequest(BaseModel):
+    """Simple citizen input for fast, non-technical case analysis"""
+    case_description: str
+    urgency: Optional[str] = "medium"  # low, medium, high
+    city: Optional[str] = ""
+    hearing_court: Optional[str] = ""
+    custody_status: Optional[str] = "unknown"  # in_custody, not_in_custody, unknown
 
 
 class CreateLawyerClientRequest(BaseModel):
@@ -691,6 +709,250 @@ async def case_analysis_text(request: CaseTextRequest):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error in text analysis: {str(e)}")
+
+
+def _extract_sections_from_text(text: str) -> List[str]:
+    """Extract likely section numbers from free text."""
+    if not text:
+        return []
+    matches = re.findall(r"\b\d{2,4}[A-Za-z]?\b", text)
+    sections: List[str] = []
+    for item in matches:
+        normalized = item.strip().upper()
+        if normalized not in sections:
+            sections.append(normalized)
+    return sections[:8]
+
+
+def _normalize_risk_score_0_100(raw) -> int:
+    """
+    Groq often returns risk as a 0–1 float (e.g. 0.08 → wrongly shown as 8%),
+    or a 1–10 scale. Normalize to integer 0–100 (severity / legal exposure for triage).
+    """
+    if raw is None:
+        return 50
+    try:
+        val = float(raw)
+    except (TypeError, ValueError):
+        return 50
+    if 0 < val <= 1:
+        return int(max(1, min(100, round(val * 100))))
+    if 1 < val <= 10 and val == int(val):
+        return int(max(1, min(100, round(val * 10))))
+    return int(max(0, min(100, round(val))))
+
+
+def _heuristic_risk_floor(request: CitizenQuickCaseRequest) -> int:
+    """Minimum plausible severity from plain text + sections (Pakistan criminal triage)."""
+    text = (request.case_description or "").lower()
+    sections = _extract_sections_from_text(request.case_description)
+    sec_join = " ".join(sections).lower()
+
+    floor = 22
+    # Violent / grave
+    violent = [
+        "murder", "kill", "killed", "killing", "death", "dead", "die", "dies",
+        "qatal", "qatil", "302", "307", "324", "kidnap", "abduct", "rape",
+        "dacoity", "392", "terror", "blast", "bomb", "acid", "narcotics", "drugs",
+    ]
+    if any(k in text for k in violent) or any(s in sec_join for s in ["302", "307", "324", "392"]):
+        floor = 78
+    # Theft / property / robbery
+    elif any(
+        k in text
+        for k in [
+            "theft", "steal", "stole", "stolen", "robbery", "snatch", "snatching",
+            "chor", "chori", "pickpocket", "379", "380", "356",
+        ]
+    ) or any(s in sec_join for s in ["379", "380", "356", "457"]):
+        floor = 44
+    # Fraud / cyber / white-collar
+    elif any(
+        k in text for k in ["fraud", "420", "cyber", "online", "cheat", "cheating", "forgery", "468", "471"]
+    ) or any(s in sec_join for s in ["420", "468", "471"]):
+        floor = 52
+    # Assault / hurt / harassment
+    elif any(k in text for k in ["assault", "beat", "beating", "hurt", "323", "354", "harass"]):
+        floor = 48
+    # Custody / arrest urgency
+    if (request.custody_status or "").lower() == "in_custody":
+        floor = min(95, floor + 8)
+    if (request.urgency or "medium").lower() == "high":
+        floor = min(95, floor + 5)
+    return floor
+
+
+def _risk_level_from_score(score: int) -> str:
+    if score >= 75:
+        return "High"
+    if score >= 45:
+        return "Medium"
+    return "Low"
+
+
+def _fallback_quick_case_analysis(request: CitizenQuickCaseRequest) -> Dict:
+    """Fast no-model fallback so citizens always get instant guidance."""
+    text = (request.case_description or "").lower()
+    sections = _extract_sections_from_text(request.case_description)
+
+    risk_score = 45
+    if any(k in text for k in ["murder", "302", "kidnap", "terror", "narcotics", "rape"]):
+        risk_score = 82
+    elif any(k in text for k in ["fraud", "420", "cyber", "harassment", "cheating"]):
+        risk_score = 67
+    elif any(k in text for k in ["bail", "custody", "arrest"]):
+        risk_score = 58
+
+    if (request.urgency or "medium").lower() == "high":
+        risk_score = min(95, risk_score + 5)
+    if (request.custody_status or "unknown").lower() == "in_custody":
+        risk_score = min(95, risk_score + 6)
+
+    risk_score = int(max(0, min(100, max(risk_score, _heuristic_risk_floor(request)))))
+    risk_level = _risk_level_from_score(risk_score)
+
+    recommendations = [
+        "Keep FIR copy, arrest memo, and all police documents in one folder.",
+        "Write a clear timeline of events with dates, locations, and witness names.",
+        "Consult a criminal lawyer before giving detailed statements."
+    ]
+    if (request.custody_status or "").lower() == "in_custody":
+        recommendations.insert(0, "Discuss urgent bail preparation and hearing strategy immediately.")
+    if "cyber" in text:
+        recommendations.append("Preserve digital evidence (screenshots, logs, messages, transaction IDs).")
+
+    return {
+        "summary": "Initial legal triage generated from your plain-language case description.",
+        "extracted_sections": sections,
+        "likely_case_type": "Criminal Matter",
+        "risk_score": risk_score,
+        "risk_level": risk_level,
+        "recommendations": recommendations[:6],
+        "next_steps": [
+            "Share all available documents with your lawyer.",
+            "Track next hearing date and required court documents.",
+            "Do not delete chats/files that may be evidence."
+        ],
+        "disclaimer": "This is AI-supported guidance, not a substitute for formal legal advice."
+    }
+
+
+@app.post("/api/citizen/case-quick-analysis")
+async def citizen_case_quick_analysis(request: CitizenQuickCaseRequest):
+    """
+    Citizen-first quick case analysis:
+    - Plain-language input
+    - Groq extraction + triage when available
+    - No heavy local model / RAG / embedding path
+    """
+    try:
+        description = (request.case_description or "").strip()
+        if len(description) < 20:
+            raise HTTPException(status_code=400, detail="Please provide at least 20 characters describing your case.")
+
+        groq_key = ""
+        try:
+            from config import GROQ_API_KEY
+            groq_key = GROQ_API_KEY or ""
+        except Exception:
+            groq_key = ""
+
+        if not groq_key:
+            return _fallback_quick_case_analysis(request)
+
+        prompt = f"""You are a Pakistan criminal-law intake assistant.
+Analyze this citizen case in simple practical language.
+
+Citizen input:
+- Description: {request.case_description}
+- Urgency: {request.urgency or "medium"}
+- City: {request.city or "not provided"}
+- Hearing court: {request.hearing_court or "not provided"}
+- Custody status: {request.custody_status or "unknown"}
+
+Return STRICT JSON in this schema:
+{{
+  "summary": "short plain-language summary",
+  "extracted_sections": ["302","420"],
+  "likely_case_type": "string",
+  "risk_score": 0,
+  "risk_level": "Low|Medium|High",
+  "recommendations": ["3-6 action bullets"],
+  "next_steps": ["3-5 immediate steps"],
+  "disclaimer": "short legal disclaimer"
+}}
+
+CRITICAL for risk_score:
+- risk_score MUST be an INTEGER from 0 to 100 (NOT a decimal, NOT a probability).
+- It measures overall legal seriousness / exposure for triage (higher = more serious).
+- Examples: petty dispute ~25; theft ~45–55; fraud/cyber ~55–70; violent crime/murder ~85–95.
+- Do NOT output values like 0.08 (that is forbidden). Use whole numbers only.
+
+Rules:
+- Keep output non-technical and citizen-friendly.
+- If sections are unknown, use [].
+- Return JSON only. No markdown.
+"""
+
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {groq_key}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {"role": "system", "content": "You generate valid JSON for legal-intake triage."},
+                    {"role": "user", "content": prompt}
+                ],
+                "temperature": 0.2,
+                "max_tokens": 700
+            },
+            timeout=25
+        )
+
+        if response.status_code != 200:
+            return _fallback_quick_case_analysis(request)
+
+        payload = response.json()
+        content = payload["choices"][0]["message"]["content"].strip()
+
+        import json
+        try:
+            cleaned = content.strip()
+            if cleaned.startswith("```"):
+                cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+                cleaned = re.sub(r"\s*```$", "", cleaned)
+            parsed = json.loads(cleaned)
+        except Exception:
+            return _fallback_quick_case_analysis(request)
+
+        normalized = _normalize_risk_score_0_100(parsed.get("risk_score"))
+        floor = _heuristic_risk_floor(request)
+        parsed["risk_score"] = int(max(0, min(100, max(normalized, floor))))
+
+        if parsed.get("risk_level") not in {"Low", "Medium", "High"}:
+            parsed["risk_level"] = _risk_level_from_score(parsed["risk_score"])
+        else:
+            # Align label with numeric score if model disagrees
+            expected = _risk_level_from_score(parsed["risk_score"])
+            if parsed["risk_level"] == "Low" and parsed["risk_score"] >= 60:
+                parsed["risk_level"] = expected
+            elif parsed["risk_level"] == "High" and parsed["risk_score"] < 45:
+                parsed["risk_level"] = expected
+
+        if not isinstance(parsed.get("extracted_sections"), list):
+            parsed["extracted_sections"] = _extract_sections_from_text(request.case_description)
+        parsed.setdefault("disclaimer", "This is AI-supported guidance, not a substitute for formal legal advice.")
+        return parsed
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Error in citizen quick case analysis: {e}")
+        print(traceback.format_exc())
+        return _fallback_quick_case_analysis(request)
 
 # Bail Prediction Endpoint (standalone)
 class BailFactorsRequest(BaseModel):
@@ -1190,88 +1452,91 @@ async def download_document(filename: str, format: Optional[str] = None):
 # ============================================================
 
 @app.get("/api/dashboard/citizen")
-async def get_citizen_dashboard():
+async def get_citizen_dashboard(citizen_id: Optional[str] = None):
     """
     Get dashboard data for citizen users
     Returns statistics, cases, recommendations, and next hearing info
     """
     try:
-        # For now, return default/mock data
-        # Later, this will fetch from database
-        from datetime import datetime, timedelta
-        
-        # Enhanced mock data with realistic values
+        from datetime import datetime
+
+        all_citizen_cases = db_repo.list_stored_cases("citizen")
+        if citizen_id:
+            all_citizen_cases = [c for c in all_citizen_cases if c.get("owner_citizen_id") == citizen_id]
+
+        active_cases = [c for c in all_citizen_cases if c.get("status") == "Active"]
+        pending_hearings = [c for c in all_citizen_cases if c.get("next_hearing")]
+        sorted_cases = sorted(
+            all_citizen_cases,
+            key=lambda c: c.get("filing_date") or "",
+            reverse=True,
+        )
+        recent_cases = []
+        for c in sorted_cases[:5]:
+            recent_cases.append(
+                {
+                    "id": c.get("id", ""),
+                    "status": c.get("status", "Active"),
+                    "type": c.get("case_type", "Case"),
+                    "progress": c.get("progress", 0),
+                    "date": c.get("filing_date", ""),
+                    "court": c.get("court", ""),
+                    "judge": c.get("judge", ""),
+                    "next_action": "Prepare for hearing" if c.get("next_hearing") else "Update case details",
+                }
+            )
+
+        next_hearing_case = sorted(
+            [c for c in all_citizen_cases if c.get("next_hearing")],
+            key=lambda c: c.get("next_hearing") or "",
+        )
+        next_hearing = None
+        if next_hearing_case:
+            nh = next_hearing_case[0]
+            next_hearing = {
+                "case_id": nh.get("id", ""),
+                "date": nh.get("next_hearing", ""),
+                "time": "10:00 AM",
+                "court": nh.get("court", ""),
+                "judge": nh.get("judge", ""),
+            }
+
         dashboard_data = {
             "stats": {
-                "active_cases": 3,
-                "pending_hearings": 2,
-                "documents": 15,
-                "top_lawyers": 12
+                "active_cases": len(active_cases),
+                "pending_hearings": len(pending_hearings),
+                "documents": int(sum(int(c.get("documents_count", 0) or 0) for c in all_citizen_cases)),
+                "top_lawyers": db_repo.count_lawyers_with_verification("Verified"),
             },
-            "recent_cases": [
-                {
-                    "id": "FIR/2024/150",
-                    "status": "Active",
-                    "type": "Bail Application",
-                    "progress": 65,
-                    "date": "Dec 10, 2024",
-                    "court": "District Court, Mumbai",
-                    "judge": "Hon. Justice Sharma",
-                    "next_action": "Submit documents"
-                },
-                {
-                    "id": "FIR/2024/151",
-                    "status": "Hearing Scheduled",
-                    "type": "Evidence Review",
-                    "progress": 40,
-                    "date": "Dec 18, 2024",
-                    "court": "High Court, Mumbai",
-                    "judge": "Hon. Justice Patel",
-                    "next_action": "Prepare hearing"
-                },
-                {
-                    "id": "FIR/2024/152",
-                    "status": "Active",
-                    "type": "Appeal",
-                    "progress": 25,
-                    "date": "Dec 5, 2024",
-                    "court": "Sessions Court, Delhi",
-                    "judge": "Hon. Justice Reddy",
-                    "next_action": "File response"
-                }
-            ],
+            "recent_cases": recent_cases,
             "recommendations": [
                 {
-                    "title": "Document Review Required",
-                    "description": "3 documents need review before Dec 18 hearing",
+                    "title": "Keep case data updated",
+                    "description": "Use the case form to keep hearing dates and sections current.",
                     "action": "Review Now",
-                    "type": "warning"
+                    "type": "warning",
                 },
                 {
-                    "title": "Similar Cases Found",
-                    "description": "5 cases with 78% win rate similar to yours",
+                    "title": "Find verified lawyers",
+                    "description": "Browse verified lawyers with strong criminal-law experience.",
                     "action": "View Cases",
-                    "type": "success"
+                    "type": "success",
                 },
                 {
                     "title": "Legal Update",
-                    "description": "2 new amendments filed related to your case",
+                    "description": "Track your dashboard regularly for status and hearing updates.",
                     "action": "Read Update",
-                    "type": "info"
-                }
+                    "type": "info",
+                },
             ],
-            "next_hearing": {
-                "case_id": "FIR/2024/151",
-                "date": "Dec 18, 2024",
-                "time": "10:00 AM",
-                "court": "High Court, Mumbai, Room 304",
-                "judge": "Hon. Justice Patel"
-            },
+            "next_hearing": next_hearing,
             "trends": {
-                "cases_this_month": 2,
-                "documents_this_month": 5,
-                "next_hearing_date": "Dec 18, 2024"
-            }
+                "cases_this_month": len(
+                    [c for c in all_citizen_cases if str(c.get("filing_date", "")).startswith(datetime.now().strftime("%Y-%m"))]
+                ),
+                "documents_this_month": int(sum(int(c.get("documents_count", 0) or 0) for c in all_citizen_cases)),
+                "next_hearing_date": next_hearing["date"] if next_hearing else "",
+            },
         }
         
         return dashboard_data
@@ -1282,70 +1547,65 @@ async def get_citizen_dashboard():
         raise HTTPException(status_code=500, detail=f"Error getting dashboard data: {str(e)}")
 
 @app.get("/api/dashboard/lawyer")
-async def get_lawyer_dashboard():
+async def get_lawyer_dashboard(lawyer_id: Optional[str] = None):
     """
     Get dashboard data for lawyer users
     Returns metrics, urgent cases, performance data, and client information
     """
     try:
-        # For now, return default/mock data
-        # Later, this will fetch from database
-        from datetime import datetime, timedelta
-        
-        # Enhanced mock data with realistic values
+        from datetime import datetime
+
+        all_lawyer_cases = db_repo.list_stored_cases("lawyer")
+        if lawyer_id:
+            all_lawyer_cases = [c for c in all_lawyer_cases if c.get("owner_lawyer_id") == lawyer_id]
+
+        active_cases = [c for c in all_lawyer_cases if c.get("status") == "Active"]
+        urgent_cases_rows = [c for c in all_lawyer_cases if c.get("priority", "Medium") == "High"]
+        urgent_cases_rows = sorted(urgent_cases_rows, key=lambda c: c.get("deadline") or "", reverse=False)[:5]
+        urgent_cases = [
+            {
+                "id": c.get("id", ""),
+                "priority": c.get("priority", "Medium"),
+                "client_name": c.get("client_name", "Client"),
+                "deadline": c.get("deadline") or c.get("next_hearing") or "",
+                "hours_billed": c.get("hours_billed", 0),
+                "progress": c.get("progress", 0),
+            }
+            for c in urgent_cases_rows
+        ]
+
+        total_clients = db_repo.unique_client_count_for_lawyer(lawyer_id) if lawyer_id else len(
+            {
+                row.get("clientId")
+                for row in db_repo.list_lawyer_client_payloads()
+                if row.get("clientId")
+            }
+        )
+
         dashboard_data = {
             "metrics": {
-                "active_cases": 15,
-                "win_rate": 82,
-                "pending_hearings": 6,
-                "total_clients": 35
+                "active_cases": len(active_cases),
+                "win_rate": 0,
+                "pending_hearings": len([c for c in all_lawyer_cases if c.get("next_hearing")]),
+                "total_clients": total_clients,
             },
-            "urgent_cases": [
-                {
-                    "id": "C-2024-156",
-                    "priority": "High",
-                    "client_name": "John Doe",
-                    "deadline": "Dec 15, 2024",
-                    "hours_billed": 24,
-                    "progress": 75
-                },
-                {
-                    "id": "C-2024-157",
-                    "priority": "Medium",
-                    "client_name": "Jane Smith",
-                    "deadline": "Dec 20, 2024",
-                    "hours_billed": 18,
-                    "progress": 60
-                },
-                {
-                    "id": "C-2024-158",
-                    "priority": "High",
-                    "client_name": "Raj Kumar",
-                    "deadline": "Dec 12, 2024",
-                    "hours_billed": 32,
-                    "progress": 85
-                },
-                {
-                    "id": "C-2024-159",
-                    "priority": "Medium",
-                    "client_name": "Priya Singh",
-                    "deadline": "Dec 22, 2024",
-                    "hours_billed": 15,
-                    "progress": 45
-                }
-            ],
+            "urgent_cases": urgent_cases,
             "performance": {
-                "cases_won": 24,
-                "cases_total": 29,
-                "avg_resolution_months": 3.8,
-                "client_rating": 4.9
+                "cases_won": 0,
+                "cases_total": len(all_lawyer_cases),
+                "avg_resolution_months": 0,
+                "client_rating": 0,
             },
             "trends": {
-                "cases_this_month": 3,
-                "win_rate_trend": "Above average",
-                "next_hearing_date": "Dec 12, 2024",
-                "active_clients": 8
-            }
+                "cases_this_month": len(
+                    [c for c in all_lawyer_cases if str(c.get("filing_date", "")).startswith(datetime.now().strftime("%Y-%m"))]
+                ),
+                "win_rate_trend": "N/A",
+                "next_hearing_date": min(
+                    [c.get("next_hearing", "") for c in all_lawyer_cases if c.get("next_hearing")] or [""]
+                ),
+                "active_clients": total_clients,
+            },
         }
         
         return dashboard_data
@@ -1359,224 +1619,22 @@ async def get_lawyer_dashboard():
 # CASES ENDPOINTS
 # ============================================================
 
-# In-memory storage for created cases (in production, use a database)
-CITIZEN_CASES_STORAGE: List[Dict] = []
-LAWYER_CASES_STORAGE: List[Dict] = []
-
-# In-memory storage for users and lawyers
-USERS_STORAGE: List[Dict] = [
-    {
-        "id": "1",
-        "name": "Rajesh Kumar",
-        "email": "rajesh.kumar@email.com",
-        "role": "Citizen",
-        "joinDate": "2024-09-15",
-        "status": "Active",
-        "casesInvolved": 2,
-        "password": "demo123"  # In production, use hashed passwords
-    },
-    {
-        "id": "2",
-        "name": "Priya Patel",
-        "email": "priya.patel@email.com",
-        "role": "Citizen",
-        "joinDate": "2024-11-10",
-        "status": "Pending",
-        "casesInvolved": 0,
-        "password": "demo123"
-    },
-]
-
-LAWYERS_STORAGE: List[Dict] = [
-    {
-        "id": "1",
-        "name": "Adv. Sharma",
-        "email": "sharma.law@email.com",
-        "specialization": "Criminal Law",
-        "verificationStatus": "Verified",
-        "casesSolved": 45,
-        "winRate": 87,
-        "joinDate": "2024-08-20",
-        "location": "Delhi",
-        "rating": 4.8,
-        "reviews": 32,
-        "specializations": ["Bail", "Appeals", "Evidence"],
-        "yearsExp": 12,
-        "cases": 45,
-        "password": "demo123",
-        "phone": "+91-9876543201",
-        "bio": "Criminal defense specialist with strong trial and bail experience.",
-        "profileImage": ""
-    },
-    {
-        "id": "2",
-        "name": "Adv. Kumar",
-        "email": "kumar.law@email.com",
-        "specialization": "Bail & Remand",
-        "verificationStatus": "Verified",
-        "casesSolved": 32,
-        "winRate": 82,
-        "joinDate": "2024-09-15",
-        "location": "Mumbai",
-        "rating": 4.9,
-        "reviews": 28,
-        "specializations": ["Constitutional", "Appeals", "FIR Defense"],
-        "yearsExp": 15,
-        "cases": 38,
-        "password": "demo123",
-        "phone": "+91-9876543202",
-        "bio": "Focuses on remand, constitutional challenges, and appellate strategy.",
-        "profileImage": ""
-    },
-    {
-        "id": "3",
-        "name": "Adv. Singh",
-        "email": "singh.law@email.com",
-        "specialization": "Appeals",
-        "verificationStatus": "Pending",
-        "casesSolved": 0,
-        "winRate": 0,
-        "joinDate": "2024-11-01",
-        "location": "Bangalore",
-        "rating": 0,
-        "reviews": 0,
-        "specializations": ["Appeals"],
-        "yearsExp": 5,
-        "cases": 0,
-        "password": "demo123",
-        "phone": "+91-9876543203",
-        "bio": "Early-career advocate handling criminal appeals and legal research.",
-        "profileImage": ""
-    },
-]
+# Users, lawyers, cases, lawyer-clients, and admin settings persist in SQLite (data/lawmate.db).
 
 LAWYER_IMAGES_DIR = Path("data/lawyer_images")
 LAWYER_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
 
-# In-memory storage for lawyer-client relationships
-LAWYER_CLIENTS_STORAGE: List[Dict] = [
-    {
-        "lawyerId": "1",
-        "clientId": "1",
-        "clientName": "Rajesh Kumar",
-        "clientEmail": "rajesh.kumar@email.com",
-        "clientPhone": "+91-9876543210",
-        "caseType": "Bail Application",
-        "status": "Active",
-        "activeCases": 1,
-        "totalCases": 2,
-        "caseId": "FIR/2024/150",
-        "firNumber": "FIR-150/2024",
-        "court": "High Court, Delhi",
-        "policeStation": "Model Town PS",
-        "caseStage": "Bail Hearing",
-        "riskLevel": "Medium",
-        "priority": "High",
-        "nextHearing": "2026-05-02",
-        "lastContactDate": "2026-04-12",
-        "assignedDate": "2026-01-18",
-        "outstandingAmount": 35000,
-        "notes": "Client cooperative. Need certified FIR copy before next hearing.",
-        "city": "Delhi"
-    },
-    {
-        "lawyerId": "1",
-        "clientId": "2",
-        "clientName": "Priya Sharma",
-        "clientEmail": "priya.sharma@email.com",
-        "clientPhone": "+91-9876543211",
-        "caseType": "Appeal",
-        "status": "Active",
-        "activeCases": 1,
-        "totalCases": 1,
-        "caseId": "APL/2025/044",
-        "firNumber": "FIR-044/2025",
-        "court": "Sessions Court, Delhi",
-        "policeStation": "Civil Lines PS",
-        "caseStage": "Appeal Drafting",
-        "riskLevel": "Low",
-        "priority": "Medium",
-        "nextHearing": "2026-04-29",
-        "lastContactDate": "2026-04-14",
-        "assignedDate": "2026-02-05",
-        "outstandingAmount": 12000,
-        "notes": "Appeal draft shared. Awaiting client approval.",
-        "city": "Delhi"
-    },
-]
-
-# In-memory storage for admin settings
-ADMIN_SETTINGS: Dict = {
-    "platform_name": "Lawmate",
-    "support_email": "support@justiceai.com",
-    "max_file_upload_size_mb": 50,
-    "email_notifications": True,
-    "ai_monitoring": True,
-    "auto_backup": True,
-    "maintenance_mode": False,
-}
-
 @app.get("/api/cases/citizen")
-async def get_citizen_cases(status: Optional[str] = None):
+async def get_citizen_cases(status: Optional[str] = None, citizen_id: Optional[str] = None):
     """
     Get all cases for a citizen user
     Can filter by status: active, hearing_scheduled, closed, all
     """
     try:
-        # Start with mock data
-        all_cases = [
-            {
-                "id": "FIR/2024/150",
-                "case_type": "Bail Application",
-                "status": "Active",
-                "next_hearing": "2024-12-18",
-                "documents_count": 8,
-                "assigned_lawyer": "Adv. Sharma",
-                "judge": "Hon'ble Justice Reddy",
-                "court": "High Court, Delhi",
-                "filing_date": "2024-11-15",
-                "progress": 65
-            },
-            {
-                "id": "FIR/2024/151",
-                "case_type": "Appeal",
-                "status": "Hearing Scheduled",
-                "next_hearing": "2024-12-22",
-                "documents_count": 12,
-                "assigned_lawyer": None,
-                "judge": "Hon'ble Justice Nair",
-                "court": "District Court, Delhi",
-                "filing_date": "2024-10-20",
-                "progress": 40
-            },
-            {
-                "id": "FIR/2024/152",
-                "case_type": "Bail Application",
-                "status": "Active",
-                "next_hearing": "2024-12-20",
-                "documents_count": 5,
-                "assigned_lawyer": "Adv. Patel",
-                "judge": "Hon'ble Justice Kumar",
-                "court": "Sessions Court, Mumbai",
-                "filing_date": "2024-11-25",
-                "progress": 30
-            },
-            {
-                "id": "FIR/2024/153",
-                "case_type": "Revision Petition",
-                "status": "Active",
-                "next_hearing": "2025-01-05",
-                "documents_count": 15,
-                "assigned_lawyer": "Adv. Sharma",
-                "judge": "Hon'ble Justice Singh",
-                "court": "High Court, Mumbai",
-                "filing_date": "2024-09-10",
-                "progress": 55
-            }
-        ]
-        
-        # Add stored cases (created via POST /api/cases) - newest first
-        all_cases = CITIZEN_CASES_STORAGE + all_cases
+        all_cases = db_repo.list_stored_cases("citizen")
+        if citizen_id:
+            all_cases = [c for c in all_cases if c.get("owner_citizen_id") == citizen_id]
+        all_cases = sorted(all_cases, key=lambda c: c.get("filing_date") or "", reverse=True)
         
         # Filter by status if provided
         if status and status.lower() != "all":
@@ -1600,83 +1658,16 @@ async def get_citizen_cases(status: Optional[str] = None):
         raise HTTPException(status_code=500, detail=f"Error getting cases: {str(e)}")
 
 @app.get("/api/cases/lawyer")
-async def get_lawyer_cases(status: Optional[str] = None):
+async def get_lawyer_cases(status: Optional[str] = None, lawyer_id: Optional[str] = None):
     """
     Get all cases for a lawyer user
     Can filter by status: active, urgent, closed, all
     """
     try:
-        # Start with mock data
-        all_cases = [
-            {
-                "id": "C-2024-156",
-                "case_type": "Bail Application",
-                "status": "Active",
-                "priority": "High",
-                "client_name": "John Doe",
-                "deadline": "2024-12-15",
-                "hours_billed": 24,
-                "progress": 75,
-                "next_hearing": "2024-12-15",
-                "court": "High Court, Delhi",
-                "judge": "Hon'ble Justice Reddy"
-            },
-            {
-                "id": "C-2024-157",
-                "case_type": "Appeal",
-                "status": "Active",
-                "priority": "Medium",
-                "client_name": "Jane Smith",
-                "deadline": "2024-12-20",
-                "hours_billed": 18,
-                "progress": 60,
-                "next_hearing": "2024-12-22",
-                "court": "District Court, Delhi",
-                "judge": "Hon'ble Justice Nair"
-            },
-            {
-                "id": "C-2024-158",
-                "case_type": "Revision Petition",
-                "status": "Active",
-                "priority": "High",
-                "client_name": "Raj Kumar",
-                "deadline": "2024-12-12",
-                "hours_billed": 32,
-                "progress": 85,
-                "next_hearing": "2024-12-12",
-                "court": "Sessions Court, Mumbai",
-                "judge": "Hon'ble Justice Kumar"
-            },
-            {
-                "id": "C-2024-159",
-                "case_type": "Bail Application",
-                "status": "Active",
-                "priority": "Medium",
-                "client_name": "Priya Singh",
-                "deadline": "2024-12-22",
-                "hours_billed": 15,
-                "progress": 45,
-                "next_hearing": "2024-12-25",
-                "court": "High Court, Mumbai",
-                "judge": "Hon'ble Justice Singh"
-            },
-            {
-                "id": "C-2024-160",
-                "case_type": "Criminal Appeal",
-                "status": "Hearing Scheduled",
-                "priority": "Low",
-                "client_name": "Amit Verma",
-                "deadline": "2025-01-10",
-                "hours_billed": 28,
-                "progress": 50,
-                "next_hearing": "2025-01-08",
-                "court": "Supreme Court, Delhi",
-                "judge": "Hon'ble Justice Mehta"
-            }
-        ]
-        
-        # Add stored cases (created via POST /api/cases) - newest first
-        all_cases = LAWYER_CASES_STORAGE + all_cases
+        all_cases = db_repo.list_stored_cases("lawyer")
+        if lawyer_id:
+            all_cases = [c for c in all_cases if c.get("owner_lawyer_id") == lawyer_id]
+        all_cases = sorted(all_cases, key=lambda c: c.get("filing_date") or "", reverse=True)
         
         # Filter by status if provided
         if status and status.lower() != "all":
@@ -1708,31 +1699,9 @@ async def get_case_details(case_id: str):
     Get detailed information about a specific case
     """
     try:
-        # Mock data - replace with database query later
-        case_details = {
-            "id": case_id,
-            "case_type": "Bail Application",
-            "status": "Active",
-            "filing_date": "2024-11-15",
-            "next_hearing": "2024-12-18",
-            "court": "High Court, Delhi",
-            "judge": "Hon'ble Justice Reddy",
-            "sections": ["302", "34"],
-            "police_station": "Central Police Station",
-            "fir_number": case_id,
-            "client_name": "John Doe",
-            "assigned_lawyer": "Adv. Sharma",
-            "documents_count": 8,
-            "progress": 65,
-            "description": "Bail application under Section 302 and 34 of PPC",
-            "timeline": [
-                {"date": "2024-11-15", "event": "Case filed"},
-                {"date": "2024-11-20", "event": "First hearing"},
-                {"date": "2024-12-05", "event": "Evidence submitted"},
-                {"date": "2024-12-18", "event": "Next hearing scheduled"}
-            ]
-        }
-        
+        case_details = db_repo.find_stored_case_by_id(case_id)
+        if not case_details:
+            raise HTTPException(status_code=404, detail="Case not found")
         return case_details
     except Exception as e:
         import traceback
@@ -1776,6 +1745,7 @@ async def create_case(request: CreateCaseRequest, user_type: str = "citizen"):
         # Add citizen-specific fields
         if user_type == "citizen":
             new_case["assigned_lawyer"] = None
+            new_case["owner_citizen_id"] = request.owner_citizen_id or None
             if request.sections:
                 new_case["sections"] = request.sections
             if request.police_station:
@@ -1785,18 +1755,18 @@ async def create_case(request: CreateCaseRequest, user_type: str = "citizen"):
         
         # Add lawyer-specific fields
         if user_type == "lawyer":
+            new_case["owner_lawyer_id"] = request.owner_lawyer_id or None
             new_case["client_name"] = request.client_name or "Client"
             new_case["priority"] = request.priority or "Medium"
             new_case["deadline"] = request.next_hearing or None
             new_case["hours_billed"] = 0
         
-        # Store the case in memory (in production, save to database)
         if user_type == "lawyer":
-            LAWYER_CASES_STORAGE.append(new_case)
-            print(f"✅ Case created and stored: {case_id} (lawyer) - Total cases: {len(LAWYER_CASES_STORAGE)}")
+            db_repo.append_stored_case("lawyer", new_case)
+            print(f"✅ Case created and stored: {case_id} (lawyer) - Total stored: {db_repo.count_stored_cases('lawyer')}")
         else:
-            CITIZEN_CASES_STORAGE.append(new_case)
-            print(f"✅ Case created and stored: {case_id} (citizen) - Total cases: {len(CITIZEN_CASES_STORAGE)}")
+            db_repo.append_stored_case("citizen", new_case)
+            print(f"✅ Case created and stored: {case_id} (citizen) - Total stored: {db_repo.count_stored_cases('citizen')}")
         
         return {
             "success": True,
@@ -1876,68 +1846,71 @@ async def get_admin_dashboard():
     """
     try:
         # Calculate metrics from stored data
-        total_citizen_cases = len(CITIZEN_CASES_STORAGE)
-        total_lawyer_cases = len(LAWYER_CASES_STORAGE)
+        total_citizen_cases = db_repo.count_stored_cases("citizen")
+        total_lawyer_cases = db_repo.count_stored_cases("lawyer")
         total_cases = total_citizen_cases + total_lawyer_cases
         
-        # Mock data for now (in production, calculate from database)
+        total_citizens = db_repo.count_citizens()
+        total_lawyers = db_repo.count_lawyers()
+        total_users = total_citizens + total_lawyers
+        verified_lawyers = db_repo.count_lawyers_with_verification("Verified")
+        pending_lawyer_reviews = max(total_lawyers - verified_lawyers, 0)
+        all_citizens = db_repo.list_all_citizens_public()
+        all_lawyers = db_repo.list_all_lawyers_public()
+        latest_citizens = sorted(all_citizens, key=lambda u: u.get("joinDate", ""), reverse=True)[:3]
+        latest_lawyers = sorted(all_lawyers, key=lambda u: u.get("joinDate", ""), reverse=True)[:3]
+
+        recent_activity = []
+        for c in latest_citizens:
+            recent_activity.append(
+                {
+                    "action": "New citizen registration",
+                    "user": c.get("name", "Citizen"),
+                    "time": c.get("joinDate", ""),
+                    "type": "info",
+                    "detail": f"Registered with email {c.get('email', '')}",
+                }
+            )
+        for l in latest_lawyers:
+            recent_activity.append(
+                {
+                    "action": "Lawyer profile updated",
+                    "user": l.get("name", "Lawyer"),
+                    "time": l.get("joinDate", ""),
+                    "type": "success" if l.get("verificationStatus") == "Verified" else "warning",
+                    "detail": f"Verification status: {l.get('verificationStatus', 'Pending')}",
+                }
+            )
+        recent_activity = sorted(recent_activity, key=lambda x: x.get("time", ""), reverse=True)[:8]
+
         dashboard_data = {
             "metrics": {
-                "total_users": 2340,
-                "verified_lawyers": 456,
-                "active_cases": 1203 + total_cases,  # Include stored cases
-                "pending_reviews": 23
+                "total_users": total_users,
+                "verified_lawyers": verified_lawyers,
+                "active_cases": total_cases,
+                "pending_reviews": pending_lawyer_reviews,
             },
-            "recent_activity": [
-                {
-                    "action": "New user registration",
-                    "user": "Priya Patel",
-                    "time": "2 min ago",
-                    "type": "info",
-                    "detail": "Registered as citizen"
-                },
-                {
-                    "action": "Lawyer profile verified",
-                    "user": "Adv. Kumar",
-                    "time": "15 min ago",
-                    "type": "success",
-                    "detail": "All documents verified"
-                },
-                {
-                    "action": "AI response flagged",
-                    "user": "System",
-                    "time": "1 hour ago",
-                    "type": "warning",
-                    "detail": "Manual review required"
-                },
-                {
-                    "action": "Case moderation completed",
-                    "user": "Admin",
-                    "time": "2 hours ago",
-                    "type": "success",
-                    "detail": "Approved for listing"
-                }
-            ],
+            "recent_activity": recent_activity,
             "system_status": [
                 {
                     "service": "API Server",
                     "status": "Operational",
-                    "uptime": "99.95%"
+                    "uptime": "Online"
                 },
                 {
                     "service": "Database",
                     "status": "Operational",
-                    "uptime": "99.99%"
+                    "uptime": "Online"
                 },
                 {
                     "service": "AI Service",
                     "status": "Operational",
-                    "uptime": "99.87%"
+                    "uptime": "Online"
                 },
                 {
                     "service": "Storage",
                     "status": "Operational",
-                    "uptime": "100%"
+                    "uptime": "Online"
                 }
             ]
         }
@@ -1955,7 +1928,7 @@ async def get_admin_settings():
     Get admin settings
     """
     try:
-        return ADMIN_SETTINGS
+        return db_repo.get_admin_settings()
     except Exception as e:
         import traceback
         print(f"Error getting admin settings: {e}")
@@ -1977,27 +1950,28 @@ async def update_admin_settings(request: UpdateSettingsRequest):
     Update admin settings
     """
     try:
-        # Update only provided fields
+        patch = {}
         if request.platform_name is not None:
-            ADMIN_SETTINGS["platform_name"] = request.platform_name
+            patch["platform_name"] = request.platform_name
         if request.support_email is not None:
-            ADMIN_SETTINGS["support_email"] = request.support_email
+            patch["support_email"] = request.support_email
         if request.max_file_upload_size_mb is not None:
-            ADMIN_SETTINGS["max_file_upload_size_mb"] = request.max_file_upload_size_mb
+            patch["max_file_upload_size_mb"] = request.max_file_upload_size_mb
         if request.email_notifications is not None:
-            ADMIN_SETTINGS["email_notifications"] = request.email_notifications
+            patch["email_notifications"] = request.email_notifications
         if request.ai_monitoring is not None:
-            ADMIN_SETTINGS["ai_monitoring"] = request.ai_monitoring
+            patch["ai_monitoring"] = request.ai_monitoring
         if request.auto_backup is not None:
-            ADMIN_SETTINGS["auto_backup"] = request.auto_backup
+            patch["auto_backup"] = request.auto_backup
         if request.maintenance_mode is not None:
-            ADMIN_SETTINGS["maintenance_mode"] = request.maintenance_mode
-        
-        print(f"✅ Admin settings updated: {ADMIN_SETTINGS}")
-        
+            patch["maintenance_mode"] = request.maintenance_mode
+
+        merged = db_repo.update_admin_settings_partial(patch)
+        print(f"✅ Admin settings updated: {merged}")
+
         return {
             "success": True,
-            "settings": ADMIN_SETTINGS,
+            "settings": merged,
             "message": "Settings updated successfully"
         }
     except Exception as e:
@@ -2007,45 +1981,89 @@ async def update_admin_settings(request: UpdateSettingsRequest):
         raise HTTPException(status_code=500, detail=f"Error updating admin settings: {str(e)}")
 
 @app.get("/api/analytics/lawyer")
-async def get_lawyer_analytics():
+async def get_lawyer_analytics(lawyer_id: Optional[str] = None):
     """
     Get analytics data for lawyer users
     Returns case performance metrics, outcomes, and success rates
     """
     try:
-        # Calculate from stored cases and mock data
-        # In production, this would query the database
-        total_cases = len(LAWYER_CASES_STORAGE)
-        
-        # Mock data for now (in production, calculate from actual case data)
+        from datetime import datetime
+
+        all_cases = db_repo.list_stored_cases("lawyer")
+        if lawyer_id:
+            all_cases = [c for c in all_cases if c.get("owner_lawyer_id") == lawyer_id]
+
+        def _status_bucket(status: str) -> str:
+            s = (status or "").lower()
+            if s in {"won", "success", "completed"}:
+                return "won"
+            if s in {"lost", "dismissed", "rejected"}:
+                return "lost"
+            return "pending"
+
+        month_order = {}
+        for c in all_cases:
+            key = str(c.get("filing_date") or "")[:7]
+            if key:
+                month_order[key] = {"won": 0, "lost": 0, "pending": 0}
+        for c in all_cases:
+            key = str(c.get("filing_date") or "")[:7]
+            if key not in month_order:
+                continue
+            bucket = _status_bucket(str(c.get("status", "")))
+            month_order[key][bucket] += 1
+
+        recent_months = sorted(month_order.keys())[-6:]
+        case_outcomes = []
+        for m in recent_months:
+            case_outcomes.append(
+                {
+                    "month": datetime.strptime(m + "-01", "%Y-%m-%d").strftime("%b") if len(m) == 7 else m,
+                    "won": month_order[m]["won"],
+                    "lost": month_order[m]["lost"],
+                    "pending": month_order[m]["pending"],
+                }
+            )
+
+        case_type_map: Dict[str, Dict[str, float]] = {}
+        for c in all_cases:
+            ct = c.get("case_type") or "Other"
+            if ct not in case_type_map:
+                case_type_map[ct] = {"count": 0, "won": 0}
+            case_type_map[ct]["count"] += 1
+            if _status_bucket(str(c.get("status", ""))) == "won":
+                case_type_map[ct]["won"] += 1
+
+        case_type_performance = []
+        for ct, vals in case_type_map.items():
+            count = int(vals["count"])
+            won = int(vals["won"])
+            win_rate = round((won / count) * 100, 2) if count else 0
+            case_type_performance.append({"type": ct, "count": count, "winRate": win_rate})
+        case_type_performance = sorted(case_type_performance, key=lambda x: x["count"], reverse=True)[:8]
+
+        total_cases = len(all_cases)
+        cases_won = sum(1 for c in all_cases if _status_bucket(str(c.get("status", ""))) == "won")
+        cases_lost = sum(1 for c in all_cases if _status_bucket(str(c.get("status", ""))) == "lost")
+        cases_pending = max(total_cases - cases_won - cases_lost, 0)
+        success_rate = round((cases_won / total_cases) * 100, 2) if total_cases else 0
+
         analytics_data = {
-            "case_outcomes": [
-                { "month": "Jan", "won": 4, "lost": 1, "pending": 2 },
-                { "month": "Feb", "won": 3, "lost": 0, "pending": 3 },
-                { "month": "Mar", "won": 5, "lost": 1, "pending": 2 },
-                { "month": "Apr", "won": 4, "lost": 1, "pending": 3 },
-                { "month": "May", "won": 6, "lost": 0, "pending": 2 },
-                { "month": "Jun", "won": 5, "lost": 2, "pending": 1 },
-            ],
-            "case_type_performance": [
-                { "type": "Bail", "count": 15, "winRate": 87 },
-                { "type": "Appeal", "count": 12, "winRate": 75 },
-                { "type": "Remand", "count": 8, "winRate": 62 },
-                { "type": "Evidence", "count": 10, "winRate": 80 },
-            ],
+            "case_outcomes": case_outcomes,
+            "case_type_performance": case_type_performance,
             "summary_metrics": {
-                "avg_resolution_time_months": 4.2,
-                "client_satisfaction": 4.8,
-                "case_success_rate": 78,
-                "total_cases": 45 + total_cases,  # Include stored cases
-                "cases_won": 24,
-                "cases_lost": 5,
-                "cases_pending": 16
+                "avg_resolution_time_months": 0,
+                "client_satisfaction": 0,
+                "case_success_rate": success_rate,
+                "total_cases": total_cases,
+                "cases_won": cases_won,
+                "cases_lost": cases_lost,
+                "cases_pending": cases_pending,
             },
             "trends": {
-                "resolution_time_change": -0.3,  # months
-                "satisfaction_change": 0.2,  # points
-                "success_rate_change": 5  # percentage
+                "resolution_time_change": 0,
+                "satisfaction_change": 0,
+                "success_rate_change": 0,
             }
         }
         
@@ -2075,62 +2093,47 @@ class SignupRequest(BaseModel):
 async def login(request: LoginRequest):
     """Login endpoint - validates credentials and returns user info"""
     try:
-        # Demo mode: accept any credentials
         if request.userType == "admin":
+            admin_user = db_repo.verify_admin_login(request.email.strip(), request.password)
+            if not admin_user:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+            return {"success": True, "user": admin_user, "message": "Login successful"}
+
+        if request.userType == "lawyer":
+            lawyer = db_repo.verify_lawyer_login(request.email.strip(), request.password)
+            if not lawyer:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
             return {
                 "success": True,
                 "user": {
-                    "id": "admin-1",
-                    "name": "Admin User",
-                    "email": request.email,
-                    "role": "Admin",
-                    "userType": "admin"
+                    "id": lawyer["id"],
+                    "name": lawyer["name"],
+                    "email": lawyer["email"],
+                    "role": "Lawyer",
+                    "userType": "lawyer",
+                    "verificationStatus": lawyer["verificationStatus"],
                 },
-                "message": "Login successful"
+                "message": "Login successful",
             }
-        elif request.userType == "lawyer":
-            lawyer = next((l for l in LAWYERS_STORAGE if l["email"] == request.email), None)
-            if lawyer:
-                return {
-                    "success": True,
-                    "user": {
-                        "id": lawyer["id"],
-                        "name": lawyer["name"],
-                        "email": lawyer["email"],
-                        "role": "Lawyer",
-                        "userType": "lawyer",
-                        "verificationStatus": lawyer["verificationStatus"]
-                    },
-                    "message": "Login successful"
-                }
-        elif request.userType == "citizen":
-            user = next((u for u in USERS_STORAGE if u["email"] == request.email), None)
-            if user:
-                return {
-                    "success": True,
-                    "user": {
-                        "id": user["id"],
-                        "name": user["name"],
-                        "email": user["email"],
-                        "role": "Citizen",
-                        "userType": "citizen",
-                        "status": user["status"]
-                    },
-                    "message": "Login successful"
-                }
-        
-        # Demo mode: create temporary user if not found
-        return {
-            "success": True,
-            "user": {
-                "id": f"temp-{request.userType}-{len(USERS_STORAGE) + 1}",
-                "name": request.email.split("@")[0],
-                "email": request.email,
-                "role": request.userType.capitalize(),
-                "userType": request.userType
-            },
-            "message": "Login successful (demo mode)"
-        }
+
+        if request.userType == "citizen":
+            user = db_repo.verify_citizen_login(request.email.strip(), request.password)
+            if not user:
+                raise HTTPException(status_code=401, detail="Invalid email or password")
+            return {
+                "success": True,
+                "user": {
+                    "id": user["id"],
+                    "name": user["name"],
+                    "email": user["email"],
+                    "role": "Citizen",
+                    "userType": "citizen",
+                    "status": user["status"],
+                },
+                "message": "Login successful",
+            }
+
+        raise HTTPException(status_code=400, detail="Unsupported userType")
     except Exception as e:
         import traceback
         print(f"Error in login: {e}")
@@ -2144,18 +2147,14 @@ async def signup(request: SignupRequest):
         from datetime import datetime
         import uuid
         
-        # Check if email already exists
-        existing_user = next((u for u in USERS_STORAGE if u["email"] == request.email), None)
-        existing_lawyer = next((l for l in LAWYERS_STORAGE if l["email"] == request.email), None)
-        
-        if existing_user or existing_lawyer:
+        if db_repo.email_exists_as_citizen_or_lawyer(request.email.strip()):
             raise HTTPException(status_code=400, detail="Email already registered")
-        
+
         if request.userType == "lawyer":
             new_lawyer = {
                 "id": str(uuid.uuid4())[:8],
-                "name": request.name,
-                "email": request.email,
+                "name": request.name.strip(),
+                "email": request.email.strip(),
                 "specialization": "General Practice",
                 "verificationStatus": "Pending",
                 "casesSolved": 0,
@@ -2167,48 +2166,52 @@ async def signup(request: SignupRequest):
                 "specializations": [],
                 "yearsExp": 0,
                 "cases": 0,
-                "password": request.password,
-                "phone": ""
+                "phone": "",
+                "bio": "",
+                "profileImage": "",
             }
-            LAWYERS_STORAGE.append(new_lawyer)
+            try:
+                created = db_repo.create_lawyer_record(new_lawyer, request.password)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e)) from e
             print(f"✅ New lawyer registered: {request.email}")
             return {
                 "success": True,
                 "user": {
-                    "id": new_lawyer["id"],
-                    "name": new_lawyer["name"],
-                    "email": new_lawyer["email"],
+                    "id": created["id"],
+                    "name": created["name"],
+                    "email": created["email"],
                     "role": "Lawyer",
                     "userType": "lawyer",
-                    "verificationStatus": "Pending"
+                    "verificationStatus": created["verificationStatus"],
                 },
-                "message": "Account created successfully. Verification pending."
+                "message": "Account created successfully. Verification pending.",
             }
-        else:  # citizen
-            new_user = {
-                "id": str(uuid.uuid4())[:8],
-                "name": request.name,
-                "email": request.email,
+
+        try:
+            new_user = db_repo.create_citizen_record(
+                name=request.name.strip(),
+                email=request.email.strip(),
+                password_plain=request.password,
+                join_date=datetime.now().strftime("%Y-%m-%d"),
+                status="Active",
+                cases_involved=0,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        print(f"✅ New user registered: {request.email}")
+        return {
+            "success": True,
+            "user": {
+                "id": new_user["id"],
+                "name": new_user["name"],
+                "email": new_user["email"],
                 "role": "Citizen",
-                "joinDate": datetime.now().strftime("%Y-%m-%d"),
-                "status": "Active",
-                "casesInvolved": 0,
-                "password": request.password
-            }
-            USERS_STORAGE.append(new_user)
-            print(f"✅ New user registered: {request.email}")
-            return {
-                "success": True,
-                "user": {
-                    "id": new_user["id"],
-                    "name": new_user["name"],
-                    "email": new_user["email"],
-                    "role": "Citizen",
-                    "userType": "citizen",
-                    "status": "Active"
-                },
-                "message": "Account created successfully"
-            }
+                "userType": "citizen",
+                "status": new_user["status"],
+            },
+            "message": "Account created successfully",
+        }
     except HTTPException:
         raise
     except Exception as e:
@@ -2225,8 +2228,8 @@ async def signup(request: SignupRequest):
 async def get_admin_users(search: Optional[str] = None):
     """Get all users for admin management"""
     try:
-        users = USERS_STORAGE.copy()
-        for lawyer in LAWYERS_STORAGE:
+        users = list(db_repo.list_all_citizens_public())
+        for lawyer in db_repo.list_all_lawyers_public():
             users.append({
                 "id": lawyer["id"],
                 "name": lawyer["name"],
@@ -2234,7 +2237,7 @@ async def get_admin_users(search: Optional[str] = None):
                 "role": "Lawyer",
                 "joinDate": lawyer["joinDate"],
                 "status": lawyer["verificationStatus"],
-                "casesInvolved": lawyer.get("cases", 0)
+                "casesInvolved": lawyer.get("cases", 0),
             })
         if search:
             search_lower = search.lower()
@@ -2258,15 +2261,13 @@ async def create_user(request: CreateUserRequest):
     try:
         from datetime import datetime
         import uuid
-        existing = next((u for u in USERS_STORAGE if u["email"] == request.email), None)
-        existing_lawyer = next((l for l in LAWYERS_STORAGE if l["email"] == request.email), None)
-        if existing or existing_lawyer:
+        if db_repo.email_exists_as_citizen_or_lawyer(request.email.strip()):
             raise HTTPException(status_code=400, detail="Email already exists")
         if request.role == "Lawyer":
             new_lawyer = {
                 "id": str(uuid.uuid4())[:8],
-                "name": request.name,
-                "email": request.email,
+                "name": request.name.strip(),
+                "email": request.email.strip(),
                 "specialization": "General Practice",
                 "verificationStatus": "Pending",
                 "casesSolved": 0,
@@ -2278,24 +2279,27 @@ async def create_user(request: CreateUserRequest):
                 "specializations": [],
                 "yearsExp": 0,
                 "cases": 0,
-                "password": request.password,
-                "phone": ""
+                "phone": "",
+                "bio": "",
+                "profileImage": "",
             }
-            LAWYERS_STORAGE.append(new_lawyer)
-            return {"success": True, "user": new_lawyer, "message": "Lawyer created successfully"}
-        else:
-            new_user = {
-                "id": str(uuid.uuid4())[:8],
-                "name": request.name,
-                "email": request.email,
-                "role": "Citizen",
-                "joinDate": datetime.now().strftime("%Y-%m-%d"),
-                "status": "Active",
-                "casesInvolved": 0,
-                "password": request.password
-            }
-            USERS_STORAGE.append(new_user)
-            return {"success": True, "user": new_user, "message": "User created successfully"}
+            try:
+                created = db_repo.create_lawyer_record(new_lawyer, request.password)
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=str(e)) from e
+            return {"success": True, "user": created, "message": "Lawyer created successfully"}
+        try:
+            new_user = db_repo.create_citizen_record(
+                name=request.name.strip(),
+                email=request.email.strip(),
+                password_plain=request.password,
+                join_date=datetime.now().strftime("%Y-%m-%d"),
+                status="Active",
+                cases_involved=0,
+            )
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        return {"success": True, "user": new_user, "message": "User created successfully"}
     except HTTPException:
         raise
     except Exception as e:
@@ -2308,14 +2312,15 @@ async def create_user(request: CreateUserRequest):
 async def update_user(user_id: str, updates: Dict):
     """Update user information"""
     try:
-        user = next((u for u in USERS_STORAGE if u["id"] == user_id), None)
-        if user:
-            user.update(updates)
-            return {"success": True, "user": user, "message": "User updated successfully"}
-        lawyer = next((l for l in LAWYERS_STORAGE if l["id"] == user_id), None)
-        if lawyer:
-            lawyer.update(updates)
-            return {"success": True, "user": lawyer, "message": "Lawyer updated successfully"}
+        updated = db_repo.update_citizen_by_id(user_id, updates)
+        if updated:
+            return {"success": True, "user": updated, "message": "User updated successfully"}
+        try:
+            lawyer_updated = db_repo.update_lawyer_by_id(user_id, updates)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        if lawyer_updated:
+            return {"success": True, "user": lawyer_updated, "message": "Lawyer updated successfully"}
         raise HTTPException(status_code=404, detail="User not found")
     except HTTPException:
         raise
@@ -2329,13 +2334,9 @@ async def update_user(user_id: str, updates: Dict):
 async def delete_user(user_id: str):
     """Delete a user"""
     try:
-        user_index = next((i for i, u in enumerate(USERS_STORAGE) if u["id"] == user_id), None)
-        if user_index is not None:
-            USERS_STORAGE.pop(user_index)
+        if db_repo.delete_citizen_by_id(user_id):
             return {"success": True, "message": "User deleted successfully"}
-        lawyer_index = next((i for i, l in enumerate(LAWYERS_STORAGE) if l["id"] == user_id), None)
-        if lawyer_index is not None:
-            LAWYERS_STORAGE.pop(lawyer_index)
+        if db_repo.delete_lawyer_by_id(user_id):
             return {"success": True, "message": "Lawyer deleted successfully"}
         raise HTTPException(status_code=404, detail="User not found")
     except HTTPException:
@@ -2354,7 +2355,8 @@ async def delete_user(user_id: str):
 async def get_admin_lawyers():
     """Get all lawyers for admin management"""
     try:
-        return {"lawyers": LAWYERS_STORAGE, "total": len(LAWYERS_STORAGE)}
+        lawyers = db_repo.list_all_lawyers_public()
+        return {"lawyers": lawyers, "total": len(lawyers)}
     except Exception as e:
         import traceback
         print(f"Error getting admin lawyers: {e}")
@@ -2394,13 +2396,12 @@ async def create_lawyer(request: CreateLawyerRequest):
     try:
         from datetime import datetime
         import uuid
-        existing = next((l for l in LAWYERS_STORAGE if l["email"] == request.email), None)
-        if existing:
+        if db_repo.email_exists_as_citizen_or_lawyer(request.email.strip()):
             raise HTTPException(status_code=400, detail="Email already exists")
         new_lawyer = {
             "id": str(uuid.uuid4())[:8],
-            "name": request.name,
-            "email": request.email,
+            "name": request.name.strip(),
+            "email": request.email.strip(),
             "specialization": request.specialization,
             "verificationStatus": "Pending",
             "casesSolved": 0,
@@ -2412,13 +2413,15 @@ async def create_lawyer(request: CreateLawyerRequest):
             "specializations": request.specializations or ([] if not request.specialization else [request.specialization]),
             "yearsExp": request.yearsExp or 0,
             "cases": 0,
-            "password": request.password,
             "phone": request.phone or "",
             "bio": request.bio or "",
-            "profileImage": request.profileImage or ""
+            "profileImage": request.profileImage or "",
         }
-        LAWYERS_STORAGE.append(new_lawyer)
-        return {"success": True, "lawyer": new_lawyer, "message": "Lawyer created successfully"}
+        try:
+            created = db_repo.create_lawyer_record(new_lawyer, request.password)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
+        return {"success": True, "lawyer": created, "message": "Lawyer created successfully"}
     except HTTPException:
         raise
     except Exception as e:
@@ -2431,11 +2434,10 @@ async def create_lawyer(request: CreateLawyerRequest):
 async def verify_lawyer(lawyer_id: str, status: str = "Verified"):
     """Verify or reject a lawyer"""
     try:
-        lawyer = next((l for l in LAWYERS_STORAGE if l["id"] == lawyer_id), None)
-        if not lawyer:
+        updated = db_repo.set_lawyer_verification_status(lawyer_id, status)
+        if not updated:
             raise HTTPException(status_code=404, detail="Lawyer not found")
-        lawyer["verificationStatus"] = status
-        return {"success": True, "lawyer": lawyer, "message": f"Lawyer {status.lower()} successfully"}
+        return {"success": True, "lawyer": updated, "message": f"Lawyer {status.lower()} successfully"}
     except HTTPException:
         raise
     except Exception as e:
@@ -2448,25 +2450,13 @@ async def verify_lawyer(lawyer_id: str, status: str = "Verified"):
 async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest):
     """Update lawyer profile fields"""
     try:
-        lawyer = next((l for l in LAWYERS_STORAGE if l["id"] == lawyer_id), None)
+        update_data = request.dict(exclude_unset=True)
+        try:
+            lawyer = db_repo.update_lawyer_by_id(lawyer_id, update_data)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         if not lawyer:
             raise HTTPException(status_code=404, detail="Lawyer not found")
-
-        update_data = request.dict(exclude_unset=True)
-
-        # Email uniqueness check when email is changed
-        if "email" in update_data and update_data["email"] != lawyer.get("email"):
-            duplicate = next((l for l in LAWYERS_STORAGE if l["email"] == update_data["email"] and l["id"] != lawyer_id), None)
-            if duplicate:
-                raise HTTPException(status_code=400, detail="Email already exists")
-
-        for key, value in update_data.items():
-            if value is not None:
-                lawyer[key] = value
-
-        # Keep derived fields aligned for existing UI compatibility
-        if "casesSolved" in update_data:
-            lawyer["cases"] = lawyer.get("casesSolved", lawyer.get("cases", 0))
 
         return {"success": True, "lawyer": lawyer, "message": "Lawyer updated successfully"}
     except HTTPException:
@@ -2481,10 +2471,8 @@ async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest):
 async def delete_lawyer(lawyer_id: str):
     """Delete a lawyer"""
     try:
-        lawyer_index = next((i for i, l in enumerate(LAWYERS_STORAGE) if l["id"] == lawyer_id), None)
-        if lawyer_index is None:
+        if not db_repo.delete_lawyer_by_id(lawyer_id):
             raise HTTPException(status_code=404, detail="Lawyer not found")
-        LAWYERS_STORAGE.pop(lawyer_index)
         return {"success": True, "message": "Lawyer deleted successfully"}
     except HTTPException:
         raise
@@ -2498,8 +2486,7 @@ async def delete_lawyer(lawyer_id: str):
 async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...)):
     """Upload and store profile image for a lawyer"""
     try:
-        lawyer = next((l for l in LAWYERS_STORAGE if l["id"] == lawyer_id), None)
-        if not lawyer:
+        if not db_repo.lawyer_exists(lawyer_id):
             raise HTTPException(status_code=404, detail="Lawyer not found")
 
         content_type = (image.content_type or "").lower()
@@ -2513,7 +2500,7 @@ async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...)):
             shutil.copyfileobj(image.file, buffer)
 
         image_url = f"/api/lawyers/{lawyer_id}/image"
-        lawyer["profileImage"] = image_url
+        db_repo.update_lawyer_profile_image(lawyer_id, image_url)
         return {"success": True, "imageUrl": image_url}
     except HTTPException:
         raise
@@ -2531,10 +2518,7 @@ async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...)):
 async def get_lawyer_clients(lawyer_id: Optional[str] = None):
     """Get clients for a lawyer"""
     try:
-        if lawyer_id:
-            clients = [c for c in LAWYER_CLIENTS_STORAGE if c["lawyerId"] == lawyer_id]
-        else:
-            clients = LAWYER_CLIENTS_STORAGE
+        clients = db_repo.list_lawyer_client_payloads(lawyer_id)
         unique_clients = {}
         for client in clients:
             client_id = client["clientId"]
@@ -2577,14 +2561,14 @@ async def create_lawyer_client(request: CreateLawyerClientRequest):
         if not request.clientName.strip() or not request.clientEmail.strip() or not request.clientPhone.strip():
             raise HTTPException(status_code=400, detail="clientName, clientEmail and clientPhone are required")
 
-        if not any(l.get("id") == request.lawyerId for l in LAWYERS_STORAGE):
+        if not db_repo.lawyer_exists(request.lawyerId):
             raise HTTPException(status_code=404, detail="Lawyer not found")
 
         import uuid
         from datetime import datetime
 
         client_id = f"cli-{str(uuid.uuid4())[:8]}"
-        LAWYER_CLIENTS_STORAGE.append({
+        db_repo.append_lawyer_client_row({
             "lawyerId": request.lawyerId,
             "clientId": client_id,
             "clientName": request.clientName.strip(),
@@ -2623,11 +2607,11 @@ async def create_lawyer_client(request: CreateLawyerClientRequest):
 async def get_lawyer_client_cases(client_id: str, lawyer_id: Optional[str] = None):
     """Get all case records for a specific lawyer client"""
     try:
-        entries = [c for c in LAWYER_CLIENTS_STORAGE if c.get("clientId") == client_id]
+        entries = [c for c in db_repo.list_lawyer_client_payloads() if c.get("clientId") == client_id]
         if lawyer_id:
             entries = [c for c in entries if c.get("lawyerId") == lawyer_id]
 
-        cases = [c for c in entries if c.get("caseId")]
+        cases = [{k: v for k, v in c.items() if k != "_row_id"} for c in entries if c.get("caseId")]
         return {
             "clientId": client_id,
             "cases": [
@@ -2667,10 +2651,7 @@ async def create_lawyer_client_case(client_id: str, request: CreateLawyerClientC
         if not request.caseType.strip():
             raise HTTPException(status_code=400, detail="caseType is required")
 
-        client_entries = [
-            c for c in LAWYER_CLIENTS_STORAGE
-            if c.get("lawyerId") == request.lawyerId and c.get("clientId") == client_id
-        ]
+        client_entries = db_repo.get_entries_for_lawyer_client(request.lawyerId, client_id)
         if not client_entries:
             raise HTTPException(status_code=404, detail="Client not found for this lawyer")
 
@@ -2678,10 +2659,10 @@ async def create_lawyer_client_case(client_id: str, request: CreateLawyerClientC
         from datetime import datetime
 
         new_case_id = f"LC-{datetime.now().strftime('%Y')}-{str(uuid.uuid4())[:6].upper()}"
-        base = client_entries[0]
+        base = {k: v for k, v in client_entries[0].items() if k != "_row_id"}
         new_outstanding = float(request.outstandingAmount or 0)
 
-        LAWYER_CLIENTS_STORAGE.append({
+        db_repo.append_lawyer_client_row({
             "lawyerId": request.lawyerId,
             "clientId": client_id,
             "clientName": base.get("clientName", ""),
@@ -2706,34 +2687,36 @@ async def create_lawyer_client_case(client_id: str, request: CreateLawyerClientC
             "city": base.get("city", "")
         })
 
-        # Refresh aggregate counters and summary snapshot on all entries for this client.
-        all_entries = [
-            c for c in LAWYER_CLIENTS_STORAGE
-            if c.get("lawyerId") == request.lawyerId and c.get("clientId") == client_id
-        ]
+        all_entries = db_repo.get_entries_for_lawyer_client(request.lawyerId, client_id)
         total_cases = len([c for c in all_entries if c.get("caseId")])
         active_cases = len([c for c in all_entries if c.get("caseId") and c.get("status", "Active") != "Closed"])
         total_outstanding = float(sum(float(c.get("outstandingAmount", 0) or 0) for c in all_entries if c.get("caseId")))
 
         latest_case = next((c for c in reversed(all_entries) if c.get("caseId")), None)
         for entry in all_entries:
-            entry["totalCases"] = total_cases
-            entry["activeCases"] = active_cases
-            entry["outstandingAmount"] = total_outstanding
+            row_id = entry.get("_row_id")
+            if row_id is None:
+                continue
+            plain = {k: v for k, v in entry.items() if k != "_row_id"}
+            plain["totalCases"] = total_cases
+            plain["activeCases"] = active_cases
+            plain["outstandingAmount"] = total_outstanding
             if latest_case:
-                entry["caseType"] = latest_case.get("caseType", entry.get("caseType", ""))
-                entry["status"] = latest_case.get("status", entry.get("status", "Active"))
-                entry["caseId"] = latest_case.get("caseId", entry.get("caseId", ""))
-                entry["firNumber"] = latest_case.get("firNumber", entry.get("firNumber", ""))
-                entry["court"] = latest_case.get("court", entry.get("court", ""))
-                entry["policeStation"] = latest_case.get("policeStation", entry.get("policeStation", ""))
-                entry["caseStage"] = latest_case.get("caseStage", entry.get("caseStage", "Initial Review"))
-                entry["riskLevel"] = latest_case.get("riskLevel", entry.get("riskLevel", "Medium"))
-                entry["priority"] = latest_case.get("priority", entry.get("priority", "Medium"))
-                entry["nextHearing"] = latest_case.get("nextHearing", entry.get("nextHearing", ""))
-                if latest_case.get("notes"):
-                    entry["notes"] = latest_case.get("notes")
-            entry["lastContactDate"] = datetime.now().strftime("%Y-%m-%d")
+                lc = {k: v for k, v in latest_case.items() if k != "_row_id"}
+                plain["caseType"] = lc.get("caseType", plain.get("caseType", ""))
+                plain["status"] = lc.get("status", plain.get("status", "Active"))
+                plain["caseId"] = lc.get("caseId", plain.get("caseId", ""))
+                plain["firNumber"] = lc.get("firNumber", plain.get("firNumber", ""))
+                plain["court"] = lc.get("court", plain.get("court", ""))
+                plain["policeStation"] = lc.get("policeStation", plain.get("policeStation", ""))
+                plain["caseStage"] = lc.get("caseStage", plain.get("caseStage", "Initial Review"))
+                plain["riskLevel"] = lc.get("riskLevel", plain.get("riskLevel", "Medium"))
+                plain["priority"] = lc.get("priority", plain.get("priority", "Medium"))
+                plain["nextHearing"] = lc.get("nextHearing", plain.get("nextHearing", ""))
+                if lc.get("notes"):
+                    plain["notes"] = lc.get("notes")
+            plain["lastContactDate"] = datetime.now().strftime("%Y-%m-%d")
+            db_repo.save_lawyer_client_entry(row_id, plain)
 
         return {"success": True, "message": "Client case created successfully", "caseId": new_case_id}
     except HTTPException:
@@ -2868,7 +2851,7 @@ def _recommendation_scores(lawyer: Dict, req: LawyerRecommendationRequest, case_
 async def recommend_lawyers_for_case(request: LawyerRecommendationRequest):
     """Recommend best-fit criminal lawyers for a citizen case intake"""
     try:
-        verified_lawyers = [l for l in LAWYERS_STORAGE if l.get("verificationStatus") == "Verified"]
+        verified_lawyers = [l for l in db_repo.list_all_lawyers_public() if l.get("verificationStatus") == "Verified"]
         if not verified_lawyers:
             return {"recommendations": [], "total": 0, "message": "No verified lawyers currently available"}
 
@@ -2920,10 +2903,16 @@ async def recommend_lawyers_for_case(request: LawyerRecommendationRequest):
         raise HTTPException(status_code=500, detail=f"Error generating recommendations: {str(e)}")
 
 @app.get("/api/lawyers")
-async def get_lawyers_for_citizens(search: Optional[str] = None, specialization: Optional[str] = None):
-    """Get list of verified lawyers for citizens to browse"""
+async def get_lawyers_for_citizens(
+    search: Optional[str] = None,
+    specialization: Optional[str] = None,
+    verified_only: bool = False,
+):
+    """Get lawyer directory data for citizens to browse"""
     try:
-        lawyers = [l for l in LAWYERS_STORAGE if l["verificationStatus"] == "Verified"]
+        lawyers = db_repo.list_all_lawyers_public()
+        if verified_only:
+            lawyers = [l for l in lawyers if l["verificationStatus"] == "Verified"]
         if search:
             search_lower = search.lower()
             lawyers = [l for l in lawyers if search_lower in l["name"].lower() or search_lower in l.get("specialization", "").lower()]
@@ -2958,7 +2947,7 @@ async def get_lawyers_for_citizens(search: Optional[str] = None, specialization:
 async def get_lawyer_profile(lawyer_id: str):
     """Get detailed lawyer profile"""
     try:
-        lawyer = next((l for l in LAWYERS_STORAGE if l["id"] == lawyer_id), None)
+        lawyer = db_repo.get_lawyer_public_by_id(lawyer_id)
         if not lawyer:
             raise HTTPException(status_code=404, detail="Lawyer not found")
         return {

@@ -1,5 +1,17 @@
 import { api } from "../api";
 
+function getLoggedInUser(): { id?: string; userType?: string } {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as { id?: string; userType?: string };
+    return parsed || {};
+  } catch {
+    return {};
+  }
+}
+
 // Types for Lawyer Analytics
 export interface CaseOutcome {
   month: string;
@@ -39,9 +51,11 @@ export interface LawyerAnalyticsData {
 
 // API Functions
 export async function getLawyerAnalytics(): Promise<LawyerAnalyticsData> {
-  console.log("📡 Calling /api/analytics/lawyer...");
+  const user = getLoggedInUser();
+  const params = user.id ? `?lawyer_id=${encodeURIComponent(user.id)}` : "";
+  console.log(`📡 Calling /api/analytics/lawyer${params}...`);
   try {
-    const data = await api.get<LawyerAnalyticsData>("/api/analytics/lawyer");
+    const data = await api.get<LawyerAnalyticsData>(`/api/analytics/lawyer${params}`);
     console.log("✅ Lawyer analytics API response:", data);
     return data;
   } catch (error) {

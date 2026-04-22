@@ -26,13 +26,15 @@ export default function LoginPage() {
       const raw = localStorage.getItem("user")
       if (!raw) return
       const user = JSON.parse(raw) as { userType?: "citizen" | "lawyer" | "admin" }
-      if (user?.userType) {
+      // Only auto-redirect when user was sent here from a protected route.
+      // For direct /login visits, let user pick role and login normally.
+      if (user?.userType && redirectPath) {
         router.replace(`/${user.userType}`)
       }
     } catch {
       localStorage.removeItem("user")
     }
-  }, [router])
+  }, [router, redirectPath])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,10 +50,12 @@ export default function LoginPage() {
         if (response.success) {
           // Store user info in localStorage (in production, use proper auth)
           localStorage.setItem("user", JSON.stringify(response.user))
+          const roleFromBackend = response.user?.userType as "citizen" | "lawyer" | "admin" | undefined
+          const targetRole = roleFromBackend || userType
           if (redirectPath && redirectPath.startsWith("/")) {
             router.push(redirectPath)
           } else {
-            router.push(`/${userType}`)
+            router.push(`/${targetRole}`)
           }
         }
       } catch (error: any) {

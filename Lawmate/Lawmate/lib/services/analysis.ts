@@ -1,4 +1,4 @@
-import { api } from "../api";
+import { api, BASE_URL } from "../api";
 
 export type CaseDetails = {
   sections: string[];
@@ -129,6 +129,102 @@ export type BailPredictionResponse = {
   };
 };
 
+export type CitizenQuickCaseAnalysisRequest = {
+  case_description: string;
+  urgency?: "low" | "medium" | "high";
+  city?: string;
+  hearing_court?: string;
+  custody_status?: "in_custody" | "not_in_custody" | "unknown";
+};
+
+export type CitizenQuickCaseAnalysisResponse = {
+  summary: string;
+  extracted_sections: string[];
+  likely_case_type: string;
+  risk_score: number;
+  risk_level: "Low" | "Medium" | "High";
+  recommendations: string[];
+  next_steps: string[];
+  disclaimer: string;
+};
+
+/** Groq sometimes returns 0–1 (e.g. 0.08) or 1–10; normalize to 0–100 severity. */
+function normalizeRiskScore0To100(raw: unknown): number {
+  if (raw === null || raw === undefined) return 50;
+  const val = Number(raw);
+  if (Number.isNaN(val)) return 50;
+  if (val > 0 && val <= 1) return Math.max(1, Math.min(100, Math.round(val * 100)));
+  if (val > 1 && val <= 10 && Number.isInteger(val)) return Math.max(1, Math.min(100, Math.round(val * 10)));
+  return Math.max(0, Math.min(100, Math.round(val)));
+}
+
+function heuristicRiskFloor(req: CitizenQuickCaseAnalysisRequest): number {
+  const text = (req.case_description || "").toLowerCase();
+  const sectionMatches = req.case_description.match(/\b\d{2,4}[A-Za-z]?\b/g) || [];
+  const sec = sectionMatches.map((s) => s.toUpperCase()).join(" ").toLowerCase();
+  let floor = 22;
+  const violent = [
+    "murder",
+    "kill",
+    "killed",
+    "killing",
+    "death",
+    "dead",
+    "die",
+    "qatal",
+    "qatil",
+    "kidnap",
+    "abduct",
+    "rape",
+    "dacoity",
+    "terror",
+    "blast",
+    "bomb",
+    "acid",
+    "narcotics",
+  ];
+  if (violent.some((k) => text.includes(k)) || ["302", "307", "324", "392"].some((s) => sec.includes(s))) {
+    floor = 78;
+  } else if (
+    ["theft", "steal", "stole", "stolen", "robbery", "snatch", "snatching", "chor", "chori", "379", "380", "356"].some(
+      (k) => text.includes(k),
+    ) ||
+    ["379", "380", "356", "457"].some((s) => sec.includes(s))
+  ) {
+    floor = 44;
+  } else if (
+    ["fraud", "420", "cyber", "online", "cheat", "cheating", "forgery", "468", "471"].some((k) => text.includes(k)) ||
+    ["420", "468", "471"].some((s) => sec.includes(s))
+  ) {
+    floor = 52;
+  } else if (["assault", "beat", "beating", "hurt", "323", "354", "harass"].some((k) => text.includes(k))) {
+    floor = 48;
+  }
+  if (req.custody_status === "in_custody") floor = Math.min(95, floor + 8);
+  if (req.urgency === "high") floor = Math.min(95, floor + 5);
+  return floor;
+}
+
+function riskLevelFromScore(score: number): "Low" | "Medium" | "High" {
+  if (score >= 75) return "High";
+  if (score >= 45) return "Medium";
+  return "Low";
+}
+
+function applyRiskGuards(
+  data: CitizenQuickCaseAnalysisResponse,
+  req: CitizenQuickCaseAnalysisRequest,
+): CitizenQuickCaseAnalysisResponse {
+  const normalized = normalizeRiskScore0To100(data.risk_score);
+  const floor = heuristicRiskFloor(req);
+  const merged = Math.max(0, Math.min(100, Math.max(normalized, floor)));
+  return {
+    ...data,
+    risk_score: merged,
+    risk_level: riskLevelFromScore(merged),
+  };
+}
+
 // Risk Analysis
 export async function analyzeRisk(caseDetails: CaseDetails): Promise<RiskAnalysisResponse> {
   return api.post<RiskAnalysisResponse>("/api/risk-analysis", {
@@ -183,6 +279,77 @@ export async function predictBail(
     mitigating_factors: mitigatingFactors,
     aggravating_factors: aggravatingFactors,
   });
+}
+
+export async function analyzeCitizenCaseQuick(
+  request: CitizenQuickCaseAnalysisRequest
+): Promise<CitizenQuickCaseAnalysisResponse> {
+  const res = await fetch(`${BASE_URL}/api/citizen/case-quick-analysis`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(request),
+  });
+
+  if (res.ok) {
+    const data = (await res.json()) as CitizenQuickCaseAnalysisResponse;
+    return applyRiskGuards(data, request);
+  }
+
+  // If backend is not updated yet, return a dynamic local fallback
+  // based on citizen text so results differ per case.
+  if (res.status === 404) {
+    const text = (request.case_description || "").toLowerCase();
+    const sectionMatches = (request.case_description.match(/\b\d{2,4}[A-Za-z]?\b/g) || []).slice(0, 8);
+    const sections = Array.from(new Set(sectionMatches.map((s) => s.toUpperCase())));
+
+    let riskScore = 45;
+    if (
+      ["murder", "kill", "killed", "death", "dead", "302", "kidnap", "terror", "narcotics", "rape", "qatal"].some((k) =>
+        text.includes(k),
+      )
+    ) {
+      riskScore = 82;
+    } else if (["fraud", "420", "cyber", "harassment", "cheating", "theft", "steal", "robbery", "379"].some((k) => text.includes(k))) {
+      riskScore = 62;
+    } else if (["bail", "custody", "arrest"].some((k) => text.includes(k))) {
+      riskScore = 58;
+    }
+
+    if ((request.urgency || "medium") === "high") riskScore = Math.min(95, riskScore + 5);
+    if ((request.custody_status || "unknown") === "in_custody") riskScore = Math.min(95, riskScore + 6);
+
+    riskScore = Math.max(0, Math.min(100, Math.max(riskScore, heuristicRiskFloor(request))));
+    const riskLevel = riskLevelFromScore(riskScore);
+    const recommendations = [
+      "Keep FIR copy, arrest memo, and all police documents in one folder.",
+      "Write a clear timeline of events with dates, locations, and witness names.",
+      "Consult a criminal lawyer before giving detailed statements.",
+    ];
+    if ((request.custody_status || "") === "in_custody") {
+      recommendations.unshift("Discuss urgent bail preparation and hearing strategy immediately.");
+    }
+    if (text.includes("cyber")) {
+      recommendations.push("Preserve digital evidence (screenshots, logs, chats, transaction IDs).");
+    }
+
+    return {
+      summary: "Quick analysis generated in compatibility mode from your case description.",
+      extracted_sections: sections,
+      likely_case_type: "Criminal Matter",
+      risk_score: riskScore,
+      risk_level: riskLevel,
+      recommendations: recommendations.slice(0, 6),
+      next_steps: [
+        "Share all available documents with your lawyer.",
+        "Track hearing/court deadlines carefully.",
+        "Do not delete chats/files that may be evidence.",
+      ],
+      disclaimer: "Backend quick-analysis endpoint is unavailable; this is a compatibility estimate.",
+    };
+  }
+
+  const errText = await res.text().catch(() => "");
+  throw new Error(`Request failed: ${res.status} ${res.statusText} ${errText}`.trim());
 }
 
 
