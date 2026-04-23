@@ -6,16 +6,16 @@ import re
 from typing import Dict, List
 
 class LegalDomainClassifier:
-    """Enhanced domain classifier - out-of-scope first, then criminal law"""
+    """Enhanced domain classifier for broad legal support with safety-focused refusal only"""
     
     def __init__(self):
         """Initialize domain classifier with priority logic"""
         
-        # Out-of-scope domains (CHECKED FIRST)
+        # Legal domains (detected for routing/context, not refusal)
         self.out_of_scope_domains = {
             'family_law': {
                 'keywords': ['divorce', 'marriage', 'nikah', 'talaq', 'khula', 'maintenance', 'custody', 'family law'],
-                'priority': 10,  # High priority - refuse immediately
+                'priority': 10,
                 'patterns': [r'divorce.*law', r'marriage.*law', r'family.*law']
             },
             'tax_law': {
@@ -106,6 +106,15 @@ class LegalDomainClassifier:
         """
         question_lower = question.lower()
 
+        # Domestic abuse / protection context should be handled as in-scope criminal-law guidance,
+        # even when users also mention family-law terms like divorce/khula.
+        domestic_abuse_signals = [
+            'abuse', 'abusive', 'domestic violence', 'violence at home', 'beating',
+            'hit me', 'hits me', 'threat', 'threaten', 'harass', 'harassment',
+            'assault', 'hurt me'
+        ]
+        has_domestic_abuse_context = any(sig in question_lower for sig in domestic_abuse_signals)
+
         # Explicit statute reference — always in scope for this assistant (CrPC/PPC).
         if re.search(r'\bcrpc\b', question_lower) or re.search(r'\bppc\b', question_lower):
             return {
@@ -116,7 +125,7 @@ class LegalDomainClassifier:
                 'should_answer': True,
             }
 
-        # STEP 1: Check out-of-scope FIRST (priority-based)
+        # STEP 1: Detect legal domain context (priority-based)
         out_of_scope_domain = None
         out_of_scope_score = 0
         out_of_scope_priority = 0
@@ -147,24 +156,24 @@ class LegalDomainClassifier:
                     out_of_scope_priority = config['priority']
                     matched_keywords = domain_keywords
         
-        # If out-of-scope detected, REFUSE immediately (unless strong criminal law signal)
+        # If legal domain detected (e.g., family/tax/property), still allow answering.
+        # Product requirement: do not hard-refuse legal queries due to domain mismatch.
         if out_of_scope_domain:
-            # Check for criminal law keywords (to handle mixed questions)
-            criminal_score = 0
-            for category, keywords in self.criminal_law_keywords.items():
-                for keyword in keywords:
-                    if keyword in question_lower:
-                        criminal_score += 1
-            
-            # Only allow if criminal law score is MUCH higher (3x threshold)
-            if criminal_score < (out_of_scope_score * 3):
+            if out_of_scope_domain == 'family_law' and has_domestic_abuse_context:
                 return {
-                    'domain': out_of_scope_domain,
-                    'in_scope': False,
-                    'confidence': min(0.9, 0.5 + (out_of_scope_score * 0.1)),
-                    'reason': f'Question is about {out_of_scope_domain.replace("_", " ")} (keywords: {", ".join(matched_keywords[:3])})',
-                    'should_answer': False
+                    'domain': 'pakistani_criminal_law',
+                    'in_scope': True,
+                    'confidence': 0.9,
+                    'reason': 'Family-law query with domestic abuse context; prioritize immediate legal protection options',
+                    'should_answer': True
                 }
+            return {
+                'domain': out_of_scope_domain,
+                'in_scope': True,
+                'confidence': min(0.9, 0.5 + (out_of_scope_score * 0.1)),
+                'reason': f'Legal query detected in {out_of_scope_domain.replace("_", " ")}',
+                'should_answer': True
+            }
         
         # STEP 2: Check for greetings and conversational queries (ALLOW these)
         greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 
@@ -245,7 +254,7 @@ class LegalDomainClassifier:
         classification = self.classify(question)
         domain = classification.get('domain', 'unknown')
         
-        if domain == 'pakistani_criminal_law':
+        if classification.get('in_scope', True):
             return None  # Should answer
         
         domain_name = domain.replace('_', ' ').title()

@@ -10,7 +10,23 @@ export type ChatResponse = {
   retrieved_sources?: number;
 };
 
-export async function sendChat(question: string, use_formatter: boolean = false): Promise<ChatResponse> {
+export type ChatHistoryItem = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type ChatSessionMeta = {
+  session_id?: string;
+  user_id?: string;
+  user_type?: string;
+};
+
+export async function sendChat(
+  question: string,
+  use_formatter: boolean = false,
+  history: ChatHistoryItem[] = [],
+  session: ChatSessionMeta = {}
+): Promise<ChatResponse> {
   try {
     const response = await api.post<{
       answer: string;
@@ -26,7 +42,11 @@ export async function sendChat(question: string, use_formatter: boolean = false)
       retrieved_sources?: number;
     }>("/api/chat", { 
       question,
-      use_formatter
+      use_formatter,
+      history,
+      session_id: session.session_id || "",
+      user_id: session.user_id || "",
+      user_type: session.user_type || ""
     });
     
     // Map backend response to frontend format

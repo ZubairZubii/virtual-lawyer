@@ -204,7 +204,7 @@ export default function CitizenCasesPage() {
                         </div>
 
                         <div className="flex flex-col gap-2 justify-start">
-                          <Link href={`/citizen/cases/${caseItem.id}`}>
+                          <Link href={`/citizen/cases/${encodeURIComponent(caseItem.id)}`}>
                             <Button
                               size="sm"
                               className="w-full justify-center bg-primary text-primary-foreground border-0"

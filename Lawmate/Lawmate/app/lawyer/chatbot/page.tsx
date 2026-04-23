@@ -31,25 +31,83 @@ interface Message {
   sources?: string[]
 }
 
+const LAWYER_CHAT_STORAGE_KEY = "lawmate_chat_lawyer_v1"
+const LAWYER_CHAT_SESSION_KEY = "lawmate_chat_lawyer_session_v1"
+const DEFAULT_ASSISTANT_MESSAGE: Message = {
+  id: "1",
+  role: "assistant",
+  content:
+    "I'm here to support your legal workflow. Ask in plain language, and I will provide practical legal analysis and strategy guidance.",
+  timestamp: new Date(),
+  sources: [],
+}
+
 export default function LawyerChatbotPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      role: "assistant",
-      content:
-        "I'm here to help with criminal law matters! I can assist you with:\n\n1) FIR (First Information Report) - Filing and procedures\n2) Bail - Types, conditions, and application process\n3) Appeals - Criminal appeals and procedures\n4) Remand - Custody and bail remand procedures\n5) Constitutional Rights - Fundamental rights in criminal cases\n6) Court Procedures - Criminal trial procedures\n7) Sections of Law - IPC, CrPC, and other relevant laws\n\nPlease ask me about any specific legal concern you have. I can also help with document generation and case analysis.",
-      timestamp: new Date(),
-      sources: [],
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>([DEFAULT_ASSISTANT_MESSAGE])
 
   const [input, setInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
+  const [sessionId, setSessionId] = useState("")
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      const raw = localStorage.getItem(LAWYER_CHAT_STORAGE_KEY)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as Array<{
+        id: string
+        role: "user" | "assistant"
+        content: string
+        timestamp: string
+        helpful?: boolean
+        sources?: string[]
+      }>
+      if (!Array.isArray(parsed) || parsed.length === 0) return
+      const restored = parsed.map((m) => ({
+        ...m,
+        timestamp: new Date(m.timestamp),
+      }))
+      setMessages(restored)
+    } catch (error) {
+      console.warn("Failed to restore lawyer chat history:", error)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      let sid = localStorage.getItem(LAWYER_CHAT_SESSION_KEY) || ""
+      if (!sid) {
+        sid = `lawyer-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+        localStorage.setItem(LAWYER_CHAT_SESSION_KEY, sid)
+      }
+      setSessionId(sid)
+    } catch (error) {
+      console.warn("Failed to init lawyer chat session:", error)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    try {
+      localStorage.setItem(
+        LAWYER_CHAT_STORAGE_KEY,
+        JSON.stringify(
+          messages.map((m) => ({
+            ...m,
+            timestamp: m.timestamp.toISOString(),
+          })),
+        ),
+      )
+    } catch (error) {
+      console.warn("Failed to persist lawyer chat history:", error)
+    }
   }, [messages])
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -68,7 +126,28 @@ export default function LawyerChatbotPage() {
     setLoading(true)
 
     try {
-      const res = await sendChat(input)
+      const history = messages
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .slice(-8)
+        .map((m) => ({ role: m.role, content: m.content }))
+      const userRaw = typeof window !== "undefined" ? localStorage.getItem("user") : null
+      let userId = ""
+      let userType = "lawyer"
+      try {
+        if (userRaw) {
+          const parsed = JSON.parse(userRaw)
+          userId = parsed?.id || ""
+          userType = parsed?.userType || "lawyer"
+        }
+      } catch {
+        // keep defaults
+      }
+
+      const res = await sendChat(input, false, history, {
+        session_id: sessionId,
+        user_id: userId,
+        user_type: userType,
+      })
       
       // Convert reference objects to display strings
       const formatReference = (ref: any): string => {
@@ -98,8 +177,8 @@ export default function LawyerChatbotPage() {
       }
 
       const sources = res.references && res.references.length > 0
-        ? res.references.map(formatReference)
-        : (res.context_used ? [`${res.retrieved_sources || 0} source(s) used`] : [])
+        ? res.references.map(formatReference).filter(Boolean)
+        : []
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),

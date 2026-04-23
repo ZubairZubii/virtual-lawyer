@@ -151,6 +151,146 @@ class TwoStagePipeline:
         print("=" * 60)
         configure_pipeline_logging()
 
+    def _groq_model_candidates(self, primary_model: str) -> List[str]:
+        """
+        Return ordered Groq model candidates for graceful fallback on rate limits.
+        """
+        env_models = os.getenv("GROQ_FALLBACK_MODELS", "").strip()
+        fallback_models = [m.strip() for m in env_models.split(",") if m.strip()] if env_models else [
+            "llama-3.1-8b-instant",
+            "llama-3.3-70b-versatile",
+        ]
+        ordered = [primary_model] + [m for m in fallback_models if m != primary_model]
+        # de-duplicate while preserving order
+        seen = set()
+        out: List[str] = []
+        for m in ordered:
+            if m in seen:
+                continue
+            seen.add(m)
+            out.append(m)
+        return out
+
+    def _groq_chat_with_fallback(
+        self,
+        *,
+        messages: List[Dict[str, str]],
+        max_tokens: int,
+        temperature: float,
+        top_p: float = 0.9,
+        timeout_s: int = 30,
+    ) -> Optional[str]:
+        if not self.formatter_api_key:
+            return None
+        primary_model = PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile")
+        models = self._groq_model_candidates(primary_model)
+        last_error = ""
+
+        for model_name in models:
+            try:
+                response = requests.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.formatter_api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": model_name,
+                        "messages": messages,
+                        "temperature": temperature,
+                        "max_tokens": max_tokens,
+                        "top_p": top_p,
+                        "stream": False,
+                    },
+                    timeout=timeout_s,
+                )
+                if response.status_code == 200:
+                    result = response.json()
+                    return result["choices"][0]["message"]["content"].strip()
+
+                # Only continue to fallback model when we hit rate limits.
+                err_text = response.text
+                try:
+                    err_json = response.json()
+                    err_text = err_json.get("error", {}).get("message", err_text)
+                except Exception:
+                    pass
+                last_error = f"{response.status_code}: {err_text}"
+                if response.status_code != 429:
+                    break
+                print(f"Groq model {model_name} rate-limited; trying fallback model...")
+            except Exception as e:
+                last_error = str(e)
+                continue
+
+        if last_error:
+            print(f"Groq fallback exhausted: {last_error}")
+        return None
+
+    def _extract_target_section(self, question: str) -> tuple[str, str]:
+        q = (question or "").lower()
+        m = re.search(r"section\s+(\d+[a-z]?)\s*(ppc|crpc)", q)
+        if m:
+            return m.group(1), m.group(2)
+        m2 = re.search(r"section\s+(\d+[a-z]?)", q)
+        if m2:
+            section = m2.group(1)
+            code = "crpc" if "crpc" in q else ("ppc" if "ppc" in q else "ppc")
+            return section, code
+        return "", ""
+
+    def _format_statute_lookup_with_groq(self, question: str, context: str, references: list, initial_answer: str) -> str:
+        """
+        Section lookup mode: force exact, concise, citation-safe section explanation.
+        """
+        section, code = self._extract_target_section(question)
+        code_label = (code or "ppc").upper()
+        refs = []
+        for ref in (references or [])[:8]:
+            if not isinstance(ref, dict):
+                continue
+            label = ref.get("title") or ref.get("case_no") or ref.get("section") or ref.get("type")
+            if label:
+                refs.append(f"- {label}")
+        refs_text = "\n".join(refs) if refs else "- No references found"
+
+        prompt = f"""You are a Pakistan criminal law assistant in STRICT section-lookup mode.
+
+User asked about: Section {section or 'N/A'} {code_label}
+
+Rules:
+1) Explain ONLY the requested section (or closest grounded match) from provided context/references.
+2) If exact section is not present in references, clearly say "exact section text not found in current corpus".
+3) Do not switch topic to unrelated arrest/FIR/remedy templates.
+4) Keep answer concise and direct.
+5) Include section label explicitly in the answer when grounded.
+
+Question:
+{question}
+
+Context:
+{(context or '')[:2200]}
+
+References:
+{refs_text}
+
+Draft:
+{initial_answer}
+
+Return only final user-facing answer text."""
+
+        formatted = self._groq_chat_with_fallback(
+            messages=[
+                {"role": "system", "content": "You produce strict, grounded section explanations under Pakistan law."},
+                {"role": "user", "content": prompt},
+            ],
+            max_tokens=320,
+            temperature=0.1,
+            top_p=0.9,
+            timeout_s=25,
+        )
+        return formatted or initial_answer
+
     def _reason_with_groq(self, draft_answer: str, question: str, context: str, references: list) -> str:
         """Fast legal reasoning refinement with Groq (Stage 1.5)."""
         reasoner_cfg = PIPELINE_CONFIG.get("reasoner", {})
@@ -195,34 +335,23 @@ References:
 Return only the improved final answer text."""
 
         try:
-            response = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.formatter_api_key}",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": model_name,
-                    "messages": [
-                        {"role": "system", "content": "You are an expert Pakistan criminal law assistant focused on accurate reasoning."},
-                        {"role": "user", "content": prompt},
-                    ],
-                    "temperature": temperature,
-                    "max_tokens": max_tokens,
-                    "top_p": 0.9,
-                    "stream": False,
-                },
-                timeout=timeout_s,
+            refined = self._groq_chat_with_fallback(
+                messages=[
+                    {"role": "system", "content": "You are an expert Pakistan criminal law assistant focused on accurate reasoning."},
+                    {"role": "user", "content": prompt},
+                ],
+                max_tokens=max_tokens,
+                temperature=temperature,
+                top_p=0.9,
+                timeout_s=timeout_s,
             )
-            if response.status_code == 200:
-                result = response.json()
-                refined = result["choices"][0]["message"]["content"].strip()
+            if refined:
                 if trace_block:
                     trace_block(
                         "STAGE1.5 / GROQ / RESPONSE",
                         {"raw_reasoner_output": refined},
                     )
-                return refined if refined else draft_answer
+                return refined
             return draft_answer
         except Exception:
             return draft_answer
@@ -246,7 +375,7 @@ Return only the improved final answer text."""
 
     def _ensure_readable_chat_format(self, text: str) -> str:
         """
-        Normalize large paragraph outputs into scan-friendly chat format.
+        Keep model output readable without forcing a fixed template.
         """
         if not text:
             return text
@@ -254,38 +383,21 @@ Return only the improved final answer text."""
         cleaned = re.sub(r"\r\n?", "\n", text).strip()
         # Normalize bullet markers from model output.
         cleaned = re.sub(r"(?m)^\*\s+", "- ", cleaned)
+        # If the model already returned multiline output, keep it.
         non_empty_lines = [ln.strip() for ln in cleaned.split("\n") if ln.strip()]
-        has_structure = (
-            len(non_empty_lines) >= 4
-            and any(ln.startswith("- ") or ln.startswith("•") for ln in non_empty_lines)
-        ) or any(":" in ln and len(ln.split()) <= 6 for ln in non_empty_lines[:4])
-
-        if has_structure:
+        if len(non_empty_lines) >= 2:
             return cleaned
 
-        # If model returned one long block, convert into concise sections.
+        # For single long paragraphs, only add soft line breaks after sentence boundaries.
         sentences = [
             s.strip()
             for s in re.split(r"(?<=[.!?])\s+", cleaned.replace("\n", " "))
             if s.strip()
         ]
-        if len(sentences) < 3:
+        if len(sentences) < 4:
             return cleaned
 
-        short = sentences[0]
-        law_bits = sentences[1:4]
-        next_bits = sentences[4:7]
-
-        formatted = ["Overview", short, "", "Key Legal Points"]
-        for s in law_bits:
-            formatted.append(f"- {s}")
-        if next_bits:
-            formatted.append("")
-            formatted.append("Practical Next Steps")
-            for s in next_bits:
-                formatted.append(f"- {s}")
-
-        return "\n".join(formatted).strip()
+        return "\n\n".join(sentences).strip()
 
     def _trim_incomplete_tail(self, text: str) -> str:
         """Drop likely truncated trailing fragments from model output."""
@@ -597,49 +709,28 @@ FORMATTED ANSWER (start directly, no prefixes):"""
                     },
                 )
 
-            response = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.formatter_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile"),
-                    "messages": [
-                        {
-                            "role": "system", 
-                            "content": "You are an expert Pakistan criminal law assistant. You format legal answers to be clear, complete, and professional. You NEVER add information not in the source, and you ALWAYS maintain legal accuracy."
-                        },
-                        {"role": "user", "content": prompt}
-                    ],
-                    "temperature": config.get("temperature", 0.3),
-                    "max_tokens": config.get("max_tokens", 600),
-                    "top_p": config.get("top_p", 0.9),
-                    "stream": False
-                },
-                timeout=30
+            formatted = self._groq_chat_with_fallback(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are an expert Pakistan criminal law assistant. You format legal answers to be clear, complete, and professional. You NEVER add information not in the source, and you ALWAYS maintain legal accuracy."
+                    },
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=config.get("max_tokens", 600),
+                temperature=config.get("temperature", 0.3),
+                top_p=config.get("top_p", 0.9),
+                timeout_s=30,
             )
-            
-            if response.status_code == 200:
-                result = response.json()
-                formatted = result['choices'][0]['message']['content'].strip()
+            if formatted:
                 if trace_block:
                     trace_block(
                         "STAGE2 / GROQ / RESPONSE",
                         {"raw_model_output": formatted},
                     )
                 return formatted
-            else:
-                # Better error reporting
-                error_detail = response.text
-                try:
-                    error_json = response.json()
-                    error_detail = error_json.get('error', {}).get('message', error_detail)
-                except Exception:
-                    pass
-                print(f"Groq API error {response.status_code}: {error_detail}")
-                print("Falling back to initial answer (Stage 1 only)")
-                return initial_answer
+            print("Groq formatter unavailable after fallback attempts; using Stage 1 answer")
+            return initial_answer
                 
         except Exception as e:
             print(f"Error formatting with Groq: {e}")
@@ -890,12 +981,20 @@ FORMATTED ANSWER:"""
             
             # Format based on formatter type
             if self.formatter_type == "groq":
-                formatted_answer = self._format_with_groq(
-                    stage1_5_answer,
-                    question,
-                    context,
-                    stage1_result.get('references', [])
-                )
+                if stage1_result.get("intent") == "statute_lookup":
+                    formatted_answer = self._format_statute_lookup_with_groq(
+                        question=question,
+                        context=context,
+                        references=stage1_result.get("references", []),
+                        initial_answer=stage1_5_answer,
+                    )
+                else:
+                    formatted_answer = self._format_with_groq(
+                        stage1_5_answer,
+                        question,
+                        context,
+                        stage1_result.get('references', [])
+                    )
             elif self.formatter_type == "huggingface":
                 formatted_answer = self._format_with_huggingface(
                     stage1_5_answer,
@@ -931,7 +1030,9 @@ FORMATTED ANSWER:"""
         final_answer = self._trim_incomplete_tail(final_answer or "")
         final_answer = self._ensure_readable_chat_format(final_answer or "")
         final_answer = self._trim_incomplete_tail(final_answer or "")
-        final_answer = scrub_statute_numbers_from_chat_answer(final_answer or "")
+        # Keep explicit section numbers for section-lookup questions.
+        if stage1_result.get("intent") != "statute_lookup":
+            final_answer = scrub_statute_numbers_from_chat_answer(final_answer or "")
         display_sources = self._build_groq_display_sources(
             question=question,
             answer=final_answer,

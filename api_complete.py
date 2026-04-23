@@ -16,11 +16,6 @@ from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict
 import uvicorn
 import sys
-<<<<<<< HEAD
-import os
-from pathlib import Path
-=======
->>>>>>> f28ad62 (My local changes before pulling)
 import shutil
 import re
 import requests
@@ -36,16 +31,6 @@ except Exception:
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
-<<<<<<< HEAD
-from two_stage_pipeline import TwoStagePipeline
-
-try:
-    from pipeline_trace import configure_pipeline_logging
-
-    configure_pipeline_logging()
-except Exception:
-    pass
-=======
 # Try to import AI pipeline - make it optional
 try:
     from two_stage_pipeline import TwoStagePipeline
@@ -56,7 +41,13 @@ except ImportError as e:
     AI_PIPELINE_AVAILABLE = False
     TwoStagePipeline = None
 
->>>>>>> f28ad62 (My local changes before pulling)
+try:
+    from pipeline_trace import configure_pipeline_logging
+
+    configure_pipeline_logging()
+except Exception:
+    pass
+
 try:
     from three_stage_pipeline import ThreeStagePipeline
     THREE_STAGE_AVAILABLE = True
@@ -187,6 +178,45 @@ try:
 except Exception as e:
     print(f"⚠️  Security utilities not available: {e}")
     SECURITY_AVAILABLE = False
+    print("   Falling back to development-safe auth stubs (admin endpoints are unprotected).")
+
+    # Fallback helpers to keep the API bootable when optional auth deps are missing.
+    def sanitize_html(value):
+        return value
+
+    def sanitize_dict(data):
+        return data
+
+    def create_access_token(*args, **kwargs):
+        return "dev-token"
+
+    def create_user_token_response(user_data, user_type):
+        return {
+            "success": True,
+            "token": "dev-token",
+            "user": user_data,
+            "userType": user_type,
+            "expires_in": 3600,
+        }
+
+    async def get_current_user():
+        return {"id": "dev-user", "role": "admin", "userType": "admin"}
+
+    def require_role(_role):
+        async def _dependency():
+            return {"id": "dev-user", "role": "admin", "userType": "admin"}
+        return _dependency
+
+    def require_any_role(_roles):
+        async def _dependency():
+            return {"id": "dev-user", "role": "admin", "userType": "admin"}
+        return _dependency
+
+    def verify_ownership(*_args, **_kwargs):
+        return True
+
+    def verify_ownership_or_admin(*_args, **_kwargs):
+        return True
 
 # Initialize components
 print("Initializing API components...")
@@ -197,26 +227,13 @@ question_normalizer = None
 case_law_verifier = None
 
 try:
-<<<<<<< HEAD
-    # Prefer fast two-stage mode by default; opt into three-stage via env flag.
-    enable_three_stage = os.getenv("ENABLE_THREE_STAGE_PIPELINE", "false").lower() == "true"
-
-    # Try three-stage pipeline only when explicitly enabled.
-    if THREE_STAGE_AVAILABLE and enable_three_stage:
-        try:
-            pipeline = ThreeStagePipeline(
-                peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
-                formatter_type="groq",
-                formatter_api_key=None  # Will use from config
-            )
-            print("✅ Using Three-Stage Pipeline (Local Model + RAG + Groq)")
-        except Exception as e:
-            print(f"⚠️  Three-stage pipeline failed, using two-stage: {e}")
-=======
     # Initialize AI pipeline only if available
     if AI_PIPELINE_AVAILABLE:
-        # Try three-stage pipeline first (better quality)
-        if THREE_STAGE_AVAILABLE:
+        # Prefer fast two-stage mode by default; opt into three-stage via env flag.
+        enable_three_stage = os.getenv("ENABLE_THREE_STAGE_PIPELINE", "false").lower() == "true"
+
+        # Try three-stage pipeline only when explicitly enabled.
+        if THREE_STAGE_AVAILABLE and enable_three_stage:
             try:
                 pipeline = ThreeStagePipeline(
                     peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
@@ -231,28 +248,16 @@ try:
                     formatter_type="groq",
                     formatter_api_key=None  # Will use from config
                 )
-                print("✅ Using Two-Stage Pipeline (Local Model + RAG)")
+                print("✅ Using Two-Stage Pipeline (Local Model + RAG) [fallback mode]")
         else:
->>>>>>> f28ad62 (My local changes before pulling)
             pipeline = TwoStagePipeline(
                 peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
                 formatter_type="groq",
                 formatter_api_key=None  # Will use from config
             )
-            print("✅ Using Two-Stage Pipeline (Local Model + RAG)")
+            mode_label = "forced fast mode (default)" if not enable_three_stage else "fallback mode"
+            print(f"✅ Using Two-Stage Pipeline (Local Model + RAG) [{mode_label}]")
     else:
-<<<<<<< HEAD
-        pipeline = TwoStagePipeline(
-            peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
-            formatter_type="groq",
-            formatter_api_key=None  # Will use from config
-        )
-        mode_label = "forced fast mode (default)" if not enable_three_stage else "fallback mode"
-        print(f"✅ Using Two-Stage Pipeline (Local Model + RAG) [{mode_label}]")
-    risk_analyzer = LegalRiskAnalyzer()
-    case_predictor = CasePredictor()
-    advanced_analyzer = AdvancedCaseAnalyzer()
-=======
         pipeline = None
         print("⚠️  AI Pipeline disabled (PyTorch not available)")
 
@@ -260,7 +265,6 @@ try:
     risk_analyzer = LegalRiskAnalyzer() if RISK_ANALYZER_AVAILABLE else None
     case_predictor = CasePredictor() if CASE_PREDICTOR_AVAILABLE else None
     advanced_analyzer = AdvancedCaseAnalyzer() if ADVANCED_ANALYZER_AVAILABLE else None
->>>>>>> f28ad62 (My local changes before pulling)
     
     # Initialize document features if available
     document_analyzer = None
@@ -313,6 +317,36 @@ class QuestionRequest(BaseModel):
     question: str
     # Groq formatter is on by default for best final answer quality.
     use_formatter: bool = True
+    history: List[Dict[str, str]] = Field(default_factory=list)
+    session_id: Optional[str] = ""
+    user_id: Optional[str] = ""
+    user_type: Optional[str] = ""
+
+
+def _should_show_sources_for_question(question: str, references: List[str]) -> bool:
+    """Show source chips only when they add clear value for this query type."""
+    if not references:
+        return False
+    q = (question or "").lower()
+    source_intent_signals = [
+        "section", "article", "citation", "cite", "source", "reference", "precedent",
+        "case law", "under what law", "which law", "legal basis"
+    ]
+    return any(sig in q for sig in source_intent_signals)
+
+
+def _is_followup_question(question: str) -> bool:
+    q = (question or "").strip().lower()
+    if not q:
+        return False
+    followup_starts = (
+        "more", "also", "what else", "can you", "and", "then", "further",
+        "elaborate", "expand", "next", "another", "give some more"
+    )
+    word_count = len(re.findall(r"\w+", q))
+    if word_count <= 7:
+        return True
+    return any(q.startswith(prefix) for prefix in followup_starts)
 
 
 def _is_low_quality_answer(answer: str) -> bool:
@@ -352,6 +386,41 @@ def _is_low_quality_answer(answer: str) -> bool:
         return True
 
     return False
+
+
+def _build_universal_fallback_answer(question: str, intent: str = "general") -> str:
+    """
+    Robust last-line fallback for any prompt type.
+    Keeps responses useful, safe, and non-hallucinatory when model confidence is low.
+    """
+    q = (question or "").strip()
+    ql = q.lower()
+
+    if not q:
+        return (
+            "Please share your legal question in one or two lines, and include any key facts "
+            "(what happened, when, where, and what action has already been taken)."
+        )
+
+    if intent == "statute_lookup" or "section" in ql:
+        return (
+            "I can explain this section, but I need a precise target to avoid wrong guidance. "
+            "Please provide the exact format, for example: 'Section 302 PPC' or 'Section 154 CrPC'. "
+            "If you are unsure of PPC vs CrPC, I can infer it from your facts if you share a short scenario."
+        )
+
+    if any(k in ql for k in ["bail", "fir", "arrest", "remand", "police", "case"]):
+        return (
+            "I can help with this. To give a reliable answer, please share: "
+            "1) city/court (if known), 2) FIR status, 3) arrest/custody status, "
+            "4) exact allegation/section (if available), and 5) your immediate goal (bail, FIR, quashment, defense strategy)."
+        )
+
+    return (
+        "I can assist with this legal issue. Please share a bit more context so the guidance is accurate: "
+        "what happened, who is involved, current stage (pre-FIR/FIR/investigation/trial), and what outcome you want. "
+        "I will then give focused legal options and next steps."
+    )
 
 
 def _is_false_fir_urgent_question(question: str) -> bool:
@@ -617,6 +686,20 @@ class CreateLawyerClientCaseRequest(BaseModel):
     outstandingAmount: Optional[float] = 0
     notes: Optional[str] = ""
 
+def _is_domestic_abuse_query(question: str) -> bool:
+    """
+    Critical safeguard: never hard-refuse mixed family + abuse questions.
+    These users still need criminal-law safety guidance (FIR, threats, assault, protection).
+    """
+    q = (question or "").lower()
+    abuse_signals = [
+        "abuse", "abusive", "domestic violence", "violence at home", "beating",
+        "hit me", "hits me", "threat", "threaten", "harass", "harassment",
+        "assault", "hurt me"
+    ]
+    family_signals = ["divorce", "khula", "talaq", "nikah", "husband", "wife", "marriage"]
+    return any(sig in q for sig in abuse_signals) and any(sig in q for sig in family_signals)
+
 # Health Check
 @app.get("/")
 async def root():
@@ -674,12 +757,22 @@ async def chat(request: QuestionRequest):
                 normalized_question = normalization['normalized']
             except Exception as e:
                 print(f"Warning: Question normalization error: {e}")
+
+        is_domestic_abuse_case = _is_domestic_abuse_query(normalized_question)
+        if is_domestic_abuse_case:
+            # Keep the user query in-scope and guide model toward criminal-law remedies first.
+            normalized_question = (
+                normalized_question
+                + "\n\nPlease prioritize Pakistani criminal-law protection options "
+                  "(FIR, assault/harassment remedies, protection process, immediate safety steps) "
+                  "and clearly separate any family-law divorce track as secondary."
+            )
         
         # Step 2: Safety check
         if safety_guard:
             try:
                 safety_check = safety_guard.check_question(normalized_question)
-                if safety_check.get('should_refuse', False):
+                if safety_check.get('should_refuse', False) and not is_domestic_abuse_case:
                     return {
                         "question": original_question,
                         "answer": safety_check.get('suggested_response', "I cannot answer this question."),
@@ -703,7 +796,7 @@ async def chat(request: QuestionRequest):
         if domain_classifier:
             try:
                 classification = domain_classifier.classify(normalized_question)
-                if not classification.get('in_scope', True):
+                if not classification.get('in_scope', True) and not is_domestic_abuse_case:
                     refusal_msg = domain_classifier.get_refusal_message(normalized_question)
                     return {
                         "question": original_question,
@@ -783,9 +876,113 @@ Please ask me about any specific legal concern you have. I can also help with do
                 "is_greeting": True
             }
         
-        # Step 4: Generate answer
+        # Step 4: Build conversational context (multi-turn memory: client + DB)
+        contextual_question = normalized_question
+        db_history: List[Dict[str, str]] = []
+        if DATABASE_AVAILABLE and db_repo and request.session_id:
+            try:
+                db_history = db_repo.list_recent_chat_messages(
+                    session_id=request.session_id,
+                    limit=12,
+                )
+            except Exception as e:
+                print(f"Warning: DB chat history read error: {e}")
+
+        merged_history: List[Dict[str, str]] = []
+        if db_history:
+            for item in db_history:
+                role = str(item.get("role", "")).strip().lower()
+                content = str(item.get("content", "")).strip()
+                if role in ("user", "assistant") and content:
+                    merged_history.append({"role": role, "content": content})
+
+        if request.history:
+            for item in request.history[-8:]:
+                if not isinstance(item, dict):
+                    continue
+                role = str(item.get("role", "")).strip().lower()
+                content = str(item.get("content", "")).strip()
+                if role in ("user", "assistant") and content:
+                    merged_history.append({"role": role, "content": content})
+
+        # Deduplicate simple repeated turns while preserving order.
+        dedup_history: List[Dict[str, str]] = []
+        seen_turns = set()
+        for item in merged_history:
+            key = (item["role"], item["content"])
+            if key in seen_turns:
+                continue
+            seen_turns.add(key)
+            dedup_history.append(item)
+        merged_history = dedup_history[-12:]
+
+        is_followup = _is_followup_question(normalized_question)
+
+        if merged_history and is_followup:
+            try:
+                turns = []
+                for item in merged_history:
+                    if not isinstance(item, dict):
+                        continue
+                    role = str(item.get("role", "")).strip().lower()
+                    content = str(item.get("content", "")).strip()
+                    if role not in ("user", "assistant") or not content:
+                        continue
+                    speaker = "User" if role == "user" else "Assistant"
+                    turns.append(f"{speaker}: {content}")
+                if turns:
+                    history_block = "\n".join(turns)
+                    contextual_question = (
+                        "Use this conversation context to answer the latest user question naturally.\n"
+                        "Do not repeat old answers unless relevant.\n\n"
+                        f"Conversation history:\n{history_block}\n\n"
+                        f"Latest user question:\n{normalized_question}"
+                    )
+            except Exception as e:
+                print(f"Warning: history context build error: {e}")
+
+        # Follow-up anchor: for short/continuation prompts, force topic continuity with
+        # the latest substantive user question to prevent drift into unrelated subjects.
+        try:
+            latest_prior_user_question = ""
+            for item in reversed(merged_history):
+                if item.get("role") != "user":
+                    continue
+                content = str(item.get("content", "")).strip()
+                if not content:
+                    continue
+                # skip exact duplicate of current user text
+                if content.lower() == normalized_question.strip().lower():
+                    continue
+                latest_prior_user_question = content
+                break
+
+            if is_followup and latest_prior_user_question:
+                contextual_question = (
+                    "This is a follow-up to the previous user topic. Keep the same legal subject.\n\n"
+                    f"Previous user question/topic:\n{latest_prior_user_question}\n\n"
+                    f"Current follow-up request:\n{normalized_question}\n\n"
+                    "Provide additional, non-repetitive strategy points strictly for the same topic."
+                )
+        except Exception as e:
+            print(f"Warning: follow-up anchor error: {e}")
+
+        # Persist incoming user message for cross-refresh/session memory.
+        if DATABASE_AVAILABLE and db_repo and request.session_id and original_question.strip():
+            try:
+                db_repo.append_chat_message(
+                    session_id=request.session_id,
+                    role="user",
+                    content=original_question.strip(),
+                    user_id=request.user_id or None,
+                    user_type=request.user_type or None,
+                )
+            except Exception as e:
+                print(f"Warning: DB chat message write error (user): {e}")
+
+        # Step 5: Generate answer
         result = pipeline.generate_answer(
-            normalized_question,
+            contextual_question,
             use_formatter=request.use_formatter
         )
         
@@ -802,7 +999,7 @@ Please ask me about any specific legal concern you have. I can also help with do
         if (not request.use_formatter) and _is_low_quality_answer(result.get("answer", "")):
             try:
                 retry_result = pipeline.generate_answer(
-                    normalized_question,
+                    contextual_question,
                     use_formatter=True
                 )
                 if retry_result.get("answer"):
@@ -818,7 +1015,7 @@ Please ask me about any specific legal concern you have. I can also help with do
             except Exception as e:
                 print(f"Warning: formatter retry failed: {e}")
 
-        # Step 5: Verify case citations
+        # Step 6: Verify case citations
         cleaned_answer = result['answer']
         citation_warnings = []
         if case_law_verifier:
@@ -837,7 +1034,7 @@ Please ask me about any specific legal concern you have. I can also help with do
             except Exception as e:
                 print(f"Warning: Citation verification error: {e}")
         
-        # Step 6: Validate answer
+        # Step 7: Validate answer
         validation = None
         validation_warnings = []
         if validator:
@@ -854,6 +1051,7 @@ Please ask me about any specific legal concern you have. I can also help with do
         # Ensure cleaned_answer is used (fix for citation removal)
         final_answer = cleaned_answer if cleaned_answer else result.get('answer', '')
         structured_answer = result.get("structured_answer")
+        intent = result.get("intent", "general")
         
         # Keep grounded references for internal validation/guardrails.
         filtered_references = []
@@ -935,12 +1133,22 @@ Please ask me about any specific legal concern you have. I can also help with do
                 "message": "Generated answer introduced ungrounded section references; reverted to grounded extractive answer."
             })
 
+        # Universal robustness guard: for weak/uncertain output, provide a clear and useful fallback
+        # rather than returning low-quality or drifting text.
+        if _is_low_quality_answer(final_answer):
+            final_answer = _build_universal_fallback_answer(original_question, intent)
+            # Low-quality fallback should not show misleading source chips.
+            frontend_references = []
+
         try:
             from pipeline_trace import scrub_statute_numbers_from_chat_answer
-
-            final_answer = scrub_statute_numbers_from_chat_answer(final_answer or "")
+            if result.get("intent") != "statute_lookup":
+                final_answer = scrub_statute_numbers_from_chat_answer(final_answer or "")
         except Exception:
             pass
+
+        if not _should_show_sources_for_question(original_question, frontend_references):
+            frontend_references = []
 
         response = {
             "question": original_question,
@@ -954,7 +1162,7 @@ Please ask me about any specific legal concern you have. I can also help with do
             "stage3_time": round(result.get('stage3_time', 0), 2) if 'stage3_time' in result else 0,
             "formatted": result.get('formatted', False),
             "reasoned": result.get("reasoned", False),
-            "intent": result.get("intent", "general"),
+            "intent": intent,
             "confidence": result.get("confidence", "medium"),
             "structured_answer": structured_answer,
             "model_sources": {
@@ -975,6 +1183,19 @@ Please ask me about any specific legal concern you have. I can also help with do
         
         if citation_warnings:
             response['citation_warnings'] = citation_warnings
+
+        # Persist assistant reply for future context continuity.
+        if DATABASE_AVAILABLE and db_repo and request.session_id and final_answer.strip():
+            try:
+                db_repo.append_chat_message(
+                    session_id=request.session_id,
+                    role="assistant",
+                    content=final_answer.strip(),
+                    user_id=request.user_id or None,
+                    user_type=request.user_type or None,
+                )
+            except Exception as e:
+                print(f"Warning: DB chat message write error (assistant): {e}")
         
         return response
     except Exception as e:
@@ -2841,7 +3062,7 @@ async def analyze_and_generate(request: AnalyzeAndGenerateRequest):
 # ============================================================
 
 @app.get("/api/admin/dashboard")
-async def get_admin_dashboard(current_user: dict = Depends(require_role("admin"))):):
+async def get_admin_dashboard(current_user: dict = Depends(require_role("admin"))):
     """
     Get dashboard data for admin users
     Returns system metrics, recent activity, and system status
@@ -3136,11 +3357,6 @@ async def login(request: LoginRequest):
                 "status": user["status"],
             }
 
-<<<<<<< HEAD
-        raise HTTPException(status_code=400, detail="Unsupported userType")
-    except HTTPException:
-        raise
-=======
             # Create JWT token for citizen
             return create_user_token_response(user_data, "citizen")
 
@@ -3153,7 +3369,6 @@ async def login(request: LoginRequest):
     except ValueError as e:
         # Expected validation errors
         raise HTTPException(status_code=401, detail="Invalid email or password")
->>>>>>> f28ad62 (My local changes before pulling)
     except Exception as e:
         # Unexpected errors - log and return generic error
         import traceback
@@ -3355,7 +3570,7 @@ async def create_user(
         raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
 
 @app.put("/api/admin/users/{user_id}")
-async def update_user(user_id: str, updates: Dict, current_user: dict = Depends(require_role("admin")))::
+async def update_user(user_id: str, updates: Dict, current_user: dict = Depends(require_role("admin"))):
     """Update user information"""
     try:
         updated = db_repo.update_citizen_by_id(user_id, updates)
@@ -3377,7 +3592,7 @@ async def update_user(user_id: str, updates: Dict, current_user: dict = Depends(
         raise HTTPException(status_code=500, detail=f"Error updating user: {str(e)}")
 
 @app.delete("/api/admin/users/{user_id}")
-async def delete_user(user_id: str, current_user: dict = Depends(require_role("admin")))::
+async def delete_user(user_id: str, current_user: dict = Depends(require_role("admin"))):
     """Delete a user"""
     try:
         if db_repo.delete_citizen_by_id(user_id):
@@ -3398,7 +3613,7 @@ async def delete_user(user_id: str, current_user: dict = Depends(require_role("a
 # ============================================================
 
 @app.get("/api/admin/lawyers")
-async def get_admin_lawyers(current_user: dict = Depends(require_role("admin")))::
+async def get_admin_lawyers(current_user: dict = Depends(require_role("admin"))):
     """Get all lawyers for admin management"""
     try:
         lawyers = db_repo.list_all_lawyers_public()
@@ -3437,7 +3652,7 @@ class UpdateLawyerRequest(BaseModel):
     verificationStatus: Optional[str] = None
 
 @app.post("/api/admin/lawyers")
-async def create_lawyer(request: CreateLawyerRequest, current_user: dict = Depends(require_role("admin")))::
+async def create_lawyer(request: CreateLawyerRequest, current_user: dict = Depends(require_role("admin"))):
     """Create a new lawyer (admin only)"""
     try:
         from datetime import datetime
@@ -3477,7 +3692,7 @@ async def create_lawyer(request: CreateLawyerRequest, current_user: dict = Depen
         raise HTTPException(status_code=500, detail=f"Error creating lawyer: {str(e)}")
 
 @app.put("/api/admin/lawyers/{lawyer_id}/verify")
-async def verify_lawyer(lawyer_id: str, status: str = "Verified", current_user: dict = Depends(require_role("admin")))::
+async def verify_lawyer(lawyer_id: str, status: str = "Verified", current_user: dict = Depends(require_role("admin"))):
     """Verify or reject a lawyer"""
     try:
         updated = db_repo.set_lawyer_verification_status(lawyer_id, status)
@@ -3493,7 +3708,7 @@ async def verify_lawyer(lawyer_id: str, status: str = "Verified", current_user: 
         raise HTTPException(status_code=500, detail=f"Error verifying lawyer: {str(e)}")
 
 @app.put("/api/admin/lawyers/{lawyer_id}")
-async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest, current_user: dict = Depends(require_role("admin")))::
+async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest, current_user: dict = Depends(require_role("admin"))):
     """Update lawyer profile fields"""
     try:
         update_data = request.dict(exclude_unset=True)
@@ -3514,7 +3729,7 @@ async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest, current_us
         raise HTTPException(status_code=500, detail=f"Error updating lawyer: {str(e)}")
 
 @app.delete("/api/admin/lawyers/{lawyer_id}")
-async def delete_lawyer(lawyer_id: str, current_user: dict = Depends(require_role("admin")))::
+async def delete_lawyer(lawyer_id: str, current_user: dict = Depends(require_role("admin"))):
     """Delete a lawyer"""
     try:
         if not db_repo.delete_lawyer_by_id(lawyer_id):
@@ -3529,7 +3744,7 @@ async def delete_lawyer(lawyer_id: str, current_user: dict = Depends(require_rol
         raise HTTPException(status_code=500, detail=f"Error deleting lawyer: {str(e)}")
 
 @app.post("/api/admin/lawyers/{lawyer_id}/image")
-async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...), current_user: dict = Depends(require_role("admin")))::
+async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...), current_user: dict = Depends(require_role("admin"))):
     """Upload and store profile image for a lawyer"""
     try:
         if not db_repo.lawyer_exists(lawyer_id):

@@ -33,6 +33,7 @@ export default function LoginPage() {
       }
     } catch {
       localStorage.removeItem("user")
+      localStorage.removeItem("token")
     }
   }, [router, redirectPath])
 
@@ -50,6 +51,10 @@ export default function LoginPage() {
         if (response.success) {
           // Store user info in localStorage (in production, use proper auth)
           localStorage.setItem("user", JSON.stringify(response.user))
+          const accessToken = response.access_token || response.token
+          if (accessToken) {
+            localStorage.setItem("token", accessToken)
+          }
           const roleFromBackend = response.user?.userType as "citizen" | "lawyer" | "admin" | undefined
           const targetRole = roleFromBackend || userType
           if (redirectPath && redirectPath.startsWith("/")) {

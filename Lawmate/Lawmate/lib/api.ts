@@ -3,6 +3,16 @@ const BASE_URL =
 
 type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
+function getAuthHeaders(): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {}
@@ -16,6 +26,7 @@ async function request<T>(
       ...options,
       headers: {
         "Content-Type": "application/json",
+        ...getAuthHeaders(),
         ...(options.headers || {}),
       },
     });
@@ -36,6 +47,12 @@ async function request<T>(
     console.log(`✅ API Success: Data received for ${url}`, data);
     return data;
   } catch (error) {
+    if (error instanceof TypeError) {
+      console.error(`❌ Network error calling ${url}. Backend may be down or restarting.`);
+      throw new Error(
+        "Network error: unable to reach backend. Please ensure API server is running on http://localhost:8000."
+      );
+    }
     console.error(`❌ API Request Failed for ${url}:`, error);
     throw error;
   }
@@ -50,6 +67,9 @@ async function requestMultipart<T>(
   const res = await fetch(url, {
     method,
     body: formData,
+    headers: {
+      ...getAuthHeaders(),
+    },
   });
 
   if (!res.ok) {

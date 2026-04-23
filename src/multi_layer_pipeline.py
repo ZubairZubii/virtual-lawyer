@@ -131,7 +131,9 @@ class MultiLayerPipeline:
                 f"PPC corruption provisions prevention of corruption act criminal misconduct"
             )
         if intent == "statute_lookup":
-            return f"{base} exact section text PPC CrPC ingredients punishment bailable cognizable"
+            section, code = self._extract_target_section(q)
+            target = f"section {section} {code.upper()} " if section else ""
+            return f"{base} {target}exact section text ingredients punishment bailable cognizable"
         if intent == "advice":
             return f"{base} practical steps legal remedies FIR bail rights immediate actions CrPC"
         if intent == "penalty":
@@ -290,8 +292,23 @@ class MultiLayerPipeline:
         # fallback for "Explain section 154 of CrPC" style
         m2 = re.search(r"section\s+(\d+[a-z]?)", q)
         if m2:
+            sec = m2.group(1)
             code = "crpc" if "crpc" in q else ("ppc" if "ppc" in q else "")
-            return m2.group(1), code
+            if not code:
+                # Natural-language defaulting: penal sections (e.g., 302) are usually PPC.
+                sec_match = re.match(r"\d+", sec)
+                sec_num = int(sec_match.group(0)) if sec_match else 0
+                procedural_markers = [
+                    "bail", "fir", "arrest", "remand", "investigation", "procedure",
+                    "magistrate", "warrant", "custody", "inquiry",
+                ]
+                if any(marker in q for marker in procedural_markers):
+                    code = "crpc"
+                elif sec_num >= 200:
+                    code = "ppc"
+                else:
+                    code = "ppc"
+            return sec, code
         return "", ""
 
     def _extract_section_from_doc(self, doc: Dict) -> str:
@@ -683,7 +700,7 @@ class MultiLayerPipeline:
         if not retrieved_docs:
             if self._is_private_defence_homicide_scenario(q):
                 answer = (
-                    "Short answer: this can fall under lawful self-defence rather than ordinary murder if the danger was immediate and serious, "
+                    "This can fall under lawful self-defence rather than ordinary murder if the danger was immediate and serious, "
                     "and the response was limited to that danger.\n\n"
                     "If force went beyond necessity after danger had passed, homicide liability risk increases.\n\n"
                     "Retrieval gap: core law not fully captured in sources. Re-run with targeted private-defence terms and verify with counsel."
@@ -994,10 +1011,9 @@ class MultiLayerPipeline:
             retrieval_gap = ppc_refs == 0
 
             answer = (
-                "Short answer:\n"
                 "On your facts, this is more likely to be treated as lawful self-defence than ordinary murder, "
                 "but the final legal label depends on whether force stayed within lawful limits.\n\n"
-                "Reasoning (Rule -> Apply -> Conclusion):\n"
+                "How courts typically analyze this:\n"
                 "- Rule: defensive force can be legally protected when facing immediate serious threat.\n"
                 f"- Apply: threat level={fact_map['threat_level']}, immediacy={fact_map['immediacy']}, defensive_action={fact_map['defensive_action']}, death_caused={fact_map['death_caused']}.\n"
                 "- Conclusion: if danger was immediate and serious, defence justification is stronger; if force continued after danger ended, homicide liability risk rises.\n\n"
@@ -1110,7 +1126,6 @@ class MultiLayerPipeline:
             law_bullets = "\n".join(f"{i}. {ln}" for i, ln in enumerate(lines[:3], 1)) if lines else "- Use the Sources list for the exact sections retrieved."
 
             answer = (
-                "Short answer (plain words):\n\n"
                 "Whether this entry and seizure was lawful under CrPC depends on whether a valid legal basis existed at that moment — for example a search warrant from a competent authority, or another narrow statutory route described in the CrPC provisions your sources mention (such as powers during investigation or Magistrate-led search routes).\n\n"
                 "From the facts you gave — no search warrant, seizure of phones and documents, and no written authorization shown — that pattern usually raises a serious red flag unless police can later prove a recognized exception on evidence. Only a court can finally decide after full facts.\n\n"
                 "What the retrieved CrPC material is pointing to:\n"
@@ -1214,7 +1229,7 @@ class MultiLayerPipeline:
 
         confidence = "high" if len(legal_basis) >= 2 else ("medium" if len(legal_basis) == 1 else "low")
 
-        direct_opening = "Here is a plain-language read of what the retrieved Pakistani criminal-law material supports:"
+        direct_opening = "Based on the retrieved legal material, these points are most relevant:"
         answer = (
             f"{direct_opening}\n\n"
             + ("- " + application_lines[0] + "\n" if application_lines else "- I found limited grounded detail for this exact phrasing.\n")
@@ -1226,8 +1241,8 @@ class MultiLayerPipeline:
                 "- Confirm facts in writing, then have counsel map the right forum (Magistrate complaint, return applications, trial objections, or other routes supported by your papers).\n"
             )
         if reasoning_points:
-            answer += "\nWhy this matters:\n" + "\n".join(f"- {p}" for p in reasoning_points[:2]) + "\n"
-        answer += f"\nWhat you should do next:\n- {conclusion.replace('Conclusion: ', '')}\n"
+            answer += "\n" + "\n".join(f"- {p}" for p in reasoning_points[:2]) + "\n"
+        answer += f"\n- {conclusion.replace('Conclusion: ', '')}\n"
 
         structured = {
             "issue": q,
@@ -1382,7 +1397,8 @@ Now provide your answer following the format above, using the context provided:"
         
         if self.rag:
             # Keep retrieval lean for lower latency in production chat.
-            retrieved_docs = self.rag.retrieve(retrieval_query, top_k=3)
+            top_k = 12 if intent == "statute_lookup" else 3
+            retrieved_docs = self.rag.retrieve(retrieval_query, top_k=top_k)
             retrieved_docs = self._filter_relevant_chunks(question, retrieved_docs)
             retrieved_docs = self._apply_scenario_anchor_filter(question, retrieved_docs)
             context, references = self.rag.format_context_with_references(retrieved_docs, max_length=1500)

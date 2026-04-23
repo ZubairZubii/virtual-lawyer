@@ -33,6 +33,8 @@ def init_schema() -> None:
     get_collection("admin_users").create_index("email", unique=True)
     get_collection("app_settings").create_index("key", unique=True)
     get_collection("lawyer_client_rows").create_index([("lawyer_id", 1), ("client_id", 1)])
+    get_collection("chat_messages").create_index([("session_id", 1), ("created_at", -1)])
+    get_collection("chat_messages").create_index([("user_id", 1), ("created_at", -1)])
 
 
 def hash_password(plain: str) -> str:
@@ -441,3 +443,47 @@ def find_stored_case_by_id(case_id: str) -> Optional[Dict[str, Any]]:
         return None
     payload = row.get("payload")
     return dict(payload) if isinstance(payload, dict) else None
+
+
+# --- Chat messages ---
+def append_chat_message(
+    *,
+    session_id: str,
+    role: str,
+    content: str,
+    user_id: Optional[str] = None,
+    user_type: Optional[str] = None,
+) -> None:
+    if not session_id or not role or not content:
+        return
+
+    def _write() -> None:
+        get_collection("chat_messages").insert_one(
+            {
+                "session_id": str(session_id),
+                "role": str(role),
+                "content": str(content),
+                "user_id": str(user_id or ""),
+                "user_type": str(user_type or ""),
+                "created_at": time.time(),
+            }
+        )
+
+    _run_with_mongo_retry(_write)
+
+
+def list_recent_chat_messages(
+    *,
+    session_id: str,
+    limit: int = 12,
+) -> List[Dict[str, Any]]:
+    if not session_id:
+        return []
+    rows = get_collection("chat_messages").find(
+        {"session_id": str(session_id)},
+        {"_id": 0, "role": 1, "content": 1, "created_at": 1},
+    ).sort("created_at", -1).limit(max(1, int(limit)))
+    # Return oldest -> newest for prompt readability.
+    out = list(rows)
+    out.reverse()
+    return [dict(r) for r in out]

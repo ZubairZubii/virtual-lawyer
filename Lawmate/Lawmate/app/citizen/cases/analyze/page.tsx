@@ -101,9 +101,10 @@ export default function CaseAnalysisPage() {
     }
   }
 
-  const handleAnalyze = async () => {
-    if (!onboardingProfile) {
-      setError("Please click 'Prepare Analysis Inputs' first.")
+  const handleAnalyze = async (preparedProfile?: OnboardingExtractionResponse) => {
+    const effectiveProfile = preparedProfile || onboardingProfile
+    if (!effectiveProfile) {
+      setError("Unable to prepare analysis inputs. Please try again.")
       return
     }
     if (!keyQuestion.trim() || !desiredOutcome.trim()) {
@@ -126,7 +127,7 @@ export default function CaseAnalysisPage() {
         documentsApplicability === "not_applicable" ? "not_applicable" : availableDocuments
 
       const response = await analyzeCitizenCaseQuick({
-        case_description: `${caseDescription}\n\nCase Summary: ${caseSummary || onboardingProfile.one_paragraph_summary}`,
+        case_description: `${caseDescription}\n\nCase Summary: ${caseSummary || effectiveProfile.one_paragraph_summary}`,
         urgency,
         city,
         hearing_court: hearingCourt,
@@ -149,6 +150,37 @@ export default function CaseAnalysisPage() {
       setError(err.message || "Analysis failed. Please try again.")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleRunFullAnalysis = async () => {
+    if (caseDescription.trim().length < 20) return
+
+    setError(null)
+    setResults(null)
+    setOnboardingLoading(true)
+
+    try {
+      const prepared = await extractOnboardingCaseProfile({
+        case_description: caseDescription,
+        city,
+        case_type: caseType,
+        urgency,
+        custody_status: custodyStatus,
+      })
+
+      setOnboardingProfile(prepared)
+      if (!caseSummary) setCaseSummary(prepared.one_paragraph_summary)
+      if (!keyQuestion) setKeyQuestion(`Analyze ${caseType || "this matter"} and suggest strongest legal strategy.`)
+      if (!desiredOutcome) setDesiredOutcome("Clear legal strategy, immediate action plan, and practical remedy path.")
+      setOnboardingLoading(false)
+
+      await handleAnalyze(prepared)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to run analysis."
+      setError(message)
+    } finally {
+      setOnboardingLoading(false)
     }
   }
 
@@ -419,46 +451,31 @@ export default function CaseAnalysisPage() {
               <Card className="p-6 border border-border/50">
                 <h2 className="text-xl font-bold mb-4">Run Analysis</h2>
                 <div className="space-y-4">
-                  {!onboardingProfile ? (
-                    <Button
-                      onClick={handlePrepareAnalysis}
-                      disabled={onboardingLoading || caseDescription.trim().length < 20}
-                      className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground"
-                    >
-                      {onboardingLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Preparing...
-                        </>
-                      ) : (
-                        <>
-                          <Brain className="w-4 h-4 mr-2" />
-                          Prepare Analysis Inputs
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={handleAnalyze}
-                      disabled={loading || caseDescription.trim().length < 20}
-                      className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground mt-6"
-                    >
-                      {loading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <Brain className="w-4 h-4 mr-2" />
-                          Generate Final Analysis
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleRunFullAnalysis}
+                    disabled={onboardingLoading || loading || caseDescription.trim().length < 20}
+                    className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                  >
+                    {onboardingLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Preparing Summary...
+                      </>
+                    ) : loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating Analysis...
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="w-4 h-4 mr-2" />
+                        Generate Summary + Analysis
+                      </>
+                    )}
+                  </Button>
                   {onboardingProfile && (
                     <p className="text-xs text-muted-foreground">
-                      Inputs prepared. Update additional fields if needed, then click "Generate Final Analysis".
+                      Summary was auto-prepared before analysis. You can edit fields and run again anytime.
                     </p>
                   )}
                   <Button
@@ -472,7 +489,7 @@ export default function CaseAnalysisPage() {
                     Reset Prepare Step
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    Step 1 prepares profile from case data. Step 2 runs final analysis with your additional information.
+                    One click now runs both steps: summary preparation and full legal analysis.
                   </p>
                 </div>
               </Card>
@@ -562,7 +579,7 @@ export default function CaseAnalysisPage() {
                 <Card className="p-12 text-center border border-border/50">
                   <Brain className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                   <p className="text-muted-foreground">
-                    Prepare the case first, then generate final analysis with additional details.
+                    Click "Generate Summary + Analysis" to run complete case analysis in one step.
                   </p>
                 </Card>
               )}

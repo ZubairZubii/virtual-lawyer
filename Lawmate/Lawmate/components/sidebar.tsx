@@ -45,6 +45,7 @@ export function Sidebar({ userType }: { userType: "citizen" | "lawyer" | "admin"
   const items = getMenuItems()
   const handleLogout = () => {
     localStorage.removeItem("user")
+    localStorage.removeItem("token")
     router.push("/login")
   }
 

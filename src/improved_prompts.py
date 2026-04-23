@@ -111,14 +111,13 @@ SECTION-SPECIFIC REQUIREMENTS:
     # Add question
     prompt_parts.append(f"\nQUESTION: {question}\n")
     
-    # Add answer format with completeness requirements
+    # Add answer style requirements (dynamic format)
     prompt_parts.append("""
-ANSWER FORMAT (MUST FOLLOW):
-1. **Direct Answer**: Address the exact user question in 2-4 short bullets/sentences.
-   
-2. **Legal Basis**: Mention only relevant sections or precedents found in context.
-   
-3. **Practical Steps**: Give immediate next actions/checklist where relevant.
+ANSWER STYLE:
+- Adapt structure to the question type; do not force fixed headings.
+- If user asks a direct question, answer directly first.
+- Add legal basis and practical steps only where relevant.
+- Use bullets or short paragraphs as needed for clarity.
 
 QUALITY BAR:
 - No repeated filler text.
@@ -175,7 +174,7 @@ def _stage2_scenario_chat_block(question_lower: str) -> str:
     return """
 SCENARIO CHAT MODE (required for this question):
 - Rewrite INITIAL ANSWER into a natural, helpful reply (like a careful lawyer talking to a non-lawyer).
-- Use clear headings. Preferred labels: "Overview", "Key Legal Points", and when relevant "Practical Next Steps".
+- Use structure only when it improves clarity. Do NOT force fixed headings for every answer.
 - Short opening: directly address legality/risk in plain words; say courts decide on full facts where needed.
 - Middle: tight bullets — one idea per line; cite sections only by names already in INITIAL ANSWER, CONTEXT, or REFERENCES (no new numbers).
 - Remedies: give concrete bullet points (Magistrate complaint, return of seized items through procedure, trial-stage objections, constitutional forum only where appropriate). Use standard Pakistan criminal-procedure *types* of relief without inventing citations.
@@ -232,10 +231,12 @@ CORE RULES:
 OUTPUT:
 - Produce the message the user should read. No meta-commentary ("here is your answer").
 - Start with content (no "Certainly!" filler).
-- Do not output a single long paragraph. Use this readable layout:
-  1) "Overview" (1-2 lines)
-  2) "Key Legal Points" (3-6 bullets)
-  3) "Practical Next Steps" (2-5 bullets, when relevant)
+- Adapt format to the question:
+  - Definition/comparison: short direct paragraphs + optional bullets.
+  - Procedure/remedy: concise steps/checklist.
+  - Strategy questions: structured points with priorities.
+  - Follow-up questions: brief direct continuation using prior context.
+- Do not force labels like "Overview / Key Legal Points / Practical Next Steps" unless truly needed.
 
 FORMATTED ANSWER:"""
 

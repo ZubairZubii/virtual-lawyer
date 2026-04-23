@@ -36,6 +36,7 @@ export function AuthGuard({
       const user = JSON.parse(raw) as StoredUser
       if (!user?.userType) {
         localStorage.removeItem("user")
+        localStorage.removeItem("token")
         router.replace(`/login?redirect=${encodeURIComponent(pathname || `/${requiredRole}`)}`)
         return
       }
@@ -48,6 +49,7 @@ export function AuthGuard({
       setChecking(false)
     } catch {
       localStorage.removeItem("user")
+      localStorage.removeItem("token")
       router.replace(`/login?redirect=${encodeURIComponent(pathname || `/${requiredRole}`)}`)
     }
   }, [requiredRole, pathname, router])

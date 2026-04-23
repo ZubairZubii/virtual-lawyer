@@ -76,7 +76,7 @@ class SafetyGuard:
                 print(f"   Warning: Could not load semantic model: {e}")
                 self.semantic_model = None
         
-        # Out-of-scope domains (not Pakistani criminal law)
+        # Non-criminal legal domains (detected for context, not refusal)
         self.out_of_scope_patterns = [
             r'divorce|marriage|nikah|talaq',
             r'immigration|visa|passport',
@@ -100,6 +100,8 @@ class SafetyGuard:
             'conviction', 'sentence', 'punishment',
             'section 302', 'section 497', 'section 154',
             'qatl', 'dacoity', 'rape', 'assault',
+            # Domestic abuse / violence signals should be treated as criminal-law relevant
+            'abuse', 'abusive', 'domestic violence', 'harassment', 'threat', 'threaten',
         ]
     
     def _check_semantic_similarity(self, question: str) -> Tuple[bool, float]:
@@ -162,17 +164,23 @@ class SafetyGuard:
                 'similarity_score': similarity_score
             }
         
-        # Check 3: Out-of-scope domains
+        # Check 3: Non-criminal legal domain detection
         is_criminal_law = any(keyword in question_lower for keyword in self.criminal_law_keywords)
+        has_domestic_abuse_context = any(
+            signal in question_lower
+            for signal in ['abuse', 'abusive', 'domestic violence', 'harass', 'harassment', 'threat', 'assault', 'beating']
+        )
         is_out_of_scope = any(re.search(pattern, question_lower, re.IGNORECASE) for pattern in self.out_of_scope_patterns)
         
-        if is_out_of_scope and not is_criminal_law:
+        # Do not refuse legal questions just because domain is non-criminal.
+        # Keep refusal only for dangerous/illegal-assistance requests.
+        if is_out_of_scope and not is_criminal_law and not has_domestic_abuse_context:
             return {
                 'safe': True,
-                'in_scope': False,
-                'reason': 'out_of_scope',
-                'suggested_response': "I am trained only in Pakistani Criminal Law (PPC, CrPC, and related criminal procedures). Your question appears to be about a different area of law. Please ask questions related to Pakistani criminal law, such as bail, FIR, evidence, trial procedures, or specific PPC/CrPC sections.",
-                'should_refuse': True
+                'in_scope': True,
+                'reason': 'non_criminal_legal_domain',
+                'suggested_response': None,
+                'should_refuse': False
             }
         
         # Check 4: Vague or unclear questions

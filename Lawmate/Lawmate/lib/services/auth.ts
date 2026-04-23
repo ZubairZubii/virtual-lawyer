@@ -27,6 +27,10 @@ export interface AuthResponse {
   success: boolean;
   user: User;
   message: string;
+  token?: string;
+  access_token?: string;
+  token_type?: string;
+  expires_in?: number;
 }
 
 export async function login(request: LoginRequest): Promise<AuthResponse> {
