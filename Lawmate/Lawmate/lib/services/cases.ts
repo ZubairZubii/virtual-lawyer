@@ -85,7 +85,9 @@ export async function getLawyerCases(status?: string): Promise<CasesResponse> {
 }
 
 export async function getCaseDetails(caseId: string): Promise<CaseDetails> {
-  return api.get<CaseDetails>(`/api/cases/${caseId}`);
+  // Case IDs may contain "/" (e.g. "123/2023"), so encode the full ID.
+  const encodedId = encodeURIComponent(caseId);
+  return api.get<CaseDetails>(`/api/cases/${encodedId}`);
 }
 
 export interface CreateCaseRequest {

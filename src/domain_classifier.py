@@ -34,9 +34,23 @@ class LegalDomainClassifier:
                 'patterns': [r'contract.*law', r'commercial.*law']
             },
             'constitutional_law': {
-                'keywords': ['constitutional', 'fundamental rights', 'article 199', 'writ', 'constitutional law'],
+                # Do not use bare "writ" — it matches inside "written" (false constitutional hit).
+                'keywords': [
+                    'constitutional',
+                    'fundamental rights',
+                    'article 199',
+                    'constitutional law',
+                    'writ petition',
+                    'writ of',
+                ],
                 'priority': 7,
-                'patterns': [r'constitutional.*law']
+                'patterns': [
+                    r'constitutional.*law',
+                    r'\bwrit petition\b',
+                    r'\bwrit of\b',
+                    r'\bwrits\b',
+                    r'\bwrit\b',  # word-boundary: does not match inside "written"
+                ],
             },
             'administrative_law': {
                 'keywords': ['administrative', 'government', 'bureaucracy', 'administrative law'],
@@ -66,7 +80,20 @@ class LegalDomainClassifier:
             'crpc': ['crpc', 'criminal procedure', 'code of criminal procedure'],
             'sections': ['section 302', 'section 497', 'section 154', 'section 300', 'section 34', 'section 109'],
             'crimes': ['murder', 'qatl', 'theft', 'robbery', 'dacoity', 'rape', 'assault', 'bail', 'fir'],
-            'procedures': ['arrest', 'remand', 'investigation', 'trial', 'conviction', 'sentence', 'appeal'],
+            'procedures': [
+                'arrest',
+                'remand',
+                'investigation',
+                'trial',
+                'conviction',
+                'sentence',
+                'appeal',
+                'search warrant',
+                'warrant',
+                'seizure',
+                'raid',
+                'police',
+            ],
             'evidence': ['evidence', 'witness', 'ocular', 'medical evidence', 'confession', 'dying declaration'],
         }
     
@@ -78,7 +105,17 @@ class LegalDomainClassifier:
             Dict with 'domain', 'in_scope', 'confidence', 'reason'
         """
         question_lower = question.lower()
-        
+
+        # Explicit statute reference — always in scope for this assistant (CrPC/PPC).
+        if re.search(r'\bcrpc\b', question_lower) or re.search(r'\bppc\b', question_lower):
+            return {
+                'domain': 'pakistani_criminal_law',
+                'in_scope': True,
+                'confidence': 0.95,
+                'reason': 'Question references CrPC or PPC by name',
+                'should_answer': True,
+            }
+
         # STEP 1: Check out-of-scope FIRST (priority-based)
         out_of_scope_domain = None
         out_of_scope_score = 0
@@ -133,8 +170,9 @@ class LegalDomainClassifier:
         greetings = ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening', 
                      'thanks', 'thank you', 'help', 'what can you do', 'what do you do',
                      'who are you', 'introduce yourself', 'how are you', 'how can you help']
-        
-        is_greeting = any(greeting in question_lower for greeting in greetings)
+        # Short tokens must be whole words (e.g. "hi" must not match inside "this").
+        greeting_patterns = [r'\bhi\b', r'\bhey\b'] + [re.escape(g) for g in greetings if g not in ('hi', 'hey')]
+        is_greeting = any(re.search(p, question_lower) for p in greeting_patterns)
         if is_greeting:
             return {
                 'domain': 'pakistani_criminal_law',

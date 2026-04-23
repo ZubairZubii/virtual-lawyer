@@ -12,6 +12,30 @@ import re
 from typing import Dict, Optional, List
 import requests
 from multi_layer_pipeline import MultiLayerPipeline
+from local_reasoning_enhancer import LocalReasoningEnhancer
+
+try:
+    from pipeline_trace import (
+        configure_pipeline_logging,
+        scrub_statute_numbers_from_chat_answer,
+        summarize_references,
+        summarize_retrieved_docs,
+        trace_block,
+    )
+except ImportError:
+    def configure_pipeline_logging():
+        return None
+
+    def scrub_statute_numbers_from_chat_answer(t: str) -> str:
+        return t
+
+    trace_block = None
+
+    def summarize_references(refs):
+        return []
+
+    def summarize_retrieved_docs(docs):
+        return []
 
 # Import config
 import sys
@@ -29,7 +53,31 @@ except ImportError:
         # Groq decommissioned `llama-3.1-70b-versatile`. Use a supported model.
         "formatter_model": "llama-3.3-70b-versatile",
         "stage1": {"max_new_tokens": 150, "temperature": 0.2, "top_k": 3, "context_max_length": 1500},
-        "stage2": {"temperature": 0.3, "max_tokens": 600, "top_p": 0.9}
+        "stage2": {"temperature": 0.3, "max_tokens": 600, "top_p": 0.9},
+        "grounding_guard": {
+            "enabled": os.getenv("ENABLE_GROQ_GROUNDING_GUARD", "true").lower() == "true",
+            "max_tokens": int(os.getenv("GROQ_GROUNDING_GUARD_MAX_TOKENS", "420")),
+            "temperature": float(os.getenv("GROQ_GROUNDING_GUARD_TEMPERATURE", "0.0")),
+            "timeout_s": int(os.getenv("GROQ_GROUNDING_GUARD_TIMEOUT_S", "12")),
+        },
+        "formatter_routing": {
+            "always_on": os.getenv("GROQ_ALWAYS_ON", "true").lower() == "true",
+            "auto_enabled": os.getenv("AUTO_GROQ", "true").lower() == "true",
+            "min_sources_for_skip": int(os.getenv("AUTO_GROQ_MIN_SOURCES_FOR_SKIP", "2")),
+            "long_question_words": int(os.getenv("AUTO_GROQ_LONG_QUESTION_WORDS", "22")),
+        },
+        "reasoner": {
+            "enabled": os.getenv("ENABLE_LOCAL_REASONER", "true").lower() == "true",
+            "model_name": os.getenv("LOCAL_REASONER_MODEL", "Qwen/Qwen2.5-3B-Instruct"),
+            "max_new_tokens": int(os.getenv("LOCAL_REASONER_MAX_NEW_TOKENS", "320")),
+            "temperature": float(os.getenv("LOCAL_REASONER_TEMPERATURE", "0.2")),
+            "top_p": float(os.getenv("LOCAL_REASONER_TOP_P", "0.9")),
+            "groq_enabled": os.getenv("ENABLE_GROQ_REASONER", "true").lower() == "true",
+            "groq_model": os.getenv("GROQ_REASONER_MODEL", "llama-3.3-70b-versatile"),
+            "groq_max_tokens": int(os.getenv("GROQ_REASONER_MAX_TOKENS", "220")),
+            "groq_temperature": float(os.getenv("GROQ_REASONER_TEMPERATURE", "0.15")),
+            "groq_timeout_s": int(os.getenv("GROQ_REASONER_TIMEOUT_S", "18")),
+        },
     }
 
 class TwoStagePipeline:
@@ -56,7 +104,8 @@ class TwoStagePipeline:
         print("=" * 60)
         
         # Stage 1: Your fine-tuned model
-        print("\nStage 1: Loading your fine-tuned model...")
+        stage1_mode = os.getenv("STAGE1_MODE", "extractive").lower()
+        print(f"\nStage 1: Initializing local stage1 pipeline (mode={stage1_mode})...")
         self.stage1_model = MultiLayerPipeline(
             peft_model_path=peft_model_path,
             use_rag=True
@@ -76,10 +125,386 @@ class TwoStagePipeline:
         else:
             self.use_formatter = True
             print(f"Stage 2 ready! Using {formatter_type}")
+
+        # Stage 1.5: Optional local 7B reasoning enhancer
+        reasoner_cfg = PIPELINE_CONFIG.get("reasoner", {})
+        self.reasoner = None
+        self.use_reasoner = bool(reasoner_cfg.get("enabled", False))
+        if self.use_reasoner:
+            try:
+                self.reasoner = LocalReasoningEnhancer(
+                    model_name=reasoner_cfg.get("model_name", "Qwen/Qwen2.5-7B-Instruct"),
+                    max_new_tokens=reasoner_cfg.get("max_new_tokens", 220),
+                    temperature=reasoner_cfg.get("temperature", 0.2),
+                    top_p=reasoner_cfg.get("top_p", 0.9),
+                )
+                self.use_reasoner = self.reasoner.available
+            except Exception as e:
+                print(f"Stage 1.5 disabled due to error: {e}")
+                self.reasoner = None
+                self.use_reasoner = False
+        else:
+            print("Stage 1.5 disabled (ENABLE_LOCAL_REASONER=false)")
         
         print("\n" + "=" * 60)
         print("TWO-STAGE PIPELINE READY")
         print("=" * 60)
+        configure_pipeline_logging()
+
+    def _reason_with_groq(self, draft_answer: str, question: str, context: str, references: list) -> str:
+        """Fast legal reasoning refinement with Groq (Stage 1.5)."""
+        reasoner_cfg = PIPELINE_CONFIG.get("reasoner", {})
+        model_name = reasoner_cfg.get("groq_model", PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile"))
+        max_tokens = int(reasoner_cfg.get("groq_max_tokens", 220))
+        temperature = float(reasoner_cfg.get("groq_temperature", 0.15))
+        timeout_s = int(reasoner_cfg.get("groq_timeout_s", 18))
+
+        refs = []
+        for ref in (references or [])[:5]:
+            if not isinstance(ref, dict):
+                continue
+            label = ref.get("title") or ref.get("case_no") or ref.get("section") or ref.get("type")
+            if label:
+                refs.append(f"- {label}")
+        refs_text = "\n".join(refs) if refs else "- No references provided"
+
+        prompt = f"""You are a Pakistan criminal law reasoning assistant.
+
+Task: Improve the grounded draft answer with concise reasoning and direct conclusion.
+
+Rules:
+1) Use only the draft/context/references provided.
+2) Do not invent section numbers, case citations, or legal facts.
+3) Start with a direct answer sentence.
+4) Apply facts to law clearly (Rule -> Application -> Conclusion).
+5) Keep concise and practical for a non-lawyer.
+6) Do not output legal section labels in the body (sources are shown separately in UI).
+
+Question:
+{question}
+
+Grounded draft:
+{draft_answer}
+
+Context:
+{(context or '')[:1800]}
+
+References:
+{refs_text}
+
+Return only the improved final answer text."""
+
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.formatter_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model_name,
+                    "messages": [
+                        {"role": "system", "content": "You are an expert Pakistan criminal law assistant focused on accurate reasoning."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                    "top_p": 0.9,
+                    "stream": False,
+                },
+                timeout=timeout_s,
+            )
+            if response.status_code == 200:
+                result = response.json()
+                refined = result["choices"][0]["message"]["content"].strip()
+                if trace_block:
+                    trace_block(
+                        "STAGE1.5 / GROQ / RESPONSE",
+                        {"raw_reasoner_output": refined},
+                    )
+                return refined if refined else draft_answer
+            return draft_answer
+        except Exception:
+            return draft_answer
+
+    def _is_answer_weak(self, answer: str) -> bool:
+        if not answer:
+            return True
+        text = answer.strip()
+        lower = text.lower()
+        if len(re.findall(r"\w+", text)) < 50:
+            return True
+        weak_markers = [
+            "apply these legal points through counsel",
+            "verify court-specific procedure before action",
+            "i could not find sufficiently relevant legal material",
+            "retrieval gap:",
+        ]
+        if any(m in lower for m in weak_markers):
+            return True
+        return False
+
+    def _ensure_readable_chat_format(self, text: str) -> str:
+        """
+        Normalize large paragraph outputs into scan-friendly chat format.
+        """
+        if not text:
+            return text
+
+        cleaned = re.sub(r"\r\n?", "\n", text).strip()
+        # Normalize bullet markers from model output.
+        cleaned = re.sub(r"(?m)^\*\s+", "- ", cleaned)
+        non_empty_lines = [ln.strip() for ln in cleaned.split("\n") if ln.strip()]
+        has_structure = (
+            len(non_empty_lines) >= 4
+            and any(ln.startswith("- ") or ln.startswith("•") for ln in non_empty_lines)
+        ) or any(":" in ln and len(ln.split()) <= 6 for ln in non_empty_lines[:4])
+
+        if has_structure:
+            return cleaned
+
+        # If model returned one long block, convert into concise sections.
+        sentences = [
+            s.strip()
+            for s in re.split(r"(?<=[.!?])\s+", cleaned.replace("\n", " "))
+            if s.strip()
+        ]
+        if len(sentences) < 3:
+            return cleaned
+
+        short = sentences[0]
+        law_bits = sentences[1:4]
+        next_bits = sentences[4:7]
+
+        formatted = ["Overview", short, "", "Key Legal Points"]
+        for s in law_bits:
+            formatted.append(f"- {s}")
+        if next_bits:
+            formatted.append("")
+            formatted.append("Practical Next Steps")
+            for s in next_bits:
+                formatted.append(f"- {s}")
+
+        return "\n".join(formatted).strip()
+
+    def _trim_incomplete_tail(self, text: str) -> str:
+        """Drop likely truncated trailing fragments from model output."""
+        if not text:
+            return text
+        lines = [ln.rstrip() for ln in text.split("\n")]
+        while lines:
+            tail = lines[-1].strip()
+            if not tail:
+                lines.pop()
+                continue
+            # Common truncation patterns after grounding/format passes.
+            if tail.endswith("as per.") or tail.endswith("as per") or tail.endswith("the"):
+                lines.pop()
+                continue
+            # If final non-heading line has no terminal punctuation, drop it.
+            is_heading = tail.endswith(":") and len(tail.split()) <= 8
+            if (not is_heading) and (tail[-1] not in ".!?"):
+                lines.pop()
+                continue
+            break
+        return "\n".join(lines).strip()
+
+    def _ground_with_groq(self, answer: str, references: list, question: str) -> str:
+        """
+        Use Groq to remove/repair unsupported section/case mentions.
+        Keeps answer conservative when references are thin.
+        """
+        guard_cfg = PIPELINE_CONFIG.get("grounding_guard", {})
+        if not guard_cfg.get("enabled", True):
+            return answer
+        if not self.formatter_api_key:
+            return answer
+        if not answer:
+            return answer
+
+        model_name = PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile")
+        max_tokens = int(guard_cfg.get("max_tokens", 220))
+        temperature = float(guard_cfg.get("temperature", 0.0))
+        timeout_s = int(guard_cfg.get("timeout_s", 12))
+
+        refs = []
+        for ref in (references or [])[:8]:
+            if not isinstance(ref, dict):
+                continue
+            refs.append(
+                f"- type={ref.get('type','')} title={ref.get('title','')} "
+                f"section={ref.get('section','')} case_no={ref.get('case_no','')}"
+            )
+        refs_text = "\n".join(refs) if refs else "- none"
+
+        prompt = f"""You are a legal grounding checker for Pakistan criminal law outputs.
+
+Task:
+Given ANSWER and REFERENCES, remove or generalize any section/case citation in ANSWER that is not supported by REFERENCES.
+Do NOT add new section numbers or case numbers.
+Keep legal meaning intact and concise.
+Do NOT return truncated text. Ensure all sentences are complete.
+
+Question:
+{question}
+
+REFERENCES (allowed support):
+{refs_text}
+
+ANSWER:
+{answer}
+
+Return only corrected ANSWER text."""
+
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.formatter_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": model_name,
+                    "messages": [
+                        {"role": "system", "content": "You remove unsupported legal citations and keep only grounded ones."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": temperature,
+                    "max_tokens": max_tokens,
+                    "top_p": 0.9,
+                    "stream": False,
+                },
+                timeout=timeout_s,
+            )
+            if response.status_code == 200:
+                result = response.json()
+                corrected = result["choices"][0]["message"]["content"].strip()
+                if corrected:
+                    if trace_block:
+                        trace_block(
+                            "GROUNDING_GUARD / GROQ",
+                            {"input_answer": answer, "corrected_answer": corrected},
+                        )
+                    return corrected
+            return answer
+        except Exception:
+            return answer
+
+    def _build_groq_display_sources(
+        self,
+        question: str,
+        answer: str,
+        context: str,
+        references: list,
+    ) -> List[str]:
+        """
+        Create user-facing Sources labels via Groq (no backend raw dump).
+        Must stay within provided grounded references/context.
+        """
+        if not self.formatter_api_key:
+            return []
+
+        allowed = []
+        for ref in (references or [])[:10]:
+            if not isinstance(ref, dict):
+                continue
+            label = ref.get("title") or ref.get("case_no") or ref.get("section") or ref.get("type")
+            rtype = ref.get("type", "Reference")
+            if label:
+                allowed.append(f"{rtype}: {label}")
+        allowed_text = "\n".join(f"- {x}" for x in allowed) if allowed else "- No explicit legal references"
+
+        prompt = f"""You are generating frontend source labels for a legal chatbot.
+
+Rules:
+1) Output STRICT JSON array of strings only (no markdown, no explanation).
+2) Use only legal sources grounded in ALLOWED REFERENCES/CONTEXT.
+3) Keep labels short and readable for UI chips.
+4) Do NOT include technical/provider/model labels.
+5) Return 1 to 5 items max.
+
+Question:
+{question}
+
+Answer:
+{answer[:1200]}
+
+Allowed References:
+{allowed_text}
+
+Context (optional):
+{(context or '')[:1200]}
+
+Return JSON array now."""
+
+        try:
+            response = requests.post(
+                "https://api.groq.com/openai/v1/chat/completions",
+                headers={
+                    "Authorization": f"Bearer {self.formatter_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile"),
+                    "messages": [
+                        {"role": "system", "content": "You output only JSON arrays of strings."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "temperature": 0.0,
+                    "max_tokens": 160,
+                    "top_p": 0.9,
+                    "stream": False,
+                },
+                timeout=10,
+            )
+            if response.status_code != 200:
+                return []
+
+            raw = response.json()["choices"][0]["message"]["content"].strip()
+            # tolerate fenced output
+            raw = raw.replace("```json", "").replace("```", "").strip()
+            parsed = json.loads(raw)
+            if isinstance(parsed, list):
+                cleaned = [str(x).strip() for x in parsed if str(x).strip()]
+                return cleaned[:5]
+            return []
+        except Exception:
+            return []
+
+    def _should_run_formatter(self, question: str, stage1_result: Dict, stage1_5_answer: str, requested: bool) -> tuple[bool, str]:
+        if not self.use_formatter:
+            return False, "formatter_unavailable"
+
+        routing_cfg = PIPELINE_CONFIG.get("formatter_routing", {})
+        always_on = bool(routing_cfg.get("always_on", True))
+        if always_on:
+            return True, "always_on"
+        auto_enabled = bool(routing_cfg.get("auto_enabled", True))
+        if requested:
+            return True, "explicit_request"
+        if not auto_enabled:
+            return False, "auto_disabled"
+
+        confidence = str(stage1_result.get("confidence", "medium")).lower()
+        sources_count = int(stage1_result.get("sources_count", 0) or 0)
+        min_sources_for_skip = int(routing_cfg.get("min_sources_for_skip", 2))
+        long_question_words = int(routing_cfg.get("long_question_words", 22))
+        word_count = len(re.findall(r"\w+", question or ""))
+        has_gap = "retrieval gap:" in (stage1_5_answer or "").lower()
+        weak_answer = self._is_answer_weak(stage1_5_answer)
+
+        should_run = (
+            confidence != "high"
+            or sources_count < min_sources_for_skip
+            or word_count >= long_question_words
+            or has_gap
+            or weak_answer
+        )
+        reason = (
+            f"auto_route conf={confidence} sources={sources_count} words={word_count} "
+            f"gap={has_gap} weak={weak_answer}"
+        )
+        return should_run, reason
     
     def _format_with_groq(self, initial_answer: str, question: str, context: str, references: list) -> str:
         """Format answer using Groq API (FREE, FAST) - OPTIMIZED FOR PAKISTAN CRIMINAL LAW"""
@@ -163,7 +588,15 @@ FORMATTED ANSWER (start directly, no prefixes):"""
         try:
             # Use config if available
             config = PIPELINE_CONFIG.get("stage2", {})
-            
+            if trace_block:
+                trace_block(
+                    "STAGE2 / GROQ / REQUEST",
+                    {
+                        "model": PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile"),
+                        "user_prompt_to_groq": prompt,
+                    },
+                )
+
             response = requests.post(
                 "https://api.groq.com/openai/v1/chat/completions",
                 headers={
@@ -190,6 +623,11 @@ FORMATTED ANSWER (start directly, no prefixes):"""
             if response.status_code == 200:
                 result = response.json()
                 formatted = result['choices'][0]['message']['content'].strip()
+                if trace_block:
+                    trace_block(
+                        "STAGE2 / GROQ / RESPONSE",
+                        {"raw_model_output": formatted},
+                    )
                 return formatted
             else:
                 # Better error reporting
@@ -197,7 +635,7 @@ FORMATTED ANSWER (start directly, no prefixes):"""
                 try:
                     error_json = response.json()
                     error_detail = error_json.get('error', {}).get('message', error_detail)
-                except:
+                except Exception:
                     pass
                 print(f"Groq API error {response.status_code}: {error_detail}")
                 print("Falling back to initial answer (Stage 1 only)")
@@ -345,73 +783,192 @@ FORMATTED ANSWER:"""
             max_new_tokens=config.get("max_new_tokens", 150),
             temperature=config.get("temperature", 0.2)
         )
-        
+
         stage1_time = time.time() - stage1_start
         print(f"\nStage 1 complete in {stage1_time:.1f}s")
         print(f"Initial answer length: {len(stage1_result['answer'])} chars")
+        if trace_block:
+            trace_block(
+                "TWO_STAGE / STAGE1 SUMMARY",
+                {
+                    "question": question,
+                    "intent": stage1_result.get("intent"),
+                    "confidence": stage1_result.get("confidence"),
+                    "retrieved_summary": summarize_retrieved_docs(
+                        stage1_result.get("retrieved_docs") or []
+                    ),
+                    "references_summary": summarize_references(stage1_result.get("references")),
+                    "stage1_initial_answer": stage1_result.get("answer", ""),
+                },
+            )
         
-        # Stage 2: Formatting (if enabled)
-        if use_formatter and self.use_formatter:
+        # Stage 1.5: Local reasoning enhancement (optional)
+        stage1_5_time = 0
+        stage1_5_answer = stage1_result['answer']
+        reasoner_cfg = PIPELINE_CONFIG.get("reasoner", {})
+        use_groq_reasoner = bool(reasoner_cfg.get("groq_enabled", True)) and bool(self.formatter_api_key)
+        reasoner_mode = "none"
+        reasoner_model_used = ""
+        if use_groq_reasoner or (self.use_reasoner and self.reasoner):
+            print("\n" + "=" * 60)
+            if use_groq_reasoner:
+                rname = reasoner_cfg.get("groq_model", PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile"))
+                print(f"STAGE 1.5: Groq reasoning enhancement ({rname})")
+            else:
+                rname = PIPELINE_CONFIG.get("reasoner", {}).get("model_name", "local")
+                print(f"STAGE 1.5: Local reasoning enhancement ({rname})")
+            print("=" * 60)
+            stage1_5_start = time.time()
+            try:
+                if use_groq_reasoner:
+                    reasoner_mode = "groq"
+                    reasoner_model_used = reasoner_cfg.get("groq_model", PIPELINE_CONFIG.get("formatter_model", "llama-3.3-70b-versatile"))
+                    context = (stage1_result.get("context") or "").strip()
+                    if not context and stage1_result.get("retrieved_docs"):
+                        context = "\n\n".join(
+                            (doc.get("text") or "")[:1200] for doc in stage1_result["retrieved_docs"][:3]
+                        )
+                    stage1_5_answer = self._reason_with_groq(
+                        draft_answer=stage1_result["answer"],
+                        question=question,
+                        context=context,
+                        references=stage1_result.get("references", []),
+                    )
+                else:
+                    reasoner_mode = "local"
+                    reasoner_model_used = PIPELINE_CONFIG.get("reasoner", {}).get("model_name", "local")
+                    stage1_5_answer = self.reasoner.enhance(
+                        question=question,
+                        answer=stage1_result['answer'],
+                        references=stage1_result.get('references', []),
+                    )
+            except Exception as e:
+                print(f"Stage 1.5 failed, using Stage 1 answer: {e}")
+                stage1_5_answer = stage1_result['answer']
+            stage1_5_time = time.time() - stage1_5_start
+            print(f"\nStage 1.5 complete in {stage1_5_time:.1f}s")
+            print(f"Enhanced answer length: {len(stage1_5_answer)} chars")
+            if trace_block:
+                trace_block(
+                    "TWO_STAGE / STAGE1.5 (LOCAL REASONER)",
+                    {
+                        "input_to_reasoner": stage1_result.get("answer", ""),
+                        "output_from_reasoner": stage1_5_answer,
+                    },
+                )
+
+        # Stage 2: Formatting (explicit request or auto-route)
+        should_run_formatter, formatter_reason = self._should_run_formatter(
+            question=question,
+            stage1_result=stage1_result,
+            stage1_5_answer=stage1_5_answer,
+            requested=use_formatter,
+        )
+        stage2_applied = False
+        if trace_block:
+            trace_block(
+                "TWO_STAGE / FORMATTER ROUTING",
+                {
+                    "requested_use_formatter": use_formatter,
+                    "should_run_formatter": should_run_formatter,
+                    "routing_reason": formatter_reason,
+                },
+            )
+
+        if should_run_formatter:
             print("\n" + "=" * 60)
             print("STAGE 2: Formatting & Improvement")
             print("=" * 60)
             stage2_start = time.time()
             
-            # Get context from Stage 1
-            context = ""
-            if stage1_result.get('retrieved_docs'):
-                context = "\n".join([
-                    doc.get('text', '')[:200] 
-                    for doc in stage1_result['retrieved_docs'][:3]
-                ])
+            # Full RAG context from Stage 1 (required for coherent Groq formatting)
+            context = (stage1_result.get("context") or "").strip()
+            if not context and stage1_result.get("retrieved_docs"):
+                context = "\n\n".join(
+                    (doc.get("text") or "")[:1200] for doc in stage1_result["retrieved_docs"][:3]
+                )
             
             # Format based on formatter type
             if self.formatter_type == "groq":
                 formatted_answer = self._format_with_groq(
-                    stage1_result['answer'],
+                    stage1_5_answer,
                     question,
                     context,
                     stage1_result.get('references', [])
                 )
             elif self.formatter_type == "huggingface":
                 formatted_answer = self._format_with_huggingface(
-                    stage1_result['answer'],
+                    stage1_5_answer,
                     question,
                     context,
                     stage1_result.get('references', [])
                 )
             elif self.formatter_type == "openai":
                 formatted_answer = self._format_with_openai(
-                    stage1_result['answer'],
+                    stage1_5_answer,
                     question,
                     context,
                     stage1_result.get('references', [])
                 )
             else:
-                formatted_answer = stage1_result['answer']
+                formatted_answer = stage1_5_answer
             
             stage2_time = time.time() - stage2_start
             print(f"\nStage 2 complete in {stage2_time:.1f}s")
             print(f"Formatted answer length: {len(formatted_answer)} chars")
             
             final_answer = formatted_answer
+            stage2_applied = True
         else:
-            final_answer = stage1_result['answer']
+            final_answer = stage1_5_answer
             stage2_time = 0
-        
+
+        final_answer = self._ground_with_groq(
+            answer=final_answer or "",
+            references=stage1_result.get("references", []),
+            question=question,
+        )
+        final_answer = self._trim_incomplete_tail(final_answer or "")
+        final_answer = self._ensure_readable_chat_format(final_answer or "")
+        final_answer = self._trim_incomplete_tail(final_answer or "")
+        final_answer = scrub_statute_numbers_from_chat_answer(final_answer or "")
+        display_sources = self._build_groq_display_sources(
+            question=question,
+            answer=final_answer,
+            context=stage1_result.get("context", ""),
+            references=stage1_result.get("references", []),
+        )
+
         total_time = time.time() - total_start
-        
+
+        if trace_block:
+            trace_block(
+                "TWO_STAGE / FINAL (AFTER SECTION SCRUB FOR CHAT)",
+                {"final_answer_for_client": final_answer},
+            )
+
         return {
             "question": question,
             "answer": final_answer,
             "initial_answer": stage1_result['answer'],  # For comparison
+            "reasoned_answer": stage1_5_answer if self.use_reasoner else None,
             "references": stage1_result.get('references', []),
+            "display_references": display_sources,
             "context_used": stage1_result.get('context_used', False),
             "sources_count": stage1_result.get('sources_count', 0),
             "response_time": total_time,
             "stage1_time": stage1_time,
+            "stage1_5_time": stage1_5_time,
             "stage2_time": stage2_time,
-            "formatted": use_formatter and self.use_formatter
+            "formatted": stage2_applied,
+            "reasoned": self.use_reasoner,
+            "reasoner_mode": reasoner_mode,
+            "reasoner_model_used": reasoner_model_used,
+            "formatter_mode": self.formatter_type if stage2_applied else "none",
+            "formatter_model_used": PIPELINE_CONFIG.get("formatter_model", "") if stage2_applied else "",
+            "intent": stage1_result.get("intent", "general"),
+            "confidence": stage1_result.get("confidence", "medium"),
+            "structured_answer": stage1_result.get("structured_answer"),
         }
 
 if __name__ == "__main__":

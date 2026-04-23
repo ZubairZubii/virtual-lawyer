@@ -10,6 +10,118 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { X, Loader2 } from "lucide-react"
 import { createCase, type CreateCaseRequest } from "@/lib/services/cases"
 
+const COURTS_BY_CITY: Record<string, string[]> = {
+  Karachi: [
+    "Sindh High Court, Karachi",
+    "City Courts Karachi",
+    "District & Sessions Court Karachi South",
+    "District & Sessions Court Karachi East",
+    "District & Sessions Court Karachi West",
+    "District & Sessions Court Karachi Central",
+    "District & Sessions Court Malir",
+    "District & Sessions Court Korangi",
+    "Banking Court Karachi",
+    "Special Court (Anti-Corruption), Karachi",
+    "Anti-Terrorism Court Karachi",
+  ],
+  Lahore: [
+    "Lahore High Court, Lahore",
+    "District & Sessions Court Lahore",
+    "Model Criminal Trial Court Lahore",
+    "Anti-Terrorism Court Lahore",
+    "Banking Court Lahore",
+    "Special Court (CNS), Lahore",
+  ],
+  Islamabad: [
+    "Islamabad High Court",
+    "District & Sessions Court Islamabad",
+    "Accountability Court Islamabad",
+    "Special Court (Central), Islamabad",
+    "Banking Court Islamabad",
+    "Anti-Terrorism Court Islamabad",
+  ],
+  Rawalpindi: [
+    "District & Sessions Court Rawalpindi",
+    "Special Judge Central Rawalpindi",
+    "Banking Court Rawalpindi",
+    "Anti-Terrorism Court Rawalpindi",
+  ],
+  Peshawar: [
+    "Peshawar High Court",
+    "District & Sessions Court Peshawar",
+    "Banking Court Peshawar",
+    "Special Court (Anti-Corruption), Peshawar",
+    "Anti-Terrorism Court Peshawar",
+  ],
+  Quetta: [
+    "Balochistan High Court, Quetta",
+    "District & Sessions Court Quetta",
+    "Banking Court Quetta",
+    "Anti-Terrorism Court Quetta",
+  ],
+  Multan: [
+    "Lahore High Court, Multan Bench",
+    "District & Sessions Court Multan",
+    "Banking Court Multan",
+    "Anti-Terrorism Court Multan",
+  ],
+  Faisalabad: [
+    "Lahore High Court, Faisalabad Bench",
+    "District & Sessions Court Faisalabad",
+    "Banking Court Faisalabad",
+    "Anti-Terrorism Court Faisalabad",
+  ],
+  Hyderabad: [
+    "Sindh High Court, Hyderabad Bench",
+    "District & Sessions Court Hyderabad",
+    "Banking Court Hyderabad",
+    "Anti-Terrorism Court Hyderabad",
+  ],
+  Sukkur: [
+    "District & Sessions Court Sukkur",
+    "Banking Court Sukkur",
+    "Anti-Terrorism Court Sukkur",
+  ],
+  Sialkot: [
+    "District & Sessions Court Sialkot",
+    "Banking Court Sialkot",
+  ],
+  Gujranwala: [
+    "District & Sessions Court Gujranwala",
+    "Banking Court Gujranwala",
+    "Anti-Terrorism Court Gujranwala",
+  ],
+  Gujrat: [
+    "District & Sessions Court Gujrat",
+    "Banking Court Gujrat",
+  ],
+  Sargodha: [
+    "District & Sessions Court Sargodha",
+    "Banking Court Sargodha",
+  ],
+  Bahawalpur: [
+    "Lahore High Court, Bahawalpur Bench",
+    "District & Sessions Court Bahawalpur",
+    "Banking Court Bahawalpur",
+  ],
+  DeraGhaziKhan: [
+    "District & Sessions Court Dera Ghazi Khan",
+    "Banking Court Dera Ghazi Khan",
+  ],
+  Abbottabad: [
+    "District & Sessions Court Abbottabad",
+    "Banking Court Abbottabad",
+  ],
+  Mardan: [
+    "District & Sessions Court Mardan",
+    "Banking Court Mardan",
+  ],
+  Swat: [
+    "District & Sessions Court Swat",
+    "Banking Court Swat",
+  ],
+}
+
 interface CaseFormProps {
   userType: "citizen" | "lawyer"
   onSuccess: () => void
@@ -32,6 +144,30 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
     next_hearing: "",
     priority: "Medium",
   })
+  const [selectedCity, setSelectedCity] = useState("")
+  const [courtInputMode, setCourtInputMode] = useState<"dropdown" | "manual">("dropdown")
+  const selectedCaseType = formData.case_type
+  const showPoliceFields = ["FIR Complaint", "Bail Application", "Criminal Appeal", "Revision Petition"].includes(
+    selectedCaseType,
+  )
+
+  const cityOptions = Object.keys(COURTS_BY_CITY)
+  const selectedCityCourts = selectedCity ? COURTS_BY_CITY[selectedCity] || [] : []
+
+  const descriptionPlaceholderByType: Record<string, string> = {
+    "FIR Complaint":
+      "Write full facts: incident date/time, place, what happened, accused details (if known), police response, whether FIR was refused, witnesses, and evidence.",
+    "Bail Application":
+      "Write full facts: arrest date, custody status, FIR details (if any), allegations, previous record, medical/family hardship, and what relief you need.",
+    "Criminal Appeal":
+      "Write full facts: trial court result, sentence/order date, key legal errors, important evidence/witness issues, and relief sought in appeal.",
+    "Revision Petition":
+      "Write full facts: impugned order, date, procedural/legal defects, prejudice caused, and exact revision relief sought.",
+    Appeal:
+      "Write full facts: order challenged, legal mistakes, factual background, available documents, and the specific outcome you want.",
+    Other:
+      "Write complete timeline in plain language: what happened, where, who is involved, documents/evidence available, current stage, and desired outcome.",
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -43,6 +179,9 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
       if (!formData.case_type || !formData.court) {
         throw new Error("Case type and court are required")
       }
+      if (!formData.description || formData.description.trim().length < 20) {
+        throw new Error("Please provide complete case facts (at least 20 characters).")
+      }
 
       const response = await createCase(formData, userType)
       console.log("✅ Case created:", response)
@@ -53,23 +192,6 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
     } finally {
       setLoading(false)
     }
-  }
-
-  const addSection = () => {
-    const section = prompt("Enter section number (e.g., 302):")
-    if (section && section.trim()) {
-      setFormData({
-        ...formData,
-        sections: [...(formData.sections || []), section.trim()],
-      })
-    }
-  }
-
-  const removeSection = (index: number) => {
-    setFormData({
-      ...formData,
-      sections: formData.sections?.filter((_, i) => i !== index) || [],
-    })
   }
 
   return (
@@ -115,19 +237,87 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
               </Select>
             </div>
 
+            {/* City */}
+            <div>
+              <Label htmlFor="city">City *</Label>
+              <Select
+                value={selectedCity}
+                onValueChange={(value) => {
+                  setSelectedCity(value)
+                  setFormData({ ...formData, court: "" })
+                }}
+              >
+                <SelectTrigger id="city" className="w-full border-2 border-border focus:border-primary">
+                  <SelectValue placeholder="Select city" />
+                </SelectTrigger>
+                <SelectContent>
+                  {cityOptions.map((city) => (
+                    <SelectItem key={city} value={city}>
+                      {city === "DeraGhaziKhan" ? "Dera Ghazi Khan" : city}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="Other">Other / Not listed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Court */}
             <div>
               <Label htmlFor="court">Court *</Label>
-              <Input
-                id="court"
-                value={formData.court}
-                onChange={(e) =>
-                  setFormData({ ...formData, court: e.target.value })
-                }
-                placeholder="e.g., Lahore High Court"
-                className="w-full border-2 border-border focus:border-primary"
-                required
-              />
+              {courtInputMode === "dropdown" && selectedCity && selectedCity !== "Other" ? (
+                <>
+                  <Select
+                    value={formData.court || ""}
+                    onValueChange={(value) => {
+                      if (value === "__manual__") {
+                        setCourtInputMode("manual")
+                        setFormData({ ...formData, court: "" })
+                        return
+                      }
+                      setFormData({ ...formData, court: value })
+                    }}
+                  >
+                    <SelectTrigger id="court" className="w-full border-2 border-border focus:border-primary">
+                      <SelectValue placeholder="Select court" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedCityCourts.map((court) => (
+                        <SelectItem key={court} value={court}>
+                          {court}
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__manual__">Other court (type manually)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    If your exact court is missing, choose "Other court" and type it manually.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Input
+                    id="court"
+                    value={formData.court}
+                    onChange={(e) =>
+                      setFormData({ ...formData, court: e.target.value })
+                    }
+                    placeholder="e.g., Lahore High Court"
+                    className="w-full border-2 border-border focus:border-primary"
+                    required
+                  />
+                  {selectedCity && selectedCity !== "Other" && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="mt-2"
+                      onClick={() => setCourtInputMode("dropdown")}
+                    >
+                      Back to court dropdown
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Judge */}
@@ -144,24 +334,24 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
               />
             </div>
 
-            {/* Citizen-specific fields */}
-            {userType === "citizen" && (
+            {/* Case-type specific police fields */}
+            {userType === "citizen" && showPoliceFields && (
               <>
                 <div>
-                  <Label htmlFor="fir_number">FIR Number</Label>
+                  <Label htmlFor="fir_number">FIR Number (if registered)</Label>
                   <Input
                     id="fir_number"
                     value={formData.fir_number}
                     onChange={(e) =>
                       setFormData({ ...formData, fir_number: e.target.value })
                     }
-                    placeholder="e.g., FIR/2024/150"
+                    placeholder="Leave blank if FIR is not registered yet"
                     className="w-full border-2 border-border focus:border-primary"
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="police_station">Police Station</Label>
+                  <Label htmlFor="police_station">Police Station (if relevant)</Label>
                   <Input
                     id="police_station"
                     value={formData.police_station}
@@ -173,34 +363,6 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
                   />
                 </div>
 
-                <div>
-                  <Label>Sections</Label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {formData.sections?.map((section, index) => (
-                      <span
-                        key={index}
-                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm flex items-center gap-2"
-                      >
-                        {section}
-                        <button
-                          type="button"
-                          onClick={() => removeSection(index)}
-                          className="hover:text-destructive"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addSection}
-                  >
-                    + Add Section
-                  </Button>
-                </div>
               </>
             )}
 
@@ -215,7 +377,7 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
                     onChange={(e) =>
                       setFormData({ ...formData, client_name: e.target.value })
                     }
-                    placeholder="e.g., Ahmed Khan"
+                    placeholder="e.g., Client full name"
                     className="w-full border-2 border-border focus:border-primary"
                   />
                 </div>
@@ -269,17 +431,20 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">Case Facts *</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                placeholder="Case description (optional)"
+                placeholder={descriptionPlaceholderByType[selectedCaseType] || descriptionPlaceholderByType.Other}
                 className="w-full border-2 border-border focus:border-primary"
-                rows={3}
+                rows={5}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Include timeline, parties, evidence/documents, current stage, and the outcome you want.
+              </p>
             </div>
 
             <div className="flex gap-3 pt-4">

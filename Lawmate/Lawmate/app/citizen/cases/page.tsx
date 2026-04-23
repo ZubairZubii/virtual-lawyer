@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Plus, Calendar, FileText, Eye, TrendingUp, Loader2, AlertCircle } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { getCitizenCases, type Case } from "@/lib/services/cases"
 import { CaseForm } from "@/components/case-form"
 
 export default function CitizenCasesPage() {
+  const router = useRouter()
   const [isLoaded, setIsLoaded] = useState(false)
   const [filterStatus, setFilterStatus] = useState("all")
   const [cases, setCases] = useState<Case[]>([])
@@ -209,6 +211,10 @@ export default function CitizenCasesPage() {
                               size="sm"
                               variant="outline"
                               className="w-full justify-center bg-transparent hover:bg-primary/10"
+                              onClick={(e) => {
+                                e.preventDefault()
+                                router.push(`/citizen/cases/analyze?caseId=${encodeURIComponent(caseItem.id)}`)
+                              }}
                             >
                               <TrendingUp className="w-4 h-4 mr-2" />
                               Analyze

@@ -30,6 +30,10 @@ import {
   type CaseDetails,
   type CitizenQuickCaseAnalysisResponse,
 } from "@/lib/services/analysis"
+import {
+  SentencePredictionDisplay,
+  TimelinePredictionDisplay,
+} from "@/components/case-prediction-display"
 
 export default function LawyerCaseAnalysisPage() {
   const [workspaceMode, setWorkspaceMode] = useState<"quick" | "structured">("quick")
@@ -38,9 +42,22 @@ export default function LawyerCaseAnalysisPage() {
   const [quickCity, setQuickCity] = useState("")
   const [quickHearingCourt, setQuickHearingCourt] = useState("")
   const [quickCustody, setQuickCustody] = useState<"in_custody" | "not_in_custody" | "unknown">("unknown")
-  const [quickKnownSections, setQuickKnownSections] = useState("")
   const [quickCaseStage, setQuickCaseStage] = useState("")
   const [quickProceduralNotes, setQuickProceduralNotes] = useState("")
+  const [quickIncidentDate, setQuickIncidentDate] = useState("")
+  const [quickIncidentLocation, setQuickIncidentLocation] = useState("")
+  const [quickFirStatus, setQuickFirStatus] = useState("")
+  const [quickPoliceStation, setQuickPoliceStation] = useState("")
+  const [quickWitnessStatus, setQuickWitnessStatus] = useState("")
+  const [quickWitnessCount, setQuickWitnessCount] = useState(0)
+  const [quickEvidenceSummary, setQuickEvidenceSummary] = useState("")
+  const [quickEvidenceGaps, setQuickEvidenceGaps] = useState("")
+  const [quickDocuments, setQuickDocuments] = useState("")
+  const [quickOpposingVersion, setQuickOpposingVersion] = useState("")
+  const [quickReliefSought, setQuickReliefSought] = useState("")
+  const [quickClientGoal, setQuickClientGoal] = useState("")
+  const [quickKeyQuestion, setQuickKeyQuestion] = useState("")
+  const [quickChildInvolved, setQuickChildInvolved] = useState(false)
   const [quickLoading, setQuickLoading] = useState(false)
   const [quickResults, setQuickResults] = useState<CitizenQuickCaseAnalysisResponse | null>(null)
   const [quickError, setQuickError] = useState<string | null>(null)
@@ -148,9 +165,22 @@ export default function LawyerCaseAnalysisPage() {
         city: quickCity,
         hearing_court: quickHearingCourt,
         custody_status: quickCustody,
-        known_ppc_sections: quickKnownSections,
         case_stage: quickCaseStage,
         procedural_notes: quickProceduralNotes,
+        incident_date: quickIncidentDate,
+        incident_location: quickIncidentLocation,
+        fir_status: quickFirStatus,
+        police_station: quickPoliceStation,
+        witness_status: quickWitnessStatus,
+        witness_count: quickWitnessCount,
+        evidence_summary: quickEvidenceSummary,
+        available_documents: quickDocuments,
+        key_question: quickKeyQuestion,
+        child_involved: quickChildInvolved,
+        opposing_party_version: quickOpposingVersion,
+        evidence_gaps: quickEvidenceGaps,
+        relief_sought: quickReliefSought,
+        client_goal: quickClientGoal,
       })
       setQuickResults(response)
     } catch (err: unknown) {
@@ -201,12 +231,6 @@ export default function LawyerCaseAnalysisPage() {
                       placeholder="FIR sections, key facts, custody status, witness issues, and what you need from triage (same detail you would brief a colleague)…"
                       rows={8}
                     />
-                    <label className="text-sm font-medium mb-2 block">Known PPC sections (optional)</label>
-                    <Input
-                      value={quickKnownSections}
-                      onChange={(e) => setQuickKnownSections(e.target.value)}
-                      placeholder="e.g. 302, 34 or narrative if already in memo"
-                    />
                     <label className="text-sm font-medium mb-2 block">Procedural stage (optional)</label>
                     <Input
                       value={quickCaseStage}
@@ -219,6 +243,24 @@ export default function LawyerCaseAnalysisPage() {
                       onChange={(e) => setQuickProceduralNotes(e.target.value)}
                       placeholder="Illegal search, identification parade issues, remand gaps, disclosure requests…"
                       rows={3}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Main legal question</label>
+                    <Input
+                      value={quickKeyQuestion}
+                      onChange={(e) => setQuickKeyQuestion(e.target.value)}
+                      placeholder="Primary issue for this triage"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Relief sought</label>
+                    <Input
+                      value={quickReliefSought}
+                      onChange={(e) => setQuickReliefSought(e.target.value)}
+                      placeholder="Bail / quashment / acquittal / FIR registration / discharge"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Client goal</label>
+                    <Input
+                      value={quickClientGoal}
+                      onChange={(e) => setQuickClientGoal(e.target.value)}
+                      placeholder="Practical objective from litigation strategy"
                     />
                     <label className="text-sm font-medium mb-2 block">Urgency</label>
                     <select
@@ -238,6 +280,76 @@ export default function LawyerCaseAnalysisPage() {
                       onChange={(e) => setQuickHearingCourt(e.target.value)}
                       placeholder="Sessions Court"
                     />
+                    <label className="text-sm font-medium mb-2 block">Incident date (optional)</label>
+                    <Input type="date" value={quickIncidentDate} onChange={(e) => setQuickIncidentDate(e.target.value)} />
+                    <label className="text-sm font-medium mb-2 block">Incident location</label>
+                    <Input
+                      value={quickIncidentLocation}
+                      onChange={(e) => setQuickIncidentLocation(e.target.value)}
+                      placeholder="Location of occurrence"
+                    />
+                    <label className="text-sm font-medium mb-2 block">FIR status</label>
+                    <Input
+                      value={quickFirStatus}
+                      onChange={(e) => setQuickFirStatus(e.target.value)}
+                      placeholder="Registered / refused / under inquiry"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Police station</label>
+                    <Input
+                      value={quickPoliceStation}
+                      onChange={(e) => setQuickPoliceStation(e.target.value)}
+                      placeholder="Station and district"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Witness status</label>
+                    <Input
+                      value={quickWitnessStatus}
+                      onChange={(e) => setQuickWitnessStatus(e.target.value)}
+                      placeholder="Available / hostile risk / none"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Witness count</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      value={quickWitnessCount}
+                      onChange={(e) => setQuickWitnessCount(Number.parseInt(e.target.value, 10) || 0)}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Evidence summary</label>
+                    <Textarea
+                      value={quickEvidenceSummary}
+                      onChange={(e) => setQuickEvidenceSummary(e.target.value)}
+                      placeholder="Forensic, digital, medical, recovery, and documentary evidence snapshot"
+                      rows={3}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Evidence gaps / weak links</label>
+                    <Textarea
+                      value={quickEvidenceGaps}
+                      onChange={(e) => setQuickEvidenceGaps(e.target.value)}
+                      placeholder="Chain of custody issues, missing exhibits, contradiction points"
+                      rows={2}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Available documents</label>
+                    <Textarea
+                      value={quickDocuments}
+                      onChange={(e) => setQuickDocuments(e.target.value)}
+                      placeholder="FIR, remand papers, seizure memos, medico-legal report, CDR, challan"
+                      rows={2}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Opposing version / prosecution theory</label>
+                    <Textarea
+                      value={quickOpposingVersion}
+                      onChange={(e) => setQuickOpposingVersion(e.target.value)}
+                      placeholder="Short prosecution narrative"
+                      rows={2}
+                    />
+                    <label className="flex items-center gap-2 text-sm font-medium mt-1">
+                      <input
+                        type="checkbox"
+                        checked={quickChildInvolved}
+                        onChange={(e) => setQuickChildInvolved(e.target.checked)}
+                        className="w-4 h-4"
+                      />
+                      Juvenile/child involved
+                    </label>
                     <label className="text-sm font-medium mb-2 block">Client custody</label>
                     <select
                       value={quickCustody}
@@ -272,8 +384,7 @@ export default function LawyerCaseAnalysisPage() {
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground mt-3">
-                    Uses the lawyer quick-analysis API with the same risk guards as citizen quick triage. Add sections and
-                    stage for sharper output.
+                    Uses lawyer quick-analysis with richer facts. No need to know section numbers; focus on facts and file status.
                   </p>
                 </Card>
               </div>
@@ -345,13 +456,35 @@ export default function LawyerCaseAnalysisPage() {
                       </ul>
                       <p className="text-xs text-muted-foreground mt-4">{quickResults.disclaimer}</p>
                     </Card>
+                    {(quickResults.confidence_note ||
+                      (quickResults.missing_information && quickResults.missing_information.length > 0)) && (
+                      <Card className="p-6 border border-border/50">
+                        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                          <AlertCircle className="w-5 h-5 text-primary" />
+                          Analysis quality
+                        </h3>
+                        {quickResults.confidence_note && (
+                          <p className="text-sm text-muted-foreground mb-3">{quickResults.confidence_note}</p>
+                        )}
+                        {quickResults.missing_information && quickResults.missing_information.length > 0 && (
+                          <ul className="space-y-2">
+                            {quickResults.missing_information.map((item, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <XCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                                <p className="text-sm">{item}</p>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </Card>
+                    )}
                   </>
                 )}
                 {!quickResults && !quickError && (
                   <Card className="p-12 text-center border border-border/50">
                     <Brain className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                     <p className="text-muted-foreground">
-                      Enter your matter memo (and optional sections or stage), then run analysis for fast triage aligned
+                      Enter your matter memo and stage, then run analysis for fast triage aligned
                       with citizen quick analysis.
                     </p>
                   </Card>
@@ -401,7 +534,7 @@ export default function LawyerCaseAnalysisPage() {
                         rows={6}
                         className="w-full"
                       />
-                      <label className="text-sm font-medium mb-2 block mt-4">Section Numbers (optional)</label>
+                      <label className="text-sm font-medium mb-2 block mt-4">Known Sections (optional)</label>
                       <Input
                         value={sections}
                         onChange={(e) => setSections(e.target.value)}
@@ -444,16 +577,15 @@ export default function LawyerCaseAnalysisPage() {
                         <h3 className="font-semibold text-foreground border-b pb-2">Basic Information</h3>
                         
                         <div>
-                          <label className="text-sm font-medium mb-2 block">
-                            Section Numbers (comma-separated) <span className="text-destructive">*</span>
-                          </label>
+                          <label className="text-sm font-medium mb-2 block">Known Sections (optional)</label>
                           <Input
                             value={sections}
                             onChange={(e) => setSections(e.target.value)}
-                            placeholder="302, 34, 109"
-                            required
+                            placeholder="If known, e.g. 302, 34, 109"
                           />
-                          <p className="text-xs text-muted-foreground mt-1">Enter PPC section numbers involved in the case</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Optional only. System can analyze from facts even if you do not know sections.
+                          </p>
                         </div>
 
                         <div>
@@ -612,7 +744,7 @@ export default function LawyerCaseAnalysisPage() {
 
                   <Button
                     onClick={handleAnalyze}
-                    disabled={loading || (!sections && analysisType !== "text")}
+                    disabled={loading || (analysisType === "text" && caseDescription.trim().length < 20)}
                     className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground mt-6"
                   >
                     {loading ? (
@@ -752,16 +884,24 @@ export default function LawyerCaseAnalysisPage() {
                           </p>
                         </div>
                       </div>
-                      {results.predictions.sentence_prediction && (
+                      {results.predictions.sentence_prediction != null && (
                         <div className="p-4 rounded-lg border border-border/50 mb-4">
-                          <p className="text-sm text-muted-foreground mb-1">Sentence Prediction</p>
-                          <p className="font-medium">{results.predictions.sentence_prediction}</p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Sentence Prediction
+                          </p>
+                          <SentencePredictionDisplay
+                            value={results.predictions.sentence_prediction}
+                          />
                         </div>
                       )}
-                      {results.predictions.timeline_prediction && (
+                      {results.predictions.timeline_prediction != null && (
                         <div className="p-4 rounded-lg border border-border/50">
-                          <p className="text-sm text-muted-foreground mb-1">Timeline Prediction</p>
-                          <p className="font-medium">{results.predictions.timeline_prediction}</p>
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Timeline Prediction
+                          </p>
+                          <TimelinePredictionDisplay
+                            value={results.predictions.timeline_prediction}
+                          />
                         </div>
                       )}
                     </Card>

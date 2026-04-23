@@ -21,22 +21,23 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useCitizenDashboard } from "@/lib/store/dashboardStore"
+import { getUserDisplayName } from "@/lib/auth-user"
 
 export default function CitizenDashboard() {
   const [isLoaded, setIsLoaded] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState("active")
-  const [displayName, setDisplayName] = useState("Citizen")
+  const [welcomeName, setWelcomeName] = useState("there")
   const { data: dashboardData, loading, error, refresh } = useCitizenDashboard()
 
   useEffect(() => {
     setIsLoaded(true)
-    try {
-      const raw = localStorage.getItem("user")
-      if (raw) {
-        const user = JSON.parse(raw) as { name?: string }
-        if (user?.name) setDisplayName(user.name)
-      }
-    } catch {}
+    setWelcomeName(getUserDisplayName("there"))
+  }, [])
+
+  useEffect(() => {
+    const onStorage = () => setWelcomeName(getUserDisplayName("there"))
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
   }, [])
 
   // Show error message if there's an error
@@ -143,9 +144,11 @@ export default function CitizenDashboard() {
           >
             <div className="flex items-start justify-between mb-6 flex-col md:flex-row gap-4">
               <div>
-                <h1 className="text-5xl font-bold text-foreground mb-2">Welcome back, {displayName}</h1>
+                <h1 className="text-5xl font-bold text-foreground mb-2">
+                  Welcome back, {welcomeName}
+                </h1>
                 <p className="text-lg text-muted-foreground">
-                  Your legal journey, powered by intelligent AI assistance
+                  Your legal journey — Pakistan criminal law guidance powered by AI
                 </p>
               </div>
               <div className="flex gap-3 flex-wrap">
@@ -260,7 +263,9 @@ export default function CitizenDashboard() {
                               {case_.status}
                             </span>
                           </div>
-                          <p className="text-sm text-muted-foreground">{(case_ as any).desc || case_.type}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {(case_ as { desc?: string; type?: string }).desc ?? case_.type ?? ""}
+                          </p>
                         </div>
                       </div>
                       <div className="space-y-2 mb-4">
@@ -289,7 +294,9 @@ export default function CitizenDashboard() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground">Next: {(case_ as any).nextAction || (case_ as any).next_action || "Follow up"}</span>
+                        <span className="text-xs text-muted-foreground">
+                          Next: {(case_ as { nextAction?: string; next_action?: string }).nextAction ?? case_.next_action ?? "Follow up"}
+                        </span>
                         <CheckCircle2 className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 transition-opacity" />
                       </div>
                     </div>

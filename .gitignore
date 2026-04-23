@@ -2,6 +2,7 @@
 node_modules/
 Lawmate/Lawmate/node_modules/
 .env
+/env
 *.log
 __pycache__/
 .next/

@@ -28,6 +28,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import {
   uploadDocument,
+  listUserDocuments,
   listTemplates,
   extractFacts,
   getSummary,
@@ -38,6 +39,7 @@ import {
   getTemplateDetails,
   type TemplateInfo,
 } from "@/lib/services/documents"
+import { getDocumentApiRole } from "@/lib/auth-user"
 
 interface UploadedDocument {
   doc_id: string
@@ -46,6 +48,7 @@ interface UploadedDocument {
   text_length: number
   status: string
   uploaded_at?: string
+  is_sample?: boolean
 }
 
 interface GeneratedDocument {
@@ -92,9 +95,41 @@ export default function LawyerDocumentsPage() {
   const [suggestionFacts, setSuggestionFacts] = useState<Record<string, string>>({})
   const [suggestions, setSuggestions] = useState<any[]>([])
 
+  const getSessionEmail = (): string | undefined => {
+    try {
+      const raw = typeof window !== "undefined" ? localStorage.getItem("user") : null
+      if (!raw) return undefined
+      const u = JSON.parse(raw) as { email?: string }
+      return u.email
+    } catch {
+      return undefined
+    }
+  }
+
+  const loadUploadedDocs = async () => {
+    try {
+      const email = getSessionEmail()
+      const res = await listUserDocuments(email, getDocumentApiRole("lawyer"))
+      setUploadedDocs(
+        res.documents.map((d) => ({
+          doc_id: d.doc_id,
+          file_name: d.file_name,
+          chunks_count: d.chunks_count,
+          text_length: d.text_length,
+          status: d.status,
+          uploaded_at: d.uploaded_at,
+          is_sample: d.is_sample,
+        }))
+      )
+    } catch (err) {
+      console.error("Failed to load documents:", err)
+    }
+  }
+
   useEffect(() => {
     setIsLoaded(true)
     loadTemplates()
+    void loadUploadedDocs()
   }, [])
 
   const loadTemplates = async () => {
@@ -113,14 +148,12 @@ export default function LawyerDocumentsPage() {
     setError(null)
 
     try {
-      const result = await uploadDocument(uploadFile)
-      setUploadedDocs((prev) => [
-        {
-          ...result,
-          uploaded_at: new Date().toISOString(),
-        },
-        ...prev,
-      ])
+      const email = getSessionEmail()
+      await uploadDocument(uploadFile, {
+        email,
+        role: getDocumentApiRole("lawyer"),
+      })
+      await loadUploadedDocs()
       setUploadFile(null)
       setActiveTab("uploaded")
     } catch (err: any) {

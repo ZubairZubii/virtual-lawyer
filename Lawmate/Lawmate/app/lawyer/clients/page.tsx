@@ -45,6 +45,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [lawyerId, setLawyerId] = useState<string>("")
+  const [lawyerEmail, setLawyerEmail] = useState<string>("")
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<"All" | "Active" | "On Hold" | "Closed">("All")
   const [riskFilter, setRiskFilter] = useState<"All" | "High" | "Medium" | "Low">("All")
@@ -84,10 +85,11 @@ export default function ClientsPage() {
     try {
       const raw = localStorage.getItem("user")
       if (raw) {
-        const user = JSON.parse(raw) as { id?: string }
-        if (user?.id) {
-          setLawyerId(user.id)
-          loadClients(user.id)
+        const user = JSON.parse(raw) as { id?: string; email?: string }
+        if (user?.id) setLawyerId(user.id)
+        if (user?.email) setLawyerEmail(user.email)
+        if (user?.id || user?.email) {
+          loadClients(user?.id, user?.email)
           return
         }
       }
@@ -97,11 +99,13 @@ export default function ClientsPage() {
     }
   }, [])
 
-  const loadClients = async (id?: string) => {
+  const loadClients = async (id?: string, email?: string) => {
     try {
       setLoading(true)
       setError(null)
-      const response = await getClients(id || lawyerId || undefined)
+      const lid = (id ?? lawyerId)?.trim() || undefined
+      const em = (email ?? lawyerEmail)?.trim() || undefined
+      const response = await getClients(lid, em)
       setClients(response.clients)
     } catch (err: any) {
       console.error("Error loading clients:", err)
@@ -112,7 +116,7 @@ export default function ClientsPage() {
   }
 
   const handleAddClient = async () => {
-    if (!lawyerId) {
+    if (!lawyerId && !lawyerEmail) {
       alert("Lawyer session not found. Please login again.")
       return
     }
@@ -123,7 +127,8 @@ export default function ClientsPage() {
     try {
       setIsSubmittingClient(true)
       await createClient({
-        lawyerId,
+        lawyerId: lawyerId || "temp-lawyer",
+        lawyerEmail: lawyerEmail || undefined,
         ...newClient,
       })
       setIsAddClientOpen(false)
@@ -165,8 +170,8 @@ export default function ClientsPage() {
   }
 
   const handleAddCase = async () => {
-    if (!lawyerId || !activeClient) {
-      alert("Lawyer/client context missing.")
+    if ((!lawyerId && !lawyerEmail) || !activeClient) {
+      alert("Lawyer/client context missing. Please log in again.")
       return
     }
     if (!newCase.caseType.trim()) {
@@ -176,7 +181,8 @@ export default function ClientsPage() {
     try {
       setIsSubmittingCase(true)
       await createClientCase(activeClient.id, {
-        lawyerId,
+        lawyerId: lawyerId || "temp-lawyer",
+        lawyerEmail: lawyerEmail || undefined,
         clientId: activeClient.id,
         ...newCase,
       })
@@ -195,7 +201,11 @@ export default function ClientsPage() {
     setIsViewCasesOpen(true)
     setCasesLoading(true)
     try {
-      const response = await getClientCases(client.id, lawyerId || undefined)
+      const response = await getClientCases(
+        client.id,
+        lawyerId || undefined,
+        lawyerEmail || undefined
+      )
       setClientCases(response.cases)
     } catch (err: any) {
       setClientCases([])

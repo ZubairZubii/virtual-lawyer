@@ -7,21 +7,62 @@ import { Button } from "@/components/ui/button"
 import { BarChart3, TrendingUp, AlertCircle, Users, Calendar, Target, ArrowRight, Bell, Brain, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { useLawyerDashboard } from "@/lib/store/dashboardStore"
+import { getStoredUser, getUserDisplayName } from "@/lib/auth-user"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
+/** Demo-only notifications for Adv. Fatima Noor (matched by name/email). */
+const FATIMA_DEMO_ALERTS = [
+  {
+    id: "1",
+    title: "Hearing reminder",
+    body: "C-2026-201 (Ahmed Khan) — bail matter listed 12 May 2026, 10:30 AM at LHC.",
+    time: "2h ago",
+  },
+  {
+    id: "2",
+    title: "Client upload",
+    body: "Ahmed Khan added a certified witness affidavit to the case file.",
+    time: "5h ago",
+  },
+  {
+    id: "3",
+    title: "Filing deadline",
+    body: "Reply to state in BA-145/2026 due 20 Apr 2026.",
+    time: "1d ago",
+  },
+] as const
+
+function isFatimaDemoLawyer(): boolean {
+  const u = getStoredUser()
+  if (!u) return false
+  const em = (u.email || "").toLowerCase()
+  const nm = (u.name || "").toLowerCase()
+  return em.includes("fatima") || nm.includes("fatima")
+}
 
 export default function LawyerDashboard() {
   const [isLoaded, setIsLoaded] = useState(false)
-  const [displayName, setDisplayName] = useState("Lawyer")
+  const [welcomeName, setWelcomeName] = useState("Advocate")
+  const [showFatimaDemoAlerts, setShowFatimaDemoAlerts] = useState(false)
   const { data: dashboardData, loading, error, refresh } = useLawyerDashboard()
 
   useEffect(() => {
     setIsLoaded(true)
-    try {
-      const raw = localStorage.getItem("user")
-      if (raw) {
-        const user = JSON.parse(raw) as { name?: string }
-        if (user?.name) setDisplayName(user.name)
-      }
-    } catch {}
+    setWelcomeName(getUserDisplayName("Advocate"))
+    setShowFatimaDemoAlerts(isFatimaDemoLawyer())
+  }, [])
+
+  useEffect(() => {
+    const onStorage = () => setWelcomeName(getUserDisplayName("Advocate"))
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
   }, [])
 
   // Show error message if there's an error
@@ -126,8 +167,12 @@ export default function LawyerDashboard() {
           >
             <div className="flex items-start justify-between mb-6 flex-col md:flex-row gap-4">
               <div>
-                <h1 className="text-5xl font-bold text-foreground mb-2">Welcome, {displayName}</h1>
-                <p className="text-lg text-muted-foreground">Manage cases, track performance, and grow your practice</p>
+                <h1 className="text-5xl font-bold text-foreground mb-2">
+                  Welcome, {welcomeName}
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Manage cases before Pakistani courts — PPC, CrPC & High Court practice
+                </p>
               </div>
               <div className="flex gap-3">
                 {error && (
@@ -139,13 +184,56 @@ export default function LawyerDashboard() {
                     Retry
                   </Button>
                 )}
-                <Button
-                  variant="outline"
-                  className="bg-card/50 backdrop-blur border-border/50 hover:bg-card hover:border-primary/50 transition-all"
-                >
-                  <Bell className="w-4 h-4 mr-2" />
-                  Alerts
-                </Button>
+                {showFatimaDemoAlerts ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="relative bg-card/50 backdrop-blur border-border/50 hover:bg-card hover:border-primary/50 transition-all"
+                        aria-label={`Alerts, ${FATIMA_DEMO_ALERTS.length} demo notifications`}
+                      >
+                        <span className="relative mr-2 inline-flex shrink-0">
+                          <Bell className="h-4 w-4" />
+                          <span
+                            className="absolute -right-2 -top-2 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold leading-none text-primary-foreground shadow-sm ring-2 ring-background"
+                            aria-hidden
+                          >
+                            {FATIMA_DEMO_ALERTS.length}
+                          </span>
+                        </span>
+                        Alerts
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-80">
+                      <DropdownMenuLabel className="font-semibold">
+                        Notifications
+                        <span className="ml-2 text-xs font-normal text-muted-foreground">(demo)</span>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {FATIMA_DEMO_ALERTS.map((a) => (
+                        <DropdownMenuItem
+                          key={a.id}
+                          className="flex cursor-default flex-col items-start gap-1 py-3"
+                          onSelect={(e) => e.preventDefault()}
+                        >
+                          <div className="flex w-full items-start justify-between gap-2">
+                            <span className="font-medium leading-tight">{a.title}</span>
+                            <span className="shrink-0 text-[10px] text-muted-foreground">{a.time}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground leading-snug">{a.body}</span>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <Button
+                    variant="outline"
+                    className="bg-card/50 backdrop-blur border-border/50 hover:bg-card hover:border-primary/50 transition-all"
+                  >
+                    <Bell className="w-4 h-4 mr-2" />
+                    Alerts
+                  </Button>
+                )}
               </div>
             </div>
             {error && (

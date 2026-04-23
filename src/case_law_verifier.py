@@ -13,7 +13,6 @@ class CaseLawVerifier:
     def __init__(self, rag_corpus_path: str = "./data/processed/shc_cases_rag.json"):
         """Initialize with RAG corpus"""
         self.rag_corpus_path = rag_corpus_path
-        self.known_cases = self._load_known_cases()
         self.valid_citation_patterns = [
             r'\d{4}\s+SCMR\s+\d+',  # 2020 SCMR 316
             r'PLD\s+\d{4}\s+SC\s+\d+',  # PLD 2009 SC 45
@@ -25,6 +24,7 @@ class CaseLawVerifier:
             r'Cr\.Rev\s+\d+/\d+',
             r'Case\s+\d+/\d+',
         ]
+        self.known_cases = self._load_known_cases()
     
     def _load_known_cases(self) -> Set[str]:
         """Load known case citations from RAG corpus"""

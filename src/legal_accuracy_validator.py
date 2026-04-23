@@ -240,6 +240,15 @@ class LegalAccuracyValidator:
                 'text': mixed_format.group(),
                 'message': 'Mixed PPC/CrPC format. Use either "Section X PPC" or "Section X CrPC" separately.'
             })
+
+        # Find section mentions without legal code suffix (possible ambiguity)
+        bare_sections = re.findall(r'Section\s+\d+[A-Z]?\b(?!\s*(PPC|CrPC))', answer, re.IGNORECASE)
+        if bare_sections:
+            issues.append({
+                'type': 'ambiguous_section_reference',
+                'text': ', '.join(sorted(set(bare_sections))),
+                'message': 'Section references should include code suffix (PPC or CrPC) for clarity.'
+            })
         
         return {'issues': issues}
     

@@ -10,7 +10,7 @@ export type ChatResponse = {
   retrieved_sources?: number;
 };
 
-export async function sendChat(question: string, use_formatter: boolean = true): Promise<ChatResponse> {
+export async function sendChat(question: string, use_formatter: boolean = false): Promise<ChatResponse> {
   try {
     const response = await api.post<{
       answer: string;

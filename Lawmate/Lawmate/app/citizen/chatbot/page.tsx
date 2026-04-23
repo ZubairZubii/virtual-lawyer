@@ -136,6 +136,45 @@ export default function ChatbotPage() {
     setInput(suggestion)
   }
 
+  const renderMessageContent = (content: string) => {
+    const lines = content.split("\n")
+    const items: React.ReactNode[] = []
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = (lines[i] || "").trim()
+      if (!line) {
+        items.push(<div key={`sp-${i}`} className="h-2" />)
+        continue
+      }
+
+      const isBullet = /^[-*•]\s+/.test(line)
+      const isHeading = !isBullet && /:$/.test(line) && line.length <= 60
+
+      if (isHeading) {
+        items.push(
+          <h4 key={`h-${i}`} className="font-semibold text-sm mt-3 mb-2">
+            {line.replace(/:$/, "")}
+          </h4>,
+        )
+      } else if (isBullet) {
+        items.push(
+          <div key={`b-${i}`} className="flex gap-2 text-sm leading-relaxed mb-1">
+            <span className="mt-1.5 inline-block h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+            <span>{line.replace(/^[-*•]\s+/, "")}</span>
+          </div>,
+        )
+      } else {
+        items.push(
+          <p key={`p-${i}`} className="text-sm leading-relaxed mb-2">
+            {line}
+          </p>,
+        )
+      }
+    }
+
+    return <div className="space-y-0.5">{items}</div>
+  }
+
   return (
     <div className="flex">
       <Sidebar userType="citizen" />
@@ -190,7 +229,7 @@ export default function ChatbotPage() {
                   <Card
                     className={`px-6 py-4 border transition-all duration-300 ${message.role === "user" ? "bg-gradient-to-br from-primary to-accent text-primary-foreground border-primary/50 rounded-3xl" : "bg-card border-border/50 hover:border-primary/30 rounded-2xl"}`}
                   >
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                    {renderMessageContent(message.content)}
 
                     {/* Sources for assistant messages */}
                     {message.role === "assistant" && message.sources && message.sources.length > 0 && (

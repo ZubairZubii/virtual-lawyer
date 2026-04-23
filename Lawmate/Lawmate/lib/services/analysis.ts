@@ -33,8 +33,16 @@ export type CasePredictionResponse = {
     conviction_probability: number;
     acquittal_probability: number;
     bail_probability: number;
-    sentence_prediction: string;
-    timeline_prediction: string;
+    /** Backend returns structured objects, not only strings */
+    sentence_prediction:
+      | string
+      | {
+          predictions: Array<Record<string, unknown>>;
+          overall_risk: number;
+        };
+    timeline_prediction:
+      | string
+      | Record<string, string>;
   };
   risk_assessment: {
     overall_risk: number;
@@ -135,6 +143,18 @@ export type CitizenQuickCaseAnalysisRequest = {
   city?: string;
   hearing_court?: string;
   custody_status?: "in_custody" | "not_in_custody" | "unknown";
+  case_stage?: string;
+  incident_date?: string;
+  incident_location?: string;
+  fir_status?: string;
+  police_station?: string;
+  witness_status?: string;
+  witness_count?: number;
+  evidence_summary?: string;
+  available_documents?: string;
+  key_question?: string;
+  desired_outcome?: string;
+  child_involved?: boolean;
 };
 
 export type CitizenQuickCaseAnalysisResponse = {
@@ -146,17 +166,57 @@ export type CitizenQuickCaseAnalysisResponse = {
   recommendations: string[];
   next_steps: string[];
   disclaimer: string;
+  missing_information?: string[];
+  confidence_note?: string;
 };
 
 /** Advocate quick triage: same response shape as citizen quick analysis; extra optional intake for the lawyer endpoint. */
 export type LawyerQuickCaseAnalysisRequest = CitizenQuickCaseAnalysisRequest & {
   known_ppc_sections?: string;
-  case_stage?: string;
   procedural_notes?: string;
+  opposing_party_version?: string;
+  evidence_gaps?: string;
+  relief_sought?: string;
+  client_goal?: string;
+};
+
+export type OnboardingExtractionRequest = {
+  case_description: string;
+  city?: string;
+  case_type?: string;
+  urgency?: "low" | "medium" | "high";
+  custody_status?: "in_custody" | "not_in_custody" | "unknown";
+  uploaded_documents?: Array<{ doc_id: string; file_name: string }>;
+};
+
+export type OnboardingExtractionResponse = {
+  extracted_case_profile: {
+    case_type_guess: string;
+    stage_guess: string;
+    core_facts: string[];
+    parties: string[];
+    timeline_points: string[];
+    evidence_found: string[];
+    missing_critical_information: string[];
+  };
+  suggested_analysis_modes: string[];
+  suggested_parameters: string[];
+  one_paragraph_summary: string;
 };
 
 function mergeLawyerQuickTextForGuards(req: LawyerQuickCaseAnalysisRequest): CitizenQuickCaseAnalysisRequest {
-  const merged = [req.case_description, req.known_ppc_sections, req.case_stage, req.procedural_notes]
+  const merged = [
+    req.case_description,
+    req.known_ppc_sections,
+    req.case_stage,
+    req.procedural_notes,
+    req.evidence_summary,
+    req.evidence_gaps,
+    req.available_documents,
+    req.relief_sought,
+    req.client_goal,
+    req.key_question,
+  ]
     .filter((s) => (s || "").trim().length > 0)
     .join("\n");
   return {
@@ -165,6 +225,18 @@ function mergeLawyerQuickTextForGuards(req: LawyerQuickCaseAnalysisRequest): Cit
     city: req.city,
     hearing_court: req.hearing_court,
     custody_status: req.custody_status,
+    case_stage: req.case_stage,
+    incident_date: req.incident_date,
+    incident_location: req.incident_location,
+    fir_status: req.fir_status,
+    police_station: req.police_station,
+    witness_status: req.witness_status,
+    witness_count: req.witness_count,
+    evidence_summary: req.evidence_summary,
+    available_documents: req.available_documents,
+    key_question: req.key_question,
+    desired_outcome: req.desired_outcome,
+    child_involved: req.child_involved,
   };
 }
 
@@ -385,9 +457,24 @@ export async function analyzeLawyerCaseQuick(
       city: request.city ?? "",
       hearing_court: request.hearing_court ?? "",
       custody_status: request.custody_status ?? "unknown",
-      known_ppc_sections: request.known_ppc_sections ?? "",
       case_stage: request.case_stage ?? "",
+      incident_date: request.incident_date ?? "",
+      incident_location: request.incident_location ?? "",
+      fir_status: request.fir_status ?? "",
+      police_station: request.police_station ?? "",
+      witness_status: request.witness_status ?? "",
+      witness_count: request.witness_count ?? 0,
+      evidence_summary: request.evidence_summary ?? "",
+      available_documents: request.available_documents ?? "",
+      key_question: request.key_question ?? "",
+      desired_outcome: request.desired_outcome ?? "",
+      child_involved: request.child_involved ?? false,
+      known_ppc_sections: request.known_ppc_sections ?? "",
       procedural_notes: request.procedural_notes ?? "",
+      opposing_party_version: request.opposing_party_version ?? "",
+      evidence_gaps: request.evidence_gaps ?? "",
+      relief_sought: request.relief_sought ?? "",
+      client_goal: request.client_goal ?? "",
     }),
   });
 
@@ -449,6 +536,12 @@ export async function analyzeLawyerCaseQuick(
 
   const errText = await res.text().catch(() => "");
   throw new Error(`Request failed: ${res.status} ${res.statusText} ${errText}`.trim());
+}
+
+export async function extractOnboardingCaseProfile(
+  request: OnboardingExtractionRequest
+): Promise<OnboardingExtractionResponse> {
+  return api.post<OnboardingExtractionResponse>("/api/case-onboarding/extract", request);
 }
 
 

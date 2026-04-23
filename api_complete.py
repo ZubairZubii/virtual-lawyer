@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict
 import uvicorn
 import sys
+import os
 from pathlib import Path
 import shutil
 import re
@@ -26,6 +27,13 @@ except Exception:
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from two_stage_pipeline import TwoStagePipeline
+
+try:
+    from pipeline_trace import configure_pipeline_logging
+
+    configure_pipeline_logging()
+except Exception:
+    pass
 try:
     from three_stage_pipeline import ThreeStagePipeline
     THREE_STAGE_AVAILABLE = True
@@ -106,8 +114,11 @@ question_normalizer = None
 case_law_verifier = None
 
 try:
-    # Try three-stage pipeline first (better quality)
-    if THREE_STAGE_AVAILABLE:
+    # Prefer fast two-stage mode by default; opt into three-stage via env flag.
+    enable_three_stage = os.getenv("ENABLE_THREE_STAGE_PIPELINE", "false").lower() == "true"
+
+    # Try three-stage pipeline only when explicitly enabled.
+    if THREE_STAGE_AVAILABLE and enable_three_stage:
         try:
             pipeline = ThreeStagePipeline(
                 peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
@@ -129,7 +140,8 @@ try:
             formatter_type="groq",
             formatter_api_key=None  # Will use from config
         )
-        print("✅ Using Two-Stage Pipeline (Local Model + RAG)")
+        mode_label = "forced fast mode (default)" if not enable_three_stage else "fallback mode"
+        print(f"✅ Using Two-Stage Pipeline (Local Model + RAG) [{mode_label}]")
     risk_analyzer = LegalRiskAnalyzer()
     case_predictor = CasePredictor()
     advanced_analyzer = AdvancedCaseAnalyzer()
@@ -183,7 +195,143 @@ except Exception as e:
 # Request/Response Models
 class QuestionRequest(BaseModel):
     question: str
+    # Groq formatter is on by default for best final answer quality.
     use_formatter: bool = True
+
+
+def _is_low_quality_answer(answer: str) -> bool:
+    """
+    Heuristic guardrail for raw/broken outputs.
+    Triggers a formatter retry when the answer looks instruction-like,
+    truncated, or unrelated to user-facing legal guidance.
+    """
+    if not answer:
+        return True
+
+    text = answer.strip()
+    lower = text.lower()
+    word_count = len(re.findall(r"\w+", text))
+
+    bad_phrases = [
+        "you should not do anything until you have read the legal context",
+        "followed it directly",
+        "follow it directly",
+        "office of the",
+        "legal context and followed it",
+        "understand the legal context and follow it directly",
+        "you should not take any actions until you have read",
+    ]
+    if any(p in lower for p in bad_phrases):
+        return True
+
+    if "LEGAL CONTEXT" in text or "ANSWER FORMAT" in text:
+        return True
+
+    # Very short/truncated responses are usually low-quality for legal guidance.
+    if word_count < 40:
+        return True
+
+    # Detect likely truncation.
+    if re.search(r"(of the|under the|with the)\s*$", lower):
+        return True
+
+    return False
+
+
+def _is_false_fir_urgent_question(question: str) -> bool:
+    q = question.lower()
+    has_fir = "fir" in q or "first information report" in q
+    has_false = "false" in q or "wrong" in q or "fake" in q
+    has_urgent_window = "first 24" in q or "24 hours" in q or "immediately" in q
+    return has_fir and has_false and has_urgent_window
+
+
+def _build_false_fir_urgent_answer() -> str:
+    return (
+        "In the first 24 hours after a false FIR, act quickly and in writing.\n\n"
+        "1) Contact a criminal lawyer immediately and share FIR number, police station, and exact allegations.\n"
+        "2) Apply for protective/pre-arrest bail (if arrest risk exists) through your lawyer as early as possible.\n"
+        "3) Collect and preserve exculpatory proof right away (location evidence, CCTV, call records, witnesses, documents).\n"
+        "4) Submit a written representation to senior police officials explaining falsity and requesting fair inquiry.\n"
+        "5) Do not ignore police notices; appear through counsel and avoid any informal admissions.\n"
+        "6) Keep copies of every complaint/application with date and receiving stamp.\n\n"
+        "Legal basis: FIR registration is under Section 154 CrPC, and case handling differs for non-cognizable matters under Section 155 CrPC. "
+        "For arrest/remand and bail strategy, your lawyer should move immediately under applicable CrPC provisions."
+    )
+
+
+def _is_structured_answer_complete(structured: Dict) -> bool:
+    if not isinstance(structured, dict):
+        return False
+    issue = (structured.get("issue") or "").strip()
+    conclusion = (structured.get("conclusion") or "").strip()
+    law = structured.get("law") or []
+    application = structured.get("application") or []
+    return bool(issue and conclusion and isinstance(law, list) and len(law) > 0 and isinstance(application, list) and len(application) > 0)
+
+
+def _fallback_structured_answer(question: str, answer: str, references: List[Dict]) -> Dict:
+    law_items = []
+    for ref in references[:4]:
+        if not isinstance(ref, dict):
+            continue
+        label = ref.get("title") or ref.get("case_no") or ref.get("section") or ref.get("type")
+        if label:
+            law_items.append(str(label))
+    if not law_items:
+        law_items = ["Grounded Pakistan criminal law references were limited for this query."]
+
+    first_sentences = re.split(r"(?<=[.!?])\s+", (answer or "").strip())
+    first_sentences = [s.strip() for s in first_sentences if s.strip()]
+    app = first_sentences[:2] if first_sentences else ["No stable application point extracted from model output."]
+    conclusion = first_sentences[-1] if first_sentences else "Please verify key facts with a qualified lawyer before action."
+
+    return {
+        "issue": question.strip(),
+        "law": law_items[:4],
+        "application": app,
+        "analysis": [],
+        "conclusion": conclusion,
+    }
+
+
+def _extract_answer_sections(answer: str) -> List[str]:
+    """Extract section mentions like 'Section 154 CrPC' from answer text."""
+    if not answer:
+        return []
+    matches = re.findall(r"section\s+(\d+[a-z]?)\s*(ppc|crpc)", answer, re.IGNORECASE)
+    return [f"{num.lower()}_{code.lower()}" for num, code in matches]
+
+
+def _extract_reference_sections(references: List[Dict]) -> List[str]:
+    """Extract section mentions available in grounded references."""
+    extracted = []
+    for ref in references:
+        if not isinstance(ref, dict):
+            continue
+        rtype = str(ref.get("type", "")).lower()
+        title = str(ref.get("title", "")).lower()
+        section = str(ref.get("section", "")).lower()
+        if rtype == "ppc" and section:
+            extracted.append(f"{section}_ppc")
+        # Capture CrPC/PPC sections from title text when available
+        for num, code in re.findall(r"section\s+(\d+[a-z]?)\s*(ppc|crpc)", title, re.IGNORECASE):
+            extracted.append(f"{num.lower()}_{code.lower()}")
+    return extracted
+
+
+def _is_legally_grounded_answer(answer: str, references: List[Dict]) -> bool:
+    """
+    Reject answers that introduce new section numbers not present in references.
+    This prevents hallucination amplification through formatting/reasoning.
+    """
+    ans_sections = set(_extract_answer_sections(answer))
+    if not ans_sections:
+        return True
+    ref_sections = set(_extract_reference_sections(references))
+    if not ref_sections:
+        return True
+    return ans_sections.issubset(ref_sections)
 
 class CaseDetailsRequest(BaseModel):
     sections: List[str]
@@ -248,6 +396,18 @@ class CitizenQuickCaseRequest(BaseModel):
     city: Optional[str] = ""
     hearing_court: Optional[str] = ""
     custody_status: Optional[str] = "unknown"  # in_custody, not_in_custody, unknown
+    case_stage: Optional[str] = ""
+    incident_date: Optional[str] = ""
+    incident_location: Optional[str] = ""
+    fir_status: Optional[str] = ""
+    police_station: Optional[str] = ""
+    witness_status: Optional[str] = ""
+    witness_count: Optional[int] = 0
+    evidence_summary: Optional[str] = ""
+    available_documents: Optional[str] = ""
+    key_question: Optional[str] = ""
+    desired_outcome: Optional[str] = ""
+    child_involved: Optional[bool] = False
 
 
 class LawyerQuickCaseRequest(BaseModel):
@@ -260,6 +420,35 @@ class LawyerQuickCaseRequest(BaseModel):
     known_ppc_sections: Optional[str] = ""
     case_stage: Optional[str] = ""
     procedural_notes: Optional[str] = ""
+    incident_date: Optional[str] = ""
+    incident_location: Optional[str] = ""
+    fir_status: Optional[str] = ""
+    police_station: Optional[str] = ""
+    witness_status: Optional[str] = ""
+    witness_count: Optional[int] = 0
+    evidence_summary: Optional[str] = ""
+    available_documents: Optional[str] = ""
+    key_question: Optional[str] = ""
+    desired_outcome: Optional[str] = ""
+    child_involved: Optional[bool] = False
+    opposing_party_version: Optional[str] = ""
+    evidence_gaps: Optional[str] = ""
+    relief_sought: Optional[str] = ""
+    client_goal: Optional[str] = ""
+
+
+class OnboardingDocumentItem(BaseModel):
+    doc_id: str
+    file_name: str
+
+
+class CaseOnboardingExtractRequest(BaseModel):
+    case_description: str
+    city: Optional[str] = ""
+    case_type: Optional[str] = ""
+    urgency: Optional[str] = "medium"
+    custody_status: Optional[str] = "unknown"
+    uploaded_documents: Optional[List[OnboardingDocumentItem]] = []
 
 
 class CreateLawyerClientRequest(BaseModel):
@@ -461,6 +650,35 @@ Please ask me about any specific legal concern you have. I can also help with do
             use_formatter=request.use_formatter
         )
         
+        # Hard fallback for urgent false-FIR guidance where model quality is currently unstable.
+        if _is_false_fir_urgent_question(normalized_question):
+            result["answer"] = _build_false_fir_urgent_answer()
+            result["references"] = [
+                {"type": "CrPC", "title": "CrPC Section 154 - First Information Report (FIR)"},
+                {"type": "CrPC", "title": "CrPC Section 155 - Non-Cognizable Cases"},
+            ]
+            result["sources_count"] = 2
+
+        # If fast mode produced a low-quality/raw response, retry once with formatter.
+        if (not request.use_formatter) and _is_low_quality_answer(result.get("answer", "")):
+            try:
+                retry_result = pipeline.generate_answer(
+                    normalized_question,
+                    use_formatter=True
+                )
+                if retry_result.get("answer"):
+                    result = retry_result
+                    # If retry is still weak for urgent false-FIR query, force safe structured answer.
+                    if _is_false_fir_urgent_question(normalized_question) and _is_low_quality_answer(result.get("answer", "")):
+                        result["answer"] = _build_false_fir_urgent_answer()
+                        result["references"] = [
+                            {"type": "CrPC", "title": "CrPC Section 154 - First Information Report (FIR)"},
+                            {"type": "CrPC", "title": "CrPC Section 155 - Non-Cognizable Cases"},
+                        ]
+                        result["sources_count"] = 2
+            except Exception as e:
+                print(f"Warning: formatter retry failed: {e}")
+
         # Step 5: Verify case citations
         cleaned_answer = result['answer']
         citation_warnings = []
@@ -482,6 +700,7 @@ Please ask me about any specific legal concern you have. I can also help with do
         
         # Step 6: Validate answer
         validation = None
+        validation_warnings = []
         if validator:
             try:
                 validation = validator.validate_answer(
@@ -489,22 +708,122 @@ Please ask me about any specific legal concern you have. I can also help with do
                     question=normalized_question,
                     references=result.get('references', [])
                 )
+                validation_warnings = validation.get('warnings', [])
             except Exception as e:
                 print(f"Warning: Validation error: {e}")
         
         # Ensure cleaned_answer is used (fix for citation removal)
         final_answer = cleaned_answer if cleaned_answer else result.get('answer', '')
+        structured_answer = result.get("structured_answer")
         
+        # Keep grounded references for internal validation/guardrails.
+        filtered_references = []
+        for ref in result.get('references', []):
+            if not isinstance(ref, dict):
+                continue
+            ref_type = ref.get("type")
+            if ref_type == "PPC" and ref.get("section"):
+                filtered_references.append(ref)
+            elif ref_type == "CrPC" and ref.get("title"):
+                filtered_references.append(ref)
+            elif ref_type == "Constitution" and ref.get("title"):
+                filtered_references.append(ref)
+            elif ref_type == "Case Law" and ref.get("case_no"):
+                filtered_references.append(ref)
+            elif ref.get("title"):
+                filtered_references.append(ref)
+
+        # Deduplicate references while preserving order.
+        dedup_refs = []
+        seen_refs = set()
+        for ref in filtered_references:
+            key = (
+                str(ref.get("type", "")),
+                str(ref.get("title", "")),
+                str(ref.get("case_no", "")),
+                str(ref.get("section", "")),
+            )
+            if key in seen_refs:
+                continue
+            seen_refs.add(key)
+            dedup_refs.append(ref)
+        filtered_references = dedup_refs
+
+        # Frontend-facing sources: prefer Groq-generated display references.
+        frontend_references = []
+        if isinstance(result.get("display_references"), list):
+            frontend_references = [str(x).strip() for x in result.get("display_references", []) if str(x).strip()]
+        if not frontend_references:
+            # fallback to readable legal references if Groq display source generation fails
+            for ref in filtered_references[:5]:
+                if isinstance(ref, dict):
+                    title = ref.get("title") or ref.get("case_no") or ref.get("section") or ref.get("type")
+                    if title:
+                        frontend_references.append(str(title))
+
+        # Source visibility fallback: keep at least one readable source item when available.
+        if not filtered_references and isinstance(result.get("references"), list):
+            for ref in result.get("references", [])[:3]:
+                if isinstance(ref, dict):
+                    title = ref.get("title") or ref.get("case_no") or ref.get("type")
+                    if title:
+                        filtered_references.append({
+                            "type": ref.get("type", "Reference"),
+                            "title": str(title),
+                        })
+
+        # Deterministic completeness check for structured output.
+        if not _is_structured_answer_complete(structured_answer):
+            structured_answer = _fallback_structured_answer(
+                question=original_question,
+                answer=final_answer,
+                references=filtered_references,
+            )
+
+        # Legal grounding lock: if answer introduces sections not in references,
+        # fall back to stage1 extractive draft (grounded by construction).
+        if not _is_legally_grounded_answer(final_answer, filtered_references):
+            extractive_fallback = result.get("initial_answer", "")
+            if extractive_fallback:
+                final_answer = extractive_fallback
+            structured_answer = _fallback_structured_answer(
+                question=original_question,
+                answer=final_answer,
+                references=filtered_references,
+            )
+            citation_warnings.append({
+                "type": "grounding_lock_fallback",
+                "message": "Generated answer introduced ungrounded section references; reverted to grounded extractive answer."
+            })
+
+        try:
+            from pipeline_trace import scrub_statute_numbers_from_chat_answer
+
+            final_answer = scrub_statute_numbers_from_chat_answer(final_answer or "")
+        except Exception:
+            pass
+
         response = {
             "question": original_question,
             "answer": final_answer,  # Use cleaned answer
-            "references": result.get('references', []),
-            "sources_count": result.get('sources_count', 0),
+            "references": frontend_references,
+            "sources_count": len(frontend_references),
             "response_time": round(result.get('response_time', 0), 2),
             "stage1_time": round(result.get('stage1_time', 0), 2),
+            "stage1_5_time": round(result.get('stage1_5_time', 0), 2),
             "stage2_time": round(result.get('stage2_time', 0), 2),
             "stage3_time": round(result.get('stage3_time', 0), 2) if 'stage3_time' in result else 0,
-            "formatted": result.get('formatted', False)
+            "formatted": result.get('formatted', False),
+            "reasoned": result.get("reasoned", False),
+            "intent": result.get("intent", "general"),
+            "confidence": result.get("confidence", "medium"),
+            "structured_answer": structured_answer,
+            "model_sources": {
+                "reasoner_mode": result.get("reasoner_mode", "none"),
+                "reasoner_model": result.get("reasoner_model_used", ""),
+                "formatter_mode": result.get("formatter_mode", "none"),
+                "formatter_model": result.get("formatter_model_used", ""),
+            },
         }
         
         # Add validation if available
@@ -512,7 +831,7 @@ Please ask me about any specific legal concern you have. I can also help with do
             response["validation"] = {
                 "valid": validation['valid'],
                 "score": validation['score'],
-                "warnings": validation['warnings'] if validation['score'] < 80 else []
+                "warnings": validation_warnings if validation['score'] < 90 else []
             }
         
         if citation_warnings:
@@ -888,7 +1207,49 @@ def _fallback_quick_case_analysis(
         "recommendations": recommendations[:6],
         "next_steps": next_steps,
         "disclaimer": "This is AI-supported guidance, not a substitute for formal legal advice.",
+        "missing_information": _build_missing_information(request),
+        "confidence_note": _build_confidence_note(request),
     }
+
+
+def _build_missing_information(request: CitizenQuickCaseRequest) -> List[str]:
+    missing: List[str] = []
+    if not (request.incident_date or "").strip():
+        missing.append("Incident date/time")
+    if not (request.incident_location or "").strip():
+        missing.append("Exact incident location")
+    if not (request.fir_status or "").strip():
+        missing.append("FIR status (registered / refused / unknown)")
+    if not (request.evidence_summary or "").strip():
+        missing.append("Evidence summary (CCTV, medical report, screenshots, call data)")
+    if not (request.witness_status or "").strip():
+        missing.append("Witness status (available / none / unknown)")
+    if not (request.available_documents or "").strip():
+        missing.append("Available documents (FIR copy, medico-legal, notices, orders)")
+    if not (request.key_question or "").strip():
+        missing.append("Main legal question")
+    return missing[:6]
+
+
+def _build_confidence_note(request: CitizenQuickCaseRequest) -> str:
+    score = 0
+    if len((request.case_description or "").strip()) >= 120:
+        score += 1
+    if (request.incident_date or "").strip():
+        score += 1
+    if (request.incident_location or "").strip():
+        score += 1
+    if (request.fir_status or "").strip():
+        score += 1
+    if (request.evidence_summary or "").strip():
+        score += 1
+    if (request.witness_status or "").strip():
+        score += 1
+    if score >= 5:
+        return "High confidence: analysis includes strong factual context."
+    if score >= 3:
+        return "Medium confidence: useful analysis, but adding missing facts can improve precision."
+    return "Low confidence: please add timeline, FIR status, evidence, and witness details for better accuracy."
 
 
 @app.post("/api/citizen/case-quick-analysis")
@@ -923,6 +1284,17 @@ Citizen input:
 - City: {request.city or "not provided"}
 - Hearing court: {request.hearing_court or "not provided"}
 - Custody status: {request.custody_status or "unknown"}
+- Case stage: {request.case_stage or "not provided"}
+- Incident date/time: {request.incident_date or "not provided"}
+- Incident location: {request.incident_location or "not provided"}
+- FIR status: {request.fir_status or "not provided"}
+- Police station: {request.police_station or "not provided"}
+- Witness status/count: {(request.witness_status or "not provided")} / {request.witness_count or 0}
+- Evidence summary: {request.evidence_summary or "not provided"}
+- Available documents: {request.available_documents or "not provided"}
+- Main legal question: {request.key_question or "not provided"}
+- Desired outcome: {request.desired_outcome or "not provided"}
+- Child involved: {"yes" if request.child_involved else "no"}
 
 Return STRICT JSON in this schema:
 {{
@@ -933,7 +1305,9 @@ Return STRICT JSON in this schema:
   "risk_level": "Low|Medium|High",
   "recommendations": ["3-6 action bullets"],
   "next_steps": ["3-5 immediate steps"],
-  "disclaimer": "short legal disclaimer"
+  "disclaimer": "short legal disclaimer",
+  "missing_information": ["3-6 missing details if needed"],
+  "confidence_note": "High|Medium|Low confidence with one-line reason"
 }}
 
 CRITICAL for risk_score:
@@ -944,6 +1318,8 @@ CRITICAL for risk_score:
 
 Rules:
 - Keep output non-technical and citizen-friendly.
+- Stay within Pakistan criminal law framing only.
+- Use missing_information to list critical facts still needed.
 - If sections are unknown, use [].
 - Return JSON only. No markdown.
 """
@@ -999,6 +1375,9 @@ Rules:
         if not isinstance(parsed.get("extracted_sections"), list):
             parsed["extracted_sections"] = _extract_sections_from_text(request.case_description)
         parsed.setdefault("disclaimer", "This is AI-supported guidance, not a substitute for formal legal advice.")
+        if not isinstance(parsed.get("missing_information"), list):
+            parsed["missing_information"] = _build_missing_information(request)
+        parsed.setdefault("confidence_note", _build_confidence_note(request))
         return parsed
     except HTTPException:
         raise
@@ -1012,7 +1391,18 @@ Rules:
 def _lawyer_quick_supplementary(req: LawyerQuickCaseRequest) -> str:
     return " ".join(
         p
-        for p in [req.known_ppc_sections or "", req.case_stage or "", req.procedural_notes or ""]
+        for p in [
+            req.known_ppc_sections or "",
+            req.case_stage or "",
+            req.procedural_notes or "",
+            req.evidence_summary or "",
+            req.evidence_gaps or "",
+            req.available_documents or "",
+            req.relief_sought or "",
+            req.client_goal or "",
+            req.key_question or "",
+            req.opposing_party_version or "",
+        ]
         if (p or "").strip()
     )
 
@@ -1053,6 +1443,18 @@ async def lawyer_case_quick_analysis(request: LawyerQuickCaseRequest):
             city=request.city,
             hearing_court=request.hearing_court,
             custody_status=request.custody_status,
+            case_stage=request.case_stage,
+            incident_date=request.incident_date,
+            incident_location=request.incident_location,
+            fir_status=request.fir_status,
+            police_station=request.police_station,
+            witness_status=request.witness_status,
+            witness_count=request.witness_count,
+            evidence_summary=request.evidence_summary,
+            available_documents=request.available_documents,
+            key_question=request.key_question,
+            desired_outcome=request.desired_outcome,
+            child_involved=request.child_involved,
         )
 
         groq_key = ""
@@ -1081,6 +1483,19 @@ Matter summary:
 - Known PPC sections (if stated): {request.known_ppc_sections or "not specified"}
 - Procedural stage: {request.case_stage or "not specified"}
 - Advocate notes (procedure / evidence / risk): {request.procedural_notes or "none"}
+- Incident date/time: {request.incident_date or "not provided"}
+- Incident location: {request.incident_location or "not provided"}
+- FIR status: {request.fir_status or "not provided"}
+- Police station: {request.police_station or "not provided"}
+- Witness status/count: {(request.witness_status or "not provided")} / {request.witness_count or 0}
+- Evidence summary: {request.evidence_summary or "not provided"}
+- Evidence gaps: {request.evidence_gaps or "not provided"}
+- Available documents: {request.available_documents or "not provided"}
+- Opposing version: {request.opposing_party_version or "not provided"}
+- Relief sought: {request.relief_sought or "not provided"}
+- Client goal: {request.client_goal or "not provided"}
+- Main legal question: {request.key_question or "not provided"}
+- Child involved: {"yes" if request.child_involved else "no"}
 - Urgency: {request.urgency or "medium"}
 - City: {request.city or "not provided"}
 - Hearing court: {request.hearing_court or "not provided"}
@@ -1095,7 +1510,9 @@ Return STRICT JSON in this schema:
   "risk_level": "Low|Medium|High",
   "recommendations": ["3-6 tactical bullets for counsel"],
   "next_steps": ["3-5 immediate litigation / file tasks"],
-  "disclaimer": "short legal disclaimer"
+  "disclaimer": "short legal disclaimer",
+  "missing_information": ["3-6 missing details if needed"],
+  "confidence_note": "High|Medium|Low confidence with one-line reason"
 }}
 
 CRITICAL for risk_score:
@@ -1106,6 +1523,8 @@ CRITICAL for risk_score:
 
 Rules:
 - Recommendations should reflect advocate work (applications, record, cross-examination angles, disclosure)—not generic client advice.
+- Keep analysis tied to Pakistan criminal law procedural practice.
+- Use missing_information to request file facts that are absent.
 - If sections are unknown, use [] or best inference from text.
 - Return JSON only. No markdown.
 """
@@ -1190,6 +1609,9 @@ Rules:
             request.case_description,
             " ".join(str(s) for s in model_sections),
         )
+        if not isinstance(parsed.get("missing_information"), list):
+            parsed["missing_information"] = _build_missing_information(base)
+        parsed.setdefault("confidence_note", _build_confidence_note(base))
         parsed.setdefault(
             "disclaimer",
             "This is AI-supported guidance, not a substitute for formal legal advice.",
@@ -1209,6 +1631,18 @@ Rules:
             city=request.city,
             hearing_court=request.hearing_court,
             custody_status=request.custody_status,
+            case_stage=request.case_stage,
+            incident_date=request.incident_date,
+            incident_location=request.incident_location,
+            fir_status=request.fir_status,
+            police_station=request.police_station,
+            witness_status=request.witness_status,
+            witness_count=request.witness_count,
+            evidence_summary=request.evidence_summary,
+            available_documents=request.available_documents,
+            key_question=request.key_question,
+            desired_outcome=request.desired_outcome,
+            child_involved=request.child_involved,
         )
         parsed_fb = _fallback_quick_case_analysis(
             base, supplementary_text=supplementary, audience="lawyer"
@@ -1219,6 +1653,135 @@ Rules:
             supplementary,
         )
         return parsed_fb
+
+
+@app.post("/api/case-onboarding/extract")
+async def case_onboarding_extract(request: CaseOnboardingExtractRequest):
+    """
+    Dynamic onboarding extractor:
+    - Uses Groq to structure intake facts
+    - Returns profile + suggested analysis modes/parameters
+    - Works even with partial information and uploaded doc metadata
+    """
+    description = (request.case_description or "").strip()
+    if len(description) < 20:
+        raise HTTPException(status_code=400, detail="Please provide at least 20 characters in case description.")
+
+    docs = request.uploaded_documents or []
+    doc_lines = "\n".join([f"- {d.file_name} ({d.doc_id})" for d in docs[:10]]) or "- none"
+
+    try:
+        groq_key = ""
+        try:
+            from config import GROQ_API_KEY
+            groq_key = GROQ_API_KEY or ""
+        except Exception:
+            groq_key = ""
+
+        if not groq_key:
+            return {
+                "extracted_case_profile": {
+                    "case_type_guess": request.case_type or "Criminal Matter",
+                    "stage_guess": "Initial intake",
+                    "core_facts": [description[:240]],
+                    "parties": [],
+                    "timeline_points": [],
+                    "evidence_found": [d.file_name for d in docs[:5]],
+                    "missing_critical_information": [
+                        "Exact timeline of events",
+                        "FIR status and police action",
+                        "Witness and evidence details",
+                    ],
+                },
+                "suggested_analysis_modes": ["risk", "remedy", "strategy"],
+                "suggested_parameters": ["urgency", "case_stage", "custody_status", "evidence_strength"],
+                "one_paragraph_summary": "Initial onboarding summary generated without external model; add more details and run analysis.",
+            }
+
+        prompt = f"""You are a Pakistan criminal-law case onboarding analyst.
+Convert user intake into structured profile for downstream analysis/prediction.
+
+Input:
+- Case type selected: {request.case_type or "not specified"}
+- City: {request.city or "not specified"}
+- Urgency: {request.urgency or "medium"}
+- Custody status: {request.custody_status or "unknown"}
+- User narrative: {description}
+- Uploaded documents:
+{doc_lines}
+
+Return STRICT JSON:
+{{
+  "extracted_case_profile": {{
+    "case_type_guess": "string",
+    "stage_guess": "string",
+    "core_facts": ["..."],
+    "parties": ["..."],
+    "timeline_points": ["..."],
+    "evidence_found": ["..."],
+    "missing_critical_information": ["..."]
+  }},
+  "suggested_analysis_modes": ["risk","remedy","strategy","bail","evidence-gap","timeline-check"],
+  "suggested_parameters": ["key-value style labels to ask user"],
+  "one_paragraph_summary": "single concise paragraph"
+}}
+
+Rules:
+- Pakistan criminal law context only.
+- Do not invent section numbers/case law when missing.
+- Prefer practical factual extraction over legal jargon.
+- Return JSON only.
+"""
+
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {groq_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {"role": "system", "content": "You generate valid JSON for legal case onboarding extraction."},
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.2,
+                "max_tokens": 900,
+            },
+            timeout=30,
+        )
+
+        if response.status_code != 200:
+            raise HTTPException(status_code=502, detail="Onboarding extraction provider error.")
+
+        payload = response.json()
+        content = payload["choices"][0]["message"]["content"].strip()
+        cleaned = content.strip()
+        if cleaned.startswith("```"):
+            cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+            cleaned = re.sub(r"\s*```$", "", cleaned)
+        import json
+        parsed = json.loads(cleaned)
+
+        profile = parsed.get("extracted_case_profile") or {}
+        profile.setdefault("case_type_guess", request.case_type or "Criminal Matter")
+        profile.setdefault("stage_guess", "Initial intake")
+        profile.setdefault("core_facts", [description[:240]])
+        profile.setdefault("parties", [])
+        profile.setdefault("timeline_points", [])
+        profile.setdefault("evidence_found", [d.file_name for d in docs[:5]])
+        profile.setdefault("missing_critical_information", [])
+        parsed["extracted_case_profile"] = profile
+        if not isinstance(parsed.get("suggested_analysis_modes"), list):
+            parsed["suggested_analysis_modes"] = ["risk", "remedy", "strategy"]
+        if not isinstance(parsed.get("suggested_parameters"), list):
+            parsed["suggested_parameters"] = ["urgency", "case_stage", "custody_status"]
+        parsed.setdefault("one_paragraph_summary", "Case onboarding summary prepared.")
+        return parsed
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error in onboarding extraction: {str(e)}")
 
 
 # Bail Prediction Endpoint (standalone)
@@ -2401,6 +2964,8 @@ async def login(request: LoginRequest):
             }
 
         raise HTTPException(status_code=400, detail="Unsupported userType")
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         print(f"Error in login: {e}")
@@ -2479,6 +3044,8 @@ async def signup(request: SignupRequest):
             },
             "message": "Account created successfully",
         }
+    except HTTPException:
+        raise
     except HTTPException:
         raise
     except Exception as e:

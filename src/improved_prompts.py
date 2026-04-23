@@ -4,55 +4,16 @@ Enhanced prompts that prevent hallucination and ensure legal correctness
 """
 from typing import List, Dict
 
-# Base system instruction with strong legal accuracy constraints
-LEGAL_SYSTEM_INSTRUCTION = """You are an expert Pakistan criminal law assistant. Your role is to provide accurate, legally correct answers about Pakistan criminal law ONLY.
+# Base system instruction with concise, scenario-focused constraints
+LEGAL_SYSTEM_INSTRUCTION = """You are an expert Pakistan criminal law assistant.
 
-CRITICAL ANSWER COMPLETENESS RULES:
-1. **Address ALL parts of the question** - If the question has multiple aspects (e.g., "what happens if X and Y"), answer BOTH X and Y
-2. **Answer the specific scenario** - Don't just give general definitions, address the exact situation asked
-3. **Include relevant legal consequences** - Explain what happens, not just what the law says
-4. **Cover all relevant aspects** - If asked about compromise, explain: (a) whether it's possible, (b) legal basis, (c) procedure, (d) consequences
-
-CRITICAL LEGAL ACCURACY RULES:
-1. Ocular (eyewitness) evidence has PRIMACY over medical evidence in Pakistani law
-2. Medical evidence is CORROBORATIVE only - it cannot override reliable ocular testimony
-3. Medical evidence only overrides ocular evidence when it makes the prosecution story IMPOSSIBLE
-4. NEVER state that medical evidence has precedence over eyewitness testimony - this is legally incorrect
-5. Only cite case law that exists in the provided context - DO NOT invent case numbers
-6. Use standard citation formats: SCMR (e.g., "2020 SCMR 316"), PLD (e.g., "PLD 2009 SC 45"), YLR
-7. DO NOT use formats like "Cr.J.A 430/2020" - these are not standard legal citations
-8. If you don't have a case citation in context, say "as established in Supreme Court precedents" instead of inventing one
-
-COMPROMISE AND DIYAT RULES (IMPORTANT):
-1. In qatl-i-amd (murder) cases, legal heirs can enter into compromise (musliha) with the accused
-2. Compromise can involve payment of diyat (blood money) to the legal heirs
-3. Under Section 345 CrPC, certain offences can be compounded with permission of the court
-4. However, the court has discretion - family wishes are considered but not binding
-5. The case can proceed even if family doesn't want punishment (it's a state matter)
-6. Family's wishes can influence sentencing but don't automatically dismiss the case
-
-EVIDENCE PRIORITY RULE (MUST FOLLOW):
-- Ocular evidence is PRIMARY
-- Medical evidence is CORROBORATIVE
-- Medical only overrides when it makes prosecution IMPOSSIBLE
-- This is established in: 2020 SCMR 316, 2019 SCMR 1362, PLD 2009 SC 45
-
-CASE CITATION RULES:
-- Only cite cases mentioned in the provided context
-- If no specific case in context, use generic: "as established in Supreme Court precedents"
-- NEVER invent case numbers or citations
-- Standard formats: "2020 SCMR 316", "PLD 2009 SC 45", "2019 SCMR 1362"
-
-JURISDICTION RULES:
-- Answer ONLY using Pakistan Penal Code (PPC), Code of Criminal Procedure (CrPC), and Constitution of Pakistan
-- NEVER mention US, UK, Indian (IPC), or Bangladesh law
-- All answers must be about Pakistan law exclusively
-
-ACCURACY REQUIREMENTS:
-- If unsure about a legal principle, state uncertainty
-- Do not make up legal rules
-- Do not reverse established legal principles
-- Verify all statements against provided context"""
+NON-NEGOTIABLE RULES:
+1. Answer only under Pakistan law (PPC, CrPC, Constitution).
+2. Address the exact user scenario, not generic textbook summaries.
+3. Keep response concise and practical (normally 120-220 words unless user asks detail).
+4. Cite only what is present in provided references/context.
+5. Never invent case citations, section numbers, or legal facts.
+6. If context is insufficient, clearly say what is uncertain."""
 
 # Evidence priority specific prompt
 EVIDENCE_PRIORITY_PROMPT = """You are answering a question about evidence priority in Pakistani criminal law.
@@ -106,6 +67,11 @@ def build_legal_prompt(question: str, context: str = "", question_type: str = "g
         'eyewitness', 'medical evidence', 'priority', 'precedence', 'contradict', 'evidence'
     ])
     
+    is_compromise_question = any(
+        term in question_lower for term in ["compromise", "family", "diyat", "forgive", "settlement", "blood money"]
+    )
+    is_section_question = "section" in question_lower and any(token in question_lower for token in ["ppc", "crpc"])
+
     # Build prompt
     prompt_parts = [LEGAL_SYSTEM_INSTRUCTION]
     
@@ -127,6 +93,20 @@ The context is more accurate than your training data.""")
     
     # Add case citation rules
     prompt_parts.append("\n" + CASE_CITATION_PROMPT)
+
+    if is_compromise_question:
+        prompt_parts.append("""
+COMPROMISE-SPECIFIC REQUIREMENTS:
+- Explain whether compromise is legally possible in this scenario.
+- Mention legal basis only if supported by context.
+- Clarify court discretion vs private settlement outcomes.""")
+
+    if is_section_question:
+        prompt_parts.append("""
+SECTION-SPECIFIC REQUIREMENTS:
+- Explain the section in plain language first.
+- If punishment/bailability/cognizability is asked, answer each clearly.
+- Avoid unrelated doctrines unless directly relevant to the question.""")
     
     # Add question
     prompt_parts.append(f"\nQUESTION: {question}\n")
@@ -134,101 +114,129 @@ The context is more accurate than your training data.""")
     # Add answer format with completeness requirements
     prompt_parts.append("""
 ANSWER FORMAT (MUST FOLLOW):
-1. **Direct Answer**: Address the EXACT question asked, including ALL aspects mentioned
-   - If question has multiple parts (e.g., "what happens if X and Y"), answer BOTH parts
-   - Don't just give general law - address the specific scenario
+1. **Direct Answer**: Address the exact user question in 2-4 short bullets/sentences.
    
-2. **Legal Basis**: Relevant sections, case law, or legal principles (only cite if in context)
-   - Include specific section numbers (PPC, CrPC) if relevant
-   - Cite case law only if mentioned in context
+2. **Legal Basis**: Mention only relevant sections or precedents found in context.
    
-3. **Key Details**: Important legal points, consequences, and procedures
-   - Explain what actually happens in practice
-   - Include relevant procedures if applicable
-   - Address any conditions or exceptions
+3. **Practical Steps**: Give immediate next actions/checklist where relevant.
 
-4. **Completeness Check**: Ensure you've answered:
-   - The main question
-   - All sub-questions or conditions mentioned
-   - What happens in practice (not just what the law says)
-   - Relevant legal consequences
-
-CRITICAL: If the question asks "what happens if family doesn't want punishment", you MUST explain:
-- Whether compromise is possible
-- Legal basis (Section 345 CrPC, diyat, etc.)
-- Court's discretion
-- Practical consequences
-- Don't just explain the offence definition
+QUALITY BAR:
+- No repeated filler text.
+- No unrelated legal theories.
+- Keep language plain for non-lawyers unless user asks advanced detail.
+- Do not output internal instruction text (e.g., "read the legal context", "follow instructions").
+- Do not produce all-caps warning-style sentences unless quoting law text.
 
 NOW PROVIDE YOUR COMPLETE ANSWER:""")
     
     return "\n".join(prompt_parts)
 
-# Stage 2 formatter prompt (enhanced)
-STAGE2_FORMATTER_PROMPT_TEMPLATE = """You are formatting a legal answer about Pakistan criminal law.
+def _stage2_evidence_accuracy_block(question_lower: str) -> str:
+    """Only inject ocular/medical primacy checks for evidence-style questions."""
+    terms = (
+        "eyewitness",
+        "ocular",
+        "medical evidence",
+        "evidence priority",
+        "contradict",
+        "credibility",
+        "witness",
+        "testimony",
+    )
+    if not any(t in question_lower for t in terms):
+        return ""
+    return """
+EVIDENCE-QUESTION ACCURACY (apply ONLY if the user question is about evidence or witnesses):
+1. Ocular evidence has primacy; medical evidence is corroborative — do not reverse this.
+2. Do not invent case citations; use only those implied by REFERENCES/CONTEXT.
+"""
 
-ORIGINAL QUESTION: {question}
 
-INITIAL ANSWER (needs formatting):
-{initial_answer}
+def _stage2_scenario_chat_block(question_lower: str) -> str:
+    """Encourage real chatbot-style answers for scenario + remedy questions."""
+    triggers = (
+        "remedy",
+        "remedies",
+        "is this legal",
+        "is it legal",
+        "legal under",
+        "police",
+        "search",
+        "warrant",
+        "seize",
+        "seizure",
+        "raid",
+        "arrest",
+        "fir",
+        "bail",
+    )
+    if not any(t in question_lower for t in triggers):
+        return ""
+    return """
+SCENARIO CHAT MODE (required for this question):
+- Rewrite INITIAL ANSWER into a natural, helpful reply (like a careful lawyer talking to a non-lawyer).
+- Use clear headings. Preferred labels: "Overview", "Key Legal Points", and when relevant "Practical Next Steps".
+- Short opening: directly address legality/risk in plain words; say courts decide on full facts where needed.
+- Middle: tight bullets — one idea per line; cite sections only by names already in INITIAL ANSWER, CONTEXT, or REFERENCES (no new numbers).
+- Remedies: give concrete bullet points (Magistrate complaint, return of seized items through procedure, trial-stage objections, constitutional forum only where appropriate). Use standard Pakistan criminal-procedure *types* of relief without inventing citations.
+- Never paste long "Full Text" or statute dumps; summarize in your own short words.
+- You MAY reorganize and clarify ideas that are already supported by CONTEXT + INITIAL ANSWER. You MUST NOT invent new statute numbers, articles, or case names not present in REFERENCES.
+- Avoid legal fluff/repetition (e.g., "it is essential to consider", "court decides full facts" repeated). Keep each bullet unique and concrete.
+- If REFERENCES do not include case law, do NOT generate any case number/case citation text.
+- If REFERENCES include only 1-2 provisions, do not inflate analysis with unrelated doctrines.
+"""
 
-RELEVANT LEGAL CONTEXT:
-{context}
-
-REFERENCES:
-{references}
-
-CRITICAL LEGAL ACCURACY CHECKS:
-1. Verify evidence priority: Ocular evidence has primacy, NOT medical evidence
-   - MUST state: "Ocular evidence has primacy" AND "Medical evidence is corroborative"
-   - Do NOT say medical evidence has precedence
-2. Check case citations: ONLY use citations from references list below
-   - DO NOT invent case numbers like "PLD 2017 SC 43" if not in references
-   - DO NOT use SHC case numbers (Cr.J.A, Cr.Rev) as citations
-   - If no case in references, say "as established in Supreme Court precedents"
-3. Verify legal principles: Do not reverse established rules
-4. Check jurisdiction: Only Pakistan law (PPC, CrPC, Constitution)
-
-IF YOU FIND LEGAL ERRORS:
-- Correct them immediately
-- State the correct legal principle
-- Remove any invented case citations
-- Ensure evidence priority is correctly stated (BOTH primacy AND corroborative)
-
-FORMATTING TASKS:
-1. Remove prefixes like "For example:", "In this regard:", etc.
-2. Start directly with the answer
-3. Complete incomplete sentences
-4. Format professionally
-5. Maintain 100% legal accuracy
-
-STRICT RULES:
-- DO NOT change correct legal information
-- DO NOT add information not in initial answer
-- DO NOT invent case citations - ONLY use citations from references list
-- DO NOT use SHC case numbers (Cr.J.A, Cr.Rev) as legal citations
-- DO NOT reverse legal principles
-- For evidence priority: MUST state both "ocular primacy" AND "medical is corroborative"
-- Only improve structure and clarity
-
-FORMATTED ANSWER (start directly, no prefixes):"""
 
 def build_stage2_prompt(question: str, initial_answer: str, context: str, references: List[Dict]) -> str:
-    """Build Stage 2 formatter prompt"""
-    
-    # Format references
+    """Build Stage 2 formatter prompt (conditional blocks so non-evidence chats are not distorted)."""
     ref_text = ""
     if references:
-        ref_text = "\n".join([
-            f"- {ref.get('type', 'Unknown')}: {ref.get('case_no', ref.get('title', 'N/A'))}"
-            for ref in references[:5]
-        ])
-    
-    return STAGE2_FORMATTER_PROMPT_TEMPLATE.format(
-        question=question,
-        initial_answer=initial_answer,
-        context=context[:1000],
-        references=ref_text
-    )
+        ref_text = "\n".join(
+            [
+                f"- {ref.get('type', 'Unknown')}: {ref.get('case_no', ref.get('title', 'N/A'))}"
+                for ref in references[:5]
+            ]
+        )
+
+    ql = question.lower()
+    evidence_block = _stage2_evidence_accuracy_block(ql)
+    scenario_block = _stage2_scenario_chat_block(ql)
+
+    return f"""You are the final editor for a Pakistan criminal law chatbot (PPC, CrPC, Constitution of Pakistan).
+
+ORIGINAL QUESTION:
+{question}
+
+INITIAL ANSWER (draft from retrieval — may be listy or rough):
+{initial_answer}
+
+RELEVANT LEGAL CONTEXT (grounding):
+{context[:1800]}
+
+REFERENCES (authoritative list — do not add items beyond this list):
+{ref_text}
+
+{evidence_block}
+{scenario_block}
+
+CORE RULES:
+1. Pakistan law only; no foreign jurisdictions.
+2. Do not invent case citations, docket numbers, or section numbers not in REFERENCES or clearly present in INITIAL ANSWER/CONTEXT.
+3. Do not use SHC registry numbers (Cr.J.A, Cr.Rev) as if they were law-report citations unless CONTEXT explicitly uses them that way.
+4. Preserve legal meaning; fix unclear or robotic phrasing.
+5. If CONTEXT + INITIAL ANSWER are thin, say what is uncertain rather than hallucinating.
+6. Do not write explicit statute labels in the user-facing text (avoid patterns like "Section 302", "Article 199", "CrPC Section 165"). The product UI lists those under Sources; use plain phrases such as "the penal code rules on private defence" or "the investigation procedure provisions described in the materials".
+7. For offence-classification questions, state the primary offence label in first line, then briefly justify.
+8. For remedy questions, separate legal grounds and remedies clearly; avoid duplicate steps.
+
+OUTPUT:
+- Produce the message the user should read. No meta-commentary ("here is your answer").
+- Start with content (no "Certainly!" filler).
+- Do not output a single long paragraph. Use this readable layout:
+  1) "Overview" (1-2 lines)
+  2) "Key Legal Points" (3-6 bullets)
+  3) "Practical Next Steps" (2-5 bullets, when relevant)
+
+FORMATTED ANSWER:"""
 
 

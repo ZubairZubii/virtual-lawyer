@@ -1,4 +1,4 @@
-import { api } from "../api";
+import { api, BASE_URL } from "../api";
 
 export type TemplateInfo = {
   id?: string;
@@ -36,9 +36,61 @@ export async function getTemplateDetails(template_id: string) {
   }>(`/api/document/templates/${encodedId}`);
 }
 
-export async function uploadDocument(file: File) {
+export type UserDocumentMeta = {
+  doc_id: string;
+  file_name: string;
+  chunks_count: number;
+  text_length: number;
+  status: string;
+  uploaded_at?: string;
+  owner_email?: string;
+  owner_role?: string;
+  is_sample?: boolean;
+};
+
+/** Lists uploads for the logged-in user (persists across refresh; includes demo samples). */
+export async function listUserDocuments(
+  email?: string,
+  role?: "citizen" | "lawyer"
+) {
+  const params = new URLSearchParams();
+  if (email) params.set("email", email);
+  if (role) params.set("role", role);
+  const q = params.toString();
+  const path = `/api/document/list${q ? `?${q}` : ""}`;
+  const url = `${BASE_URL}${path}`;
+  const res = await fetch(url, {
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
+  });
+  // Older API processes started before this route existed return 404 — restart the backend.
+  if (res.status === 404) {
+    console.warn(
+      "[Lawmate] GET /api/document/list is missing on the API. Restart the backend (e.g. python api_complete.py) so document lists persist after refresh."
+    );
+    return { documents: [], total: 0 };
+  }
+  if (!res.ok) {
+    const errText = await res.text().catch(() => "");
+    throw new Error(
+      `Request failed: ${res.status} ${res.statusText} ${errText}`.trim()
+    );
+  }
+  const text = await res.text();
+  const data = text
+    ? (JSON.parse(text) as { documents: UserDocumentMeta[]; total: number })
+    : { documents: [], total: 0 };
+  return data;
+}
+
+export async function uploadDocument(
+  file: File,
+  opts?: { email?: string; role?: "citizen" | "lawyer" }
+) {
   const fd = new FormData();
   fd.append("file", file);
+  if (opts?.email) fd.append("user_email", opts.email);
+  if (opts?.role) fd.append("user_role", opts.role);
   return api.postMultipart<{
     doc_id: string;
     file_name: string;
