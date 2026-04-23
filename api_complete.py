@@ -2343,205 +2343,29 @@ async def list_templates(category: Optional[str] = None):
 @app.get("/api/document/templates/{template_id:path}")
 async def get_template_details(template_id: str):
     """
-    Get detailed information about a specific template including placeholder descriptions
+    Get detailed information about a specific template including SIMPLIFIED placeholder descriptions
+    Returns only essential fields that laymen users need to fill
     Note: template_id can contain slashes (e.g., "general/Affidavits")
     """
     if not document_generator:
         raise HTTPException(status_code=503, detail="Document generation not available")
-    
+
     try:
         # URL decode the template_id
         import urllib.parse
         template_id = urllib.parse.unquote(template_id)
-        
+
         if not template_id or template_id.strip() == "":
             raise HTTPException(status_code=400, detail="Template ID cannot be empty")
-        
-        templates = document_generator.list_templates()
-        template = next((t for t in templates if t.get('id') == template_id or t.get('template_id') == template_id), None)
-        
-        if not template:
-            raise HTTPException(status_code=404, detail=f"Template not found: {template_id}")
-        
-        # Get placeholders and guide from template
-        placeholders = template.get('placeholders', [])
-        placeholder_map = template.get('placeholder_map', {})
-        template_guide = template.get('placeholder_guide', {})
-        
-        # Generate placeholder descriptions
-        # First, use template guide if available
-        placeholder_descriptions = {}
-        for placeholder_key in placeholders:
-            # Check if we have a guide entry for this placeholder
-            if placeholder_key in template_guide:
-                guide_info = template_guide[placeholder_key]
-                placeholder_descriptions[placeholder_key] = {
-                    "description": guide_info.get('description', 'Enter value for this field'),
-                    "type": "text",
-                    "required": False,
-                    "original_name": guide_info.get('original_name', placeholder_key)
-                }
-            else:
-                # Generate description based on placeholder name
-                placeholder_lower = placeholder_key.lower()
-                description = "Enter value for this field"
-                field_type = "text"
-                
-                # Common placeholder patterns and their descriptions
-                if 'name' in placeholder_lower:
-                    if 'accused' in placeholder_lower or 'applicant' in placeholder_lower:
-                        description = "Full name of the accused/applicant"
-                    elif 'complainant' in placeholder_lower:
-                        description = "Full name of the complainant"
-                    elif 'petitioner' in placeholder_lower:
-                        description = "Full name of the petitioner"
-                    elif 'respondent' in placeholder_lower:
-                        description = "Full name of the respondent"
-                    else:
-                        description = "Full name"
-                elif 'fir' in placeholder_lower or 'f.i.r' in placeholder_lower:
-                    description = "FIR number (e.g., FIR No. 123/2024)"
-                    field_type = "text"
-                elif 'section' in placeholder_lower or 'sections' in placeholder_lower:
-                    description = "PPC/CrPC section numbers (e.g., '302', '302, 34', or ['302', '34'])"
-                    field_type = "text"
-                elif 'police_station' in placeholder_lower or 'ps' in placeholder_lower:
-                    description = "Name of the police station"
-                elif 'date' in placeholder_lower:
-                    if 'filing' in placeholder_lower or 'filed' in placeholder_lower:
-                        description = "Date when the case was filed (format: DD/MM/YYYY)"
-                    elif 'incident' in placeholder_lower:
-                        description = "Date of the incident (format: DD/MM/YYYY)"
-                    else:
-                        description = "Date (format: DD/MM/YYYY)"
-                    field_type = "date"
-                elif 'court' in placeholder_lower:
-                    description = "Name of the court (e.g., 'Sessions Court Karachi')"
-                elif 'judge' in placeholder_lower:
-                    description = "Name of the presiding judge"
-                elif 'address' in placeholder_lower:
-                    description = "Complete address"
-                    field_type = "textarea"
-                elif 'cnic' in placeholder_lower or 'nic' in placeholder_lower:
-                    description = "CNIC number (format: XXXXX-XXXXXXX-X)"
-                    field_type = "text"
-                elif 'phone' in placeholder_lower or 'contact' in placeholder_lower:
-                    description = "Phone/contact number"
-                    field_type = "tel"
-                elif 'email' in placeholder_lower:
-                    description = "Email address"
-                    field_type = "email"
-                elif 'case_brief' in placeholder_lower or 'brief' in placeholder_lower:
-                    description = "Brief description of the case (can be auto-generated by AI if left empty)"
-                    field_type = "textarea"
-                elif 'bail_arguments' in placeholder_lower or 'arguments' in placeholder_lower:
-                    description = "Legal arguments for bail (can be auto-generated by AI if left empty)"
-                    field_type = "textarea"
-                elif 'grounds' in placeholder_lower:
-                    description = "Grounds for the application (can be auto-generated by AI if left empty)"
-                    field_type = "textarea"
-                elif 'prayer' in placeholder_lower:
-                    description = "Prayer/relief sought (can be auto-generated by AI if left empty)"
-                    field_type = "textarea"
-                elif 'case_laws' in placeholder_lower or 'precedents' in placeholder_lower:
-                    description = "Relevant case laws and precedents (can be auto-generated by AI if left empty)"
-                    field_type = "textarea"
-                elif 'facts' in placeholder_lower:
-                    description = "Facts of the case"
-                    field_type = "textarea"
-                elif 'evidence' in placeholder_lower:
-                    description = "Description of evidence"
-                    field_type = "textarea"
-                elif 'witness' in placeholder_lower:
-                    description = "Names/details of witnesses"
-                    field_type = "textarea"
-                elif 'punishment' in placeholder_lower:
-                    description = "Punishment prescribed under the section"
-                elif 'bailable' in placeholder_lower:
-                    description = "Whether the offence is bailable or non-bailable"
-                elif 'cognizable' in placeholder_lower:
-                    description = "Whether the offence is cognizable or non-cognizable"
-                
-                # Store the description for this placeholder
-                placeholder_descriptions[placeholder_key] = {
-                    "description": description,
-                    "type": field_type,
-                    "required": placeholder_key in ['accused_name', 'fir_number', 'sections', 'police_station'],
-                    "original_name": placeholder_map.get(placeholder_key, placeholder_key)
-                }
-        
-        # If no placeholders found, provide default structure
-        if not placeholders:
-            placeholders = [
-                "accused_name", "fir_number", "sections", "police_station", 
-                "court", "date", "address", "cnic", "phone", "email"
-            ]
-            placeholder_descriptions = {
-                "accused_name": {"description": "Full name of the accused/applicant", "type": "text", "required": True},
-                "fir_number": {"description": "FIR number (e.g., FIR No. 123/2024)", "type": "text", "required": True},
-                "sections": {"description": "PPC/CrPC section numbers (e.g., '302', '302, 34')", "type": "text", "required": True},
-                "police_station": {"description": "Name of the police station", "type": "text", "required": False},
-                "court": {"description": "Name of the court (e.g., 'Sessions Court Karachi')", "type": "text", "required": False},
-                "date": {"description": "Date (format: DD/MM/YYYY)", "type": "date", "required": False},
-                "address": {"description": "Complete address", "type": "textarea", "required": False},
-                "cnic": {"description": "CNIC number (format: XXXXX-XXXXXXX-X)", "type": "text", "required": False},
-                "phone": {"description": "Phone/contact number", "type": "tel", "required": False},
-                "email": {"description": "Email address", "type": "email", "required": False}
-            }
-        
-        # Create example JSON structure using placeholder keys (not original names)
-        example_data = {}
-        for placeholder_key in placeholders:
-            original_name = placeholder_map.get(placeholder_key, placeholder_key)
-            placeholder_lower = placeholder_key.lower()
-            
-            if 'name' in placeholder_lower or 'party' in placeholder_lower:
-                example_data[placeholder_key] = "John Doe"
-            elif 'fir' in placeholder_lower:
-                example_data[placeholder_key] = "FIR No. 123/2024"
-            elif 'section' in placeholder_lower or 'offence' in placeholder_lower:
-                example_data[placeholder_key] = "302, 34"
-            elif 'police_station' in placeholder_lower:
-                example_data[placeholder_key] = "Clifton Police Station"
-            elif 'date' in placeholder_lower or 'dated' in placeholder_lower:
-                example_data[placeholder_key] = "01/01/2024"
-            elif 'court' in placeholder_lower:
-                example_data[placeholder_key] = "Sessions Court Karachi"
-            elif 'address' in placeholder_lower or 'office' in placeholder_lower:
-                example_data[placeholder_key] = "123 Main Street, Karachi"
-            elif 'cnic' in placeholder_lower or 'nic' in placeholder_lower:
-                example_data[placeholder_key] = "12345-1234567-1"
-            elif 'phone' in placeholder_lower or 'contact' in placeholder_lower:
-                example_data[placeholder_key] = "0300-1234567"
-            elif 'email' in placeholder_lower:
-                example_data[placeholder_key] = "example@email.com"
-            elif 'reference' in placeholder_lower or 'ref' in placeholder_lower:
-                example_data[placeholder_key] = "REF-2024-001"
-            elif 'case' in placeholder_lower and 'number' in placeholder_lower:
-                example_data[placeholder_key] = "123/2024"
-            elif 'year' in placeholder_lower:
-                example_data[placeholder_key] = "2024"
-            elif 'amount' in placeholder_lower or 'bail' in placeholder_lower:
-                example_data[placeholder_key] = "50000"
-            elif 'enrollment' in placeholder_lower or 'bar' in placeholder_lower:
-                example_data[placeholder_key] = "12345/2020"
-            else:
-                example_data[placeholder_key] = f"[Enter {original_name}]"
-        
-        template_id_value = template.get('id') or template.get('template_id') or template_id
-        
-        return {
-            "template_id": template_id_value,
-            "name": template.get('name'),
-            "category": template.get('category'),
-            "placeholders": placeholders,
-            "placeholder_descriptions": placeholder_descriptions,
-            "placeholder_map": placeholder_map,  # Maps key -> original name
-            "example_data": example_data,
-            "total_placeholders": len(placeholders)
-        }
+
+        # Use the new simplified template details method
+        details = document_generator.get_template_details_simplified(template_id)
+        return details
+
     except HTTPException:
         raise
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting template details: {str(e)}")
 

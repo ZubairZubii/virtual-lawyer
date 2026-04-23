@@ -24,6 +24,18 @@ try:
 except ImportError:
     AI_AVAILABLE = False
 
+# Import simplified field configuration
+try:
+    from src.simplified_field_config import get_simplified_fields, map_simplified_to_original, AUTO_FILL_VALUES
+    SIMPLIFIED_CONFIG_AVAILABLE = True
+except ImportError:
+    try:
+        from simplified_field_config import get_simplified_fields, map_simplified_to_original, AUTO_FILL_VALUES
+        SIMPLIFIED_CONFIG_AVAILABLE = True
+    except ImportError:
+        SIMPLIFIED_CONFIG_AVAILABLE = False
+        print("Warning: Simplified field config not available")
+
 class DocumentGenerator:
     """
     Document Generation System:
@@ -174,25 +186,159 @@ class DocumentGenerator:
     
     def list_templates(self, category: Optional[str] = None) -> List[Dict]:
         """
-        List available templates
-        
+        List available templates with SIMPLIFIED placeholder counts
+
         Args:
             category: Filter by category (optional)
-        
+
         Returns:
-            List of template info dicts
+            List of template info dicts with simplified placeholder counts
         """
-        if category:
-            return [
-                {**info, 'id': template_id}
-                for template_id, info in self.templates.items()
-                if info['category'] == category
-            ]
-        else:
-            return [
-                {**info, 'id': template_id}
-                for template_id, info in self.templates.items()
-            ]
+        templates_list = []
+
+        for template_id, info in self.templates.items():
+            if category and info['category'] != category:
+                continue
+
+            # Get simplified placeholder count if available
+            template_name = info['name']
+            placeholder_count = len(info.get('placeholders', []))
+
+            if SIMPLIFIED_CONFIG_AVAILABLE:
+                simplified_fields = get_simplified_fields(template_name)
+                if simplified_fields:
+                    # Use simplified count instead of original
+                    placeholder_count = len(simplified_fields)
+
+            # Create template info
+            template_info = {
+                'id': template_id,
+                'name': info['name'],
+                'category': info['category'],
+                'placeholders': [],  # Don't send full list in summary
+                'placeholder_count': placeholder_count  # Use simplified count
+            }
+
+            templates_list.append(template_info)
+
+        return templates_list
+
+    def get_template_details_simplified(self, template_id: str) -> Dict:
+        """
+        Get simplified template details with only essential fields
+        Returns user-friendly field names and descriptions
+
+        Args:
+            template_id: Template ID
+
+        Returns:
+            Dict with simplified fields, descriptions, and metadata
+        """
+        if template_id not in self.templates:
+            raise ValueError(f"Template not found: {template_id}")
+
+        template_info = self.templates[template_id]
+        template_name = template_info['name']
+
+        # Try to get simplified fields if available
+        simplified_fields = {}
+        if SIMPLIFIED_CONFIG_AVAILABLE:
+            simplified_fields = get_simplified_fields(template_name)
+
+        # If we have simplified config, use it
+        if simplified_fields:
+            # Build field list with metadata
+            fields_list = []
+            placeholder_descriptions = {}
+            example_data = {}
+
+            for field_key, field_config in simplified_fields.items():
+                fields_list.append(field_key)
+
+                placeholder_descriptions[field_key] = {
+                    'original_name': field_config['label'],
+                    'description': field_config['description'],
+                    'type': field_config['type'],
+                    'required': field_config['required']
+                }
+
+                # Generate example data
+                if field_config['type'] == 'date':
+                    example_data[field_key] = "01/01/2024"
+                elif field_config['type'] == 'phone':
+                    example_data[field_key] = "0300-1234567"
+                elif field_config['type'] == 'email':
+                    example_data[field_key] = "example@email.com"
+                elif field_config['type'] == 'textarea':
+                    example_data[field_key] = f"[Enter {field_config['label'].lower()}]"
+                else:
+                    example_data[field_key] = f"[Enter {field_config['label'].lower()}]"
+
+            return {
+                'template_id': template_id,
+                'name': template_name,
+                'category': template_info.get('category', 'general'),
+                'placeholders': fields_list,
+                'placeholder_descriptions': placeholder_descriptions,
+                'example_data': example_data,
+                'total_placeholders': len(fields_list),
+                'simplified': True  # Indicate this uses simplified fields
+            }
+
+        # Fallback to original complex fields if no simplified config
+        return {
+            'template_id': template_id,
+            'name': template_name,
+            'category': template_info.get('category', 'general'),
+            'placeholders': template_info.get('placeholders', []),
+            'placeholder_map': template_info.get('placeholder_map', {}),
+            'placeholder_guide': template_info.get('placeholder_guide', {}),
+            'placeholder_descriptions': self._generate_placeholder_descriptions(template_info),
+            'example_data': self._generate_example_data(template_info),
+            'total_placeholders': len(template_info.get('placeholders', [])),
+            'simplified': False  # Original complex fields
+        }
+
+    def _generate_placeholder_descriptions(self, template_info: Dict) -> Dict:
+        """Generate descriptions for placeholders"""
+        descriptions = {}
+        placeholder_map = template_info.get('placeholder_map', {})
+        placeholder_guide = template_info.get('placeholder_guide', {})
+
+        for key in template_info.get('placeholders', []):
+            original_name = placeholder_map.get(key, key)
+            guide_info = placeholder_guide.get(key, {})
+
+            # Determine field type from name
+            field_type = 'text'
+            if any(x in original_name.upper() for x in ['DATE', 'TIME']):
+                field_type = 'date'
+            elif any(x in original_name.upper() for x in ['EMAIL', 'E-MAIL']):
+                field_type = 'email'
+            elif any(x in original_name.upper() for x in ['PHONE', 'CONTACT', 'MOBILE']):
+                field_type = 'tel'
+            elif any(x in original_name.upper() for x in ['ADDRESS', 'DESCRIPTION', 'DETAIL', 'SUMMARY', 'FACTS', 'GROUNDS']):
+                field_type = 'textarea'
+
+            descriptions[key] = {
+                'original_name': original_name,
+                'description': guide_info.get('description', f'Enter {original_name.lower()}'),
+                'type': field_type,
+                'required': False
+            }
+
+        return descriptions
+
+    def _generate_example_data(self, template_info: Dict) -> Dict:
+        """Generate example data for placeholders"""
+        example_data = {}
+        placeholder_map = template_info.get('placeholder_map', {})
+
+        for key in template_info.get('placeholders', []):
+            original_name = placeholder_map.get(key, key)
+            example_data[key] = f"[{original_name}]"
+
+        return example_data
     
     def generate_ai_section(self, section_type: str, context: Dict) -> str:
         """
@@ -284,12 +430,25 @@ List 3-5 relevant case laws with citations:""",
         
         # Get placeholder mapping
         placeholder_map = template_info.get('placeholder_map', {})
-        
+        template_name = template_info['name']
+
         # Debug: Print what we received
         print(f"\n=== FILLING TEMPLATE: {template_id} ===")
+        print(f"Template name: {template_name}")
         print(f"Received data keys: {list(data.keys())}")
-        print(f"Placeholder map: {placeholder_map}")
-        
+
+        # Check if we need to map simplified fields to original placeholders
+        if SIMPLIFIED_CONFIG_AVAILABLE:
+            simplified_config = get_simplified_fields(template_name)
+            if simplified_config and any(key in simplified_config for key in data.keys()):
+                print("Using simplified field mapping...")
+                # User provided simplified field names, map them to original
+                expanded_data = map_simplified_to_original(template_name, data)
+                print(f"Mapped {len(data)} simplified fields to {len(expanded_data)} original placeholders")
+                data = expanded_data
+
+        print(f"Data keys after mapping: {list(data.keys())}")
+
         # Map user data keys to template placeholder names
         # User provides keys like "certificate_reference_number" or "CERTIFICATE_REFERENCE_NUMBER"
         # Template has "{CERTIFICATE REFERENCE NUMBER}"

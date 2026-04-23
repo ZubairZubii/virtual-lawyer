@@ -830,9 +830,9 @@ export default function LawyerDocumentsPage() {
                               {template.category}
                             </Badge>
                           )}
-                          {template.placeholders && template.placeholders.length > 0 && (
+                          {(template.placeholder_count || (template.placeholders && template.placeholders.length)) && (
                             <p className="text-xs text-muted-foreground">
-                              {template.placeholders.length} placeholders required
+                              {template.placeholder_count || template.placeholders.length} fields required
                             </p>
                           )}
                         </Card>
