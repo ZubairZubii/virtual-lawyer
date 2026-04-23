@@ -1,0 +1,16 @@
+{
+  "name": "virtual-lawyer",
+  "version": "1.0.0",
+  "description": "Virtual Lawyer - Full Stack Application",
+  "scripts": {
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "backend": "./venv/bin/python api_complete.py",
+    "frontend": "cd Lawmate/Lawmate && npm run dev",
+    "install:frontend": "cd Lawmate/Lawmate && npm install",
+    "install:backend": "./venv/bin/pip install -r requirements.txt",
+    "install:all": "npm run install:backend && npm run install:frontend"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

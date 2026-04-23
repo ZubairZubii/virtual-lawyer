@@ -361,31 +361,43 @@ List 3-5 relevant case laws with citations:""",
         doc = None
         
         def replace_in_paragraph(paragraph, replacements):
-            """Replace all placeholders in a paragraph"""
+            """Replace all placeholders in a paragraph - handles runs properly"""
             full_text = paragraph.text
             if not full_text:
                 return False
-            
+
             new_text = full_text
             replacements_made = False
-            
+
             for original_name, value in replacements.items():
                 placeholder_pattern = f"{{{original_name}}}"
                 if placeholder_pattern in new_text:
                     new_text = new_text.replace(placeholder_pattern, str(value))
                     replacements_made = True
                     print(f"  Replaced {placeholder_pattern} with '{value}'")
-            
+
             if replacements_made:
-                # Clear all runs and set new text
+                # Preserve paragraph formatting by using the first run's style
+                # Clear all existing runs
+                first_run_style = None
+                if paragraph.runs:
+                    first_run_style = paragraph.runs[0].style
+                    first_run_font = paragraph.runs[0].font
+
+                # Remove all runs
                 for run in paragraph.runs:
                     run.text = ''
+
+                # Set the new text in the first run (or create one if needed)
                 if paragraph.runs:
                     paragraph.runs[0].text = new_text
+                    # Restore original formatting
+                    if first_run_style:
+                        paragraph.runs[0].style = first_run_style
                 else:
-                    # If no runs, add text to paragraph
-                    paragraph.add_run(new_text)
-            
+                    # If no runs exist, create a new one
+                    run = paragraph.add_run(new_text)
+
             return replacements_made
         
         def remove_placeholder_guide_section(doc):
@@ -484,7 +496,27 @@ List 3-5 relevant case laws with citations:""",
                                     replacements_count += 1
             
             print(f"Made {replacements_count} replacements in document")
-            
+
+            # Remove paragraphs with unreplaced placeholders
+            print("Removing paragraphs with unreplaced placeholders...")
+            paragraphs_to_remove = []
+            for i, para in enumerate(doc.paragraphs):
+                text = para.text.strip()
+                # Check if paragraph contains unreplaced placeholders like {SOMETHING}
+                if text and '{' in text and '}' in text:
+                    # Check if it's an actual unreplaced placeholder
+                    if re.search(r'\{[A-Z_0-9]+\}', text):
+                        print(f"  Removing paragraph with unreplaced placeholder: {text[:80]}...")
+                        paragraphs_to_remove.append(i)
+
+            # Remove in reverse order
+            for i in reversed(paragraphs_to_remove):
+                try:
+                    p = doc.paragraphs[i]._element
+                    p.getparent().remove(p)
+                except:
+                    pass
+
             # Remove placeholder guide section
             print("Removing placeholder guide section...")
             remove_placeholder_guide_section(doc)
@@ -591,7 +623,7 @@ List 3-5 relevant case laws with citations:""",
     def validate_data(self, template_id: str, data: Dict) -> Dict:
         """
         Validate data before generating document
-        
+
         Returns:
             Dict with validation status, missing_fields, warnings
         """
@@ -600,28 +632,31 @@ List 3-5 relevant case laws with citations:""",
                 'valid': False,
                 'error': f"Template not found: {template_id}"
             }
-        
+
         template_info = self.templates[template_id]
         required_placeholders = template_info['placeholders']
-        
+
         missing = []
         warnings = []
-        
+
         for placeholder in required_placeholders:
             if placeholder not in data or not data[placeholder]:
                 missing.append(placeholder)
-        
-        # Check for critical fields
+
+        # Check for critical fields (only warn, don't block generation)
         critical_fields = ['accused_name', 'fir_number', 'sections']
         for field in critical_fields:
-            if field in required_placeholders and field not in data:
+            if field in required_placeholders and (field not in data or not data[field]):
                 warnings.append(f"Critical field missing: {field}")
-        
+
+        # Allow document generation even with missing fields
+        # Only fail if template is invalid (which we already checked above)
         return {
-            'valid': len(missing) == 0,
+            'valid': True,  # Always valid as long as template exists
             'missing_fields': missing,
             'warnings': warnings,
-            'filled_fields': len([p for p in required_placeholders if p in data and data[p]])
+            'filled_fields': len([p for p in required_placeholders if p in data and data[p]]),
+            'has_missing_fields': len(missing) > 0
         }
 
 

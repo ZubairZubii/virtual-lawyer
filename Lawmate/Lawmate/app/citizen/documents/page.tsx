@@ -290,8 +290,15 @@ export default function DocumentsPage() {
       console.log("Template ID:", selectedTemplate)
       
       const result = await generateDocument(selectedTemplate, dataToSend, generateWithAI)
-      
+
       console.log("Generation result:", result)
+
+      // Check if document was generated successfully
+      if (!result.output_path) {
+        throw new Error("Document generation failed - no output file created")
+      }
+
+      // Add generated document to list
       setGeneratedDocs((prev) => [
         {
           id: Date.now().toString(),
@@ -304,6 +311,7 @@ export default function DocumentsPage() {
         },
         ...prev,
       ])
+
       setTemplateData({})
       setTemplateDataJson("")
       setTemplateDetails(null)

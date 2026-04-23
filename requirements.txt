@@ -1,13 +1,17 @@
 # Core ML
+<<<<<<< HEAD
 # GPU (NVIDIA): install CUDA PyTorch first — plain `pip install torch` is CPU-only on Windows.
 #   pip install torch --index-url https://download.pytorch.org/whl/cu124
 # Then: pip install -r requirements.txt
 torch>=2.6.0
+=======
+torch>=2.0.0
+>>>>>>> f28ad62 (My local changes before pulling)
 transformers==4.44.2
 datasets==2.19.1
 accelerate==0.33.0
 peft==0.11.1
-bitsandbytes==0.43.2
+bitsandbytes==0.42.0
 
 
 # RAG & Embeddings
@@ -25,6 +29,7 @@ beautifulsoup4==4.12.2
 fastapi==0.109.0
 uvicorn==0.27.0
 pydantic==2.5.3
+python-multipart==0.0.6
 SQLAlchemy>=2.0.29
 passlib>=1.7.4
 pymongo>=4.8.0

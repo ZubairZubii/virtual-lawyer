@@ -2,15 +2,25 @@
 Complete Legal AI API
 Includes: Risk Analysis, Case Prediction, Advanced Analysis, and Chatbot
 """
-from fastapi import FastAPI, HTTPException, UploadFile, File
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables first, before any other imports
+load_dotenv()
+
+from fastapi import FastAPI, HTTPException, UploadFile, File, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from typing import List, Optional, Dict
 import uvicorn
 import sys
+<<<<<<< HEAD
 import os
 from pathlib import Path
+=======
+>>>>>>> f28ad62 (My local changes before pulling)
 import shutil
 import re
 import requests
@@ -26,6 +36,7 @@ except Exception:
 # Add src to path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
+<<<<<<< HEAD
 from two_stage_pipeline import TwoStagePipeline
 
 try:
@@ -34,15 +45,46 @@ try:
     configure_pipeline_logging()
 except Exception:
     pass
+=======
+# Try to import AI pipeline - make it optional
+try:
+    from two_stage_pipeline import TwoStagePipeline
+    AI_PIPELINE_AVAILABLE = True
+except ImportError as e:
+    print(f"⚠️  AI Pipeline not available (missing dependencies: {e})")
+    print("   Document generation will still work, but AI features will be disabled")
+    AI_PIPELINE_AVAILABLE = False
+    TwoStagePipeline = None
+
+>>>>>>> f28ad62 (My local changes before pulling)
 try:
     from three_stage_pipeline import ThreeStagePipeline
     THREE_STAGE_AVAILABLE = True
 except ImportError:
     THREE_STAGE_AVAILABLE = False
     ThreeStagePipeline = None
-from legal_risk_analyzer import LegalRiskAnalyzer, RiskAssessment
-from case_predictor import CasePredictor
-from advanced_case_analyzer import AdvancedCaseAnalyzer
+
+try:
+    from legal_risk_analyzer import LegalRiskAnalyzer, RiskAssessment
+    RISK_ANALYZER_AVAILABLE = True
+except ImportError:
+    RISK_ANALYZER_AVAILABLE = False
+    LegalRiskAnalyzer = None
+    RiskAssessment = None
+
+try:
+    from case_predictor import CasePredictor
+    CASE_PREDICTOR_AVAILABLE = True
+except ImportError:
+    CASE_PREDICTOR_AVAILABLE = False
+    CasePredictor = None
+
+try:
+    from advanced_case_analyzer import AdvancedCaseAnalyzer
+    ADVANCED_ANALYZER_AVAILABLE = True
+except ImportError:
+    ADVANCED_ANALYZER_AVAILABLE = False
+    AdvancedCaseAnalyzer = None
 
 # Document Analysis and Generation
 try:
@@ -91,19 +133,60 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS middleware
+# CORS middleware - Secure configuration
+ALLOWED_ORIGINS = [
+    "http://localhost:3000",      # Local development frontend
+    "http://localhost:8000",      # Local development backend
+    "https://lawmate.com",        # Production frontend
+    "https://www.lawmate.com",    # Production www
+]
+
+# Add environment variable for dynamic frontend URL
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+if FRONTEND_URL not in ALLOWED_ORIGINS:
+    ALLOWED_ORIGINS.append(FRONTEND_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=ALLOWED_ORIGINS,      # Only specific origins (NOT "*")
+    allow_credentials=True,              # Allow cookies/auth headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH"],  # Specific methods
+    allow_headers=["Content-Type", "Authorization", "X-User-Type", "X-User-ID"],
+    max_age=3600,                        # Cache preflight for 1 hour
 )
 
 from db.bootstrap import init_app_database
 
-init_app_database()
-import db.repository as db_repo
+# Try to initialize database - make it optional
+try:
+    init_app_database()
+    import db.repository as db_repo
+    DATABASE_AVAILABLE = True
+    print("✅ Database initialized successfully")
+except Exception as e:
+    print(f"⚠️  Database not available: {e}")
+    print("   Server will run without database features (user auth, etc.)")
+    DATABASE_AVAILABLE = False
+    db_repo = None
+
+# Import security utilities
+try:
+    from security_utils import (
+        sanitize_html,
+        sanitize_dict,
+        create_access_token,
+        create_user_token_response,
+        get_current_user,
+        require_role,
+        require_any_role,
+        verify_ownership,
+        verify_ownership_or_admin,
+    )
+    SECURITY_AVAILABLE = True
+    print("✅ Security utilities loaded successfully")
+except Exception as e:
+    print(f"⚠️  Security utilities not available: {e}")
+    SECURITY_AVAILABLE = False
 
 # Initialize components
 print("Initializing API components...")
@@ -114,6 +197,7 @@ question_normalizer = None
 case_law_verifier = None
 
 try:
+<<<<<<< HEAD
     # Prefer fast two-stage mode by default; opt into three-stage via env flag.
     enable_three_stage = os.getenv("ENABLE_THREE_STAGE_PIPELINE", "false").lower() == "true"
 
@@ -128,6 +212,28 @@ try:
             print("✅ Using Three-Stage Pipeline (Local Model + RAG + Groq)")
         except Exception as e:
             print(f"⚠️  Three-stage pipeline failed, using two-stage: {e}")
+=======
+    # Initialize AI pipeline only if available
+    if AI_PIPELINE_AVAILABLE:
+        # Try three-stage pipeline first (better quality)
+        if THREE_STAGE_AVAILABLE:
+            try:
+                pipeline = ThreeStagePipeline(
+                    peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
+                    formatter_type="groq",
+                    formatter_api_key=None  # Will use from config
+                )
+                print("✅ Using Three-Stage Pipeline (Local Model + RAG + Groq)")
+            except Exception as e:
+                print(f"⚠️  Three-stage pipeline failed, using two-stage: {e}")
+                pipeline = TwoStagePipeline(
+                    peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
+                    formatter_type="groq",
+                    formatter_api_key=None  # Will use from config
+                )
+                print("✅ Using Two-Stage Pipeline (Local Model + RAG)")
+        else:
+>>>>>>> f28ad62 (My local changes before pulling)
             pipeline = TwoStagePipeline(
                 peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
                 formatter_type="groq",
@@ -135,6 +241,7 @@ try:
             )
             print("✅ Using Two-Stage Pipeline (Local Model + RAG)")
     else:
+<<<<<<< HEAD
         pipeline = TwoStagePipeline(
             peft_model_path="./models/fine-tuned/golden_model/final_golden_model",
             formatter_type="groq",
@@ -145,6 +252,15 @@ try:
     risk_analyzer = LegalRiskAnalyzer()
     case_predictor = CasePredictor()
     advanced_analyzer = AdvancedCaseAnalyzer()
+=======
+        pipeline = None
+        print("⚠️  AI Pipeline disabled (PyTorch not available)")
+
+    # Initialize other AI components if available
+    risk_analyzer = LegalRiskAnalyzer() if RISK_ANALYZER_AVAILABLE else None
+    case_predictor = CasePredictor() if CASE_PREDICTOR_AVAILABLE else None
+    advanced_analyzer = AdvancedCaseAnalyzer() if ADVANCED_ANALYZER_AVAILABLE else None
+>>>>>>> f28ad62 (My local changes before pulling)
     
     # Initialize document features if available
     document_analyzer = None
@@ -183,9 +299,9 @@ try:
 except Exception as e:
     print(f"Warning: Some components failed to initialize: {e}")
     pipeline = None
-    risk_analyzer = LegalRiskAnalyzer()
-    case_predictor = CasePredictor()
-    advanced_analyzer = AdvancedCaseAnalyzer()
+    risk_analyzer = LegalRiskAnalyzer() if RISK_ANALYZER_AVAILABLE else None
+    case_predictor = CasePredictor() if CASE_PREDICTOR_AVAILABLE else None
+    advanced_analyzer = AdvancedCaseAnalyzer() if ADVANCED_ANALYZER_AVAILABLE else None
     validator = None
     safety_guard = None
     domain_classifier = None
@@ -361,23 +477,43 @@ class CaseTextRequest(BaseModel):
     section_numbers: Optional[List[str]] = None
 
 class CreateCaseRequest(BaseModel):
-    """Request to create a new case"""
-    case_type: str
-    court: str
+    """Request to create a new case - flexible validation"""
+    # Required fields
+    user_id: Optional[str] = None  # For API compatibility
+
+    # Case identification
+    title: Optional[str] = None  # Case title/name
+    case_type: Optional[str] = "criminal"  # Made optional with default
+    description: Optional[str] = None  # Case description
+    status: Optional[str] = "open"  # Case status
+
+    # Court information
+    court: Optional[str] = None  # Made optional
     judge: Optional[str] = None
+
+    # Legal details
     sections: Optional[List[str]] = None
     police_station: Optional[str] = None
     fir_number: Optional[str] = None
+
+    # Client/Party information
     client_name: Optional[str] = None  # For lawyer cases
-    description: Optional[str] = None
+
+    # Dates and scheduling
     filing_date: Optional[str] = None
     next_hearing: Optional[str] = None
+
+    # Priority and ownership
     priority: Optional[str] = None  # For lawyer cases: High, Medium, Low
     case_summary: Optional[str] = None
     case_metadata: Optional[Dict[str, str]] = None
     uploaded_documents: Optional[List[Dict[str, str]]] = []
     owner_citizen_id: Optional[str] = None
     owner_lawyer_id: Optional[str] = None
+    lawyer_id: Optional[str] = None  # For API compatibility
+
+    class Config:
+        extra = "ignore"  # Allow extra fields without validation errors
 
 class LawyerRecommendationRequest(BaseModel):
     """Citizen-provided case intake for lawyer recommendations"""
@@ -2202,24 +2338,29 @@ async def generate_document(request: DocumentGenerationRequest):
             request.template_id,
             request.data
         )
-        
+
+        # Only fail if template is truly invalid (not found)
         if not validation['valid']:
             return {
                 "status": "validation_failed",
                 "validation": validation
             }
-        
-        # Generate document
+
+        # Generate document even if there are missing fields
+        # Missing fields will be left blank in the document
         result = document_generator.fill_template(
             template_id=request.template_id,
             data=request.data,
             generate_ai_sections=request.generate_ai_sections
         )
-        
+
         # Log document generation status
         print(f"\n📄 Document Generation Result:")
         print(f"   DOCX: {result.get('output_path', 'N/A')}")
-        
+
+        # Include validation info in the response so frontend can show warnings
+        result['validation'] = validation
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating document: {str(e)}")
@@ -2700,7 +2841,7 @@ async def analyze_and_generate(request: AnalyzeAndGenerateRequest):
 # ============================================================
 
 @app.get("/api/admin/dashboard")
-async def get_admin_dashboard():
+async def get_admin_dashboard(current_user: dict = Depends(require_role("admin"))):):
     """
     Get dashboard data for admin users
     Returns system metrics, recent activity, and system status
@@ -2952,72 +3093,94 @@ class SignupRequest(BaseModel):
 
 @app.post("/api/auth/login")
 async def login(request: LoginRequest):
-    """Login endpoint - validates credentials and returns user info"""
+    """Login endpoint - validates credentials and returns JWT token"""
     try:
         if request.userType == "admin":
             admin_user = db_repo.verify_admin_login(request.email.strip(), request.password)
             if not admin_user:
                 raise HTTPException(status_code=401, detail="Invalid email or password")
-            return {"success": True, "user": admin_user, "message": "Login successful"}
 
-        if request.userType == "lawyer":
+            # Create JWT token for admin
+            return create_user_token_response(admin_user, "admin")
+
+        elif request.userType == "lawyer":
             lawyer = db_repo.verify_lawyer_login(request.email.strip(), request.password)
             if not lawyer:
                 raise HTTPException(status_code=401, detail="Invalid email or password")
-            return {
-                "success": True,
-                "user": {
-                    "id": lawyer["id"],
-                    "name": lawyer["name"],
-                    "email": lawyer["email"],
-                    "role": "Lawyer",
-                    "userType": "lawyer",
-                    "verificationStatus": lawyer["verificationStatus"],
-                },
-                "message": "Login successful",
+
+            # Prepare lawyer user data
+            lawyer_data = {
+                "id": lawyer["id"],
+                "name": lawyer["name"],
+                "email": lawyer["email"],
+                "role": "Lawyer",
+                "userType": "lawyer",
+                "verificationStatus": lawyer["verificationStatus"],
             }
 
-        if request.userType == "citizen":
+            # Create JWT token for lawyer
+            return create_user_token_response(lawyer_data, "lawyer")
+
+        elif request.userType == "citizen":
             user = db_repo.verify_citizen_login(request.email.strip(), request.password)
             if not user:
                 raise HTTPException(status_code=401, detail="Invalid email or password")
-            return {
-                "success": True,
-                "user": {
-                    "id": user["id"],
-                    "name": user["name"],
-                    "email": user["email"],
-                    "role": "Citizen",
-                    "userType": "citizen",
-                    "status": user["status"],
-                },
-                "message": "Login successful",
+
+            # Prepare citizen user data
+            user_data = {
+                "id": user["id"],
+                "name": user["name"],
+                "email": user["email"],
+                "role": "Citizen",
+                "userType": "citizen",
+                "status": user["status"],
             }
 
+<<<<<<< HEAD
         raise HTTPException(status_code=400, detail="Unsupported userType")
     except HTTPException:
         raise
+=======
+            # Create JWT token for citizen
+            return create_user_token_response(user_data, "citizen")
+
+        else:
+            raise HTTPException(status_code=400, detail="Unsupported userType")
+
+    except HTTPException:
+        # Re-raise HTTP exceptions as-is (401, 400, etc.)
+        raise
+    except ValueError as e:
+        # Expected validation errors
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+>>>>>>> f28ad62 (My local changes before pulling)
     except Exception as e:
+        # Unexpected errors - log and return generic error
         import traceback
-        print(f"Error in login: {e}")
+        print(f"❌ Error in login: {e}")
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error during login: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 @app.post("/api/auth/signup")
 async def signup(request: SignupRequest):
-    """Signup endpoint - creates new user or lawyer account"""
+    """Signup endpoint - creates new user or lawyer account with input sanitization"""
     try:
         from datetime import datetime
         import uuid
-        
-        if db_repo.email_exists_as_citizen_or_lawyer(request.email.strip()):
+
+        # SECURITY: Sanitize all user inputs to prevent XSS attacks
+        sanitized_name = sanitize_html(request.name.strip())
+        sanitized_email = request.email.strip().lower()  # Email doesn't need HTML sanitization
+
+        # Check if email already exists
+        if db_repo.email_exists_as_citizen_or_lawyer(sanitized_email):
             raise HTTPException(status_code=400, detail="Email already registered")
 
         if request.userType == "lawyer":
             new_lawyer = {
                 "id": str(uuid.uuid4())[:8],
-                "name": request.name.strip(),
-                "email": request.email.strip(),
+                "name": sanitized_name,  # Sanitized to prevent XSS
+                "email": sanitized_email,
                 "specialization": "General Practice",
                 "verificationStatus": "Pending",
                 "casesSolved": 0,
@@ -3037,24 +3200,29 @@ async def signup(request: SignupRequest):
                 created = db_repo.create_lawyer_record(new_lawyer, request.password)
             except ValueError as e:
                 raise HTTPException(status_code=400, detail=str(e)) from e
-            print(f"✅ New lawyer registered: {request.email}")
-            return {
-                "success": True,
-                "user": {
-                    "id": created["id"],
-                    "name": created["name"],
-                    "email": created["email"],
-                    "role": "Lawyer",
-                    "userType": "lawyer",
-                    "verificationStatus": created["verificationStatus"],
-                },
-                "message": "Account created successfully. Verification pending.",
+
+            print(f"✅ New lawyer registered: {sanitized_email}")
+
+            # Prepare user data for token
+            user_data = {
+                "id": created["id"],
+                "name": created["name"],
+                "email": created["email"],
+                "role": "Lawyer",
+                "userType": "lawyer",
+                "verificationStatus": created["verificationStatus"],
             }
 
+            # Create JWT token response
+            response = create_user_token_response(user_data, "lawyer")
+            response["message"] = "Account created successfully. Verification pending."
+            return response
+
+        # Citizen signup
         try:
             new_user = db_repo.create_citizen_record(
-                name=request.name.strip(),
-                email=request.email.strip(),
+                name=sanitized_name,  # Sanitized to prevent XSS
+                email=sanitized_email,
                 password_plain=request.password,
                 join_date=datetime.now().strftime("%Y-%m-%d"),
                 status="Active",
@@ -3062,36 +3230,44 @@ async def signup(request: SignupRequest):
             )
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
-        print(f"✅ New user registered: {request.email}")
-        return {
-            "success": True,
-            "user": {
-                "id": new_user["id"],
-                "name": new_user["name"],
-                "email": new_user["email"],
-                "role": "Citizen",
-                "userType": "citizen",
-                "status": new_user["status"],
-            },
-            "message": "Account created successfully",
+
+        print(f"✅ New citizen registered: {sanitized_email}")
+
+        # Prepare user data for token
+        user_data = {
+            "id": new_user["id"],
+            "name": new_user["name"],
+            "email": new_user["email"],
+            "role": "Citizen",
+            "userType": "citizen",
+            "status": new_user["status"],
         }
+
+        # Create JWT token response
+        response = create_user_token_response(user_data, "citizen")
+        response["message"] = "Account created successfully"
+        return response
+
     except HTTPException:
         raise
     except HTTPException:
         raise
     except Exception as e:
         import traceback
-        print(f"Error in signup: {e}")
+        print(f"❌ Error in signup: {e}")
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error during signup: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 # ============================================================
 # ADMIN USER MANAGEMENT ENDPOINTS
 # ============================================================
 
 @app.get("/api/admin/users")
-async def get_admin_users(search: Optional[str] = None):
-    """Get all users for admin management"""
+async def get_admin_users(
+    search: Optional[str] = None,
+    current_user: dict = Depends(require_role("admin"))
+):
+    """Get all users for admin management (Admin only)"""
     try:
         users = list(db_repo.list_all_citizens_public())
         for lawyer in db_repo.list_all_lawyers_public():
@@ -3108,11 +3284,13 @@ async def get_admin_users(search: Optional[str] = None):
             search_lower = search.lower()
             users = [u for u in users if search_lower in u["name"].lower() or search_lower in u["email"].lower()]
         return {"users": users, "total": len(users)}
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
-        print(f"Error getting admin users: {e}")
+        print(f"❌ Error getting admin users: {e}")
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=f"Error getting users: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 class CreateUserRequest(BaseModel):
     name: str
@@ -3121,8 +3299,11 @@ class CreateUserRequest(BaseModel):
     password: str
 
 @app.post("/api/admin/users")
-async def create_user(request: CreateUserRequest):
-    """Create a new user (admin only)"""
+async def create_user(
+    request: CreateUserRequest,
+    current_user: dict = Depends(require_role("admin"))
+):
+    """Create a new user (Admin only)"""
     try:
         from datetime import datetime
         import uuid
@@ -3174,7 +3355,7 @@ async def create_user(request: CreateUserRequest):
         raise HTTPException(status_code=500, detail=f"Error creating user: {str(e)}")
 
 @app.put("/api/admin/users/{user_id}")
-async def update_user(user_id: str, updates: Dict):
+async def update_user(user_id: str, updates: Dict, current_user: dict = Depends(require_role("admin")))::
     """Update user information"""
     try:
         updated = db_repo.update_citizen_by_id(user_id, updates)
@@ -3196,7 +3377,7 @@ async def update_user(user_id: str, updates: Dict):
         raise HTTPException(status_code=500, detail=f"Error updating user: {str(e)}")
 
 @app.delete("/api/admin/users/{user_id}")
-async def delete_user(user_id: str):
+async def delete_user(user_id: str, current_user: dict = Depends(require_role("admin")))::
     """Delete a user"""
     try:
         if db_repo.delete_citizen_by_id(user_id):
@@ -3217,7 +3398,7 @@ async def delete_user(user_id: str):
 # ============================================================
 
 @app.get("/api/admin/lawyers")
-async def get_admin_lawyers():
+async def get_admin_lawyers(current_user: dict = Depends(require_role("admin")))::
     """Get all lawyers for admin management"""
     try:
         lawyers = db_repo.list_all_lawyers_public()
@@ -3256,7 +3437,7 @@ class UpdateLawyerRequest(BaseModel):
     verificationStatus: Optional[str] = None
 
 @app.post("/api/admin/lawyers")
-async def create_lawyer(request: CreateLawyerRequest):
+async def create_lawyer(request: CreateLawyerRequest, current_user: dict = Depends(require_role("admin")))::
     """Create a new lawyer (admin only)"""
     try:
         from datetime import datetime
@@ -3296,7 +3477,7 @@ async def create_lawyer(request: CreateLawyerRequest):
         raise HTTPException(status_code=500, detail=f"Error creating lawyer: {str(e)}")
 
 @app.put("/api/admin/lawyers/{lawyer_id}/verify")
-async def verify_lawyer(lawyer_id: str, status: str = "Verified"):
+async def verify_lawyer(lawyer_id: str, status: str = "Verified", current_user: dict = Depends(require_role("admin")))::
     """Verify or reject a lawyer"""
     try:
         updated = db_repo.set_lawyer_verification_status(lawyer_id, status)
@@ -3312,7 +3493,7 @@ async def verify_lawyer(lawyer_id: str, status: str = "Verified"):
         raise HTTPException(status_code=500, detail=f"Error verifying lawyer: {str(e)}")
 
 @app.put("/api/admin/lawyers/{lawyer_id}")
-async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest):
+async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest, current_user: dict = Depends(require_role("admin")))::
     """Update lawyer profile fields"""
     try:
         update_data = request.dict(exclude_unset=True)
@@ -3333,7 +3514,7 @@ async def update_lawyer(lawyer_id: str, request: UpdateLawyerRequest):
         raise HTTPException(status_code=500, detail=f"Error updating lawyer: {str(e)}")
 
 @app.delete("/api/admin/lawyers/{lawyer_id}")
-async def delete_lawyer(lawyer_id: str):
+async def delete_lawyer(lawyer_id: str, current_user: dict = Depends(require_role("admin")))::
     """Delete a lawyer"""
     try:
         if not db_repo.delete_lawyer_by_id(lawyer_id):
@@ -3348,7 +3529,7 @@ async def delete_lawyer(lawyer_id: str):
         raise HTTPException(status_code=500, detail=f"Error deleting lawyer: {str(e)}")
 
 @app.post("/api/admin/lawyers/{lawyer_id}/image")
-async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...)):
+async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...), current_user: dict = Depends(require_role("admin")))::
     """Upload and store profile image for a lawyer"""
     try:
         if not db_repo.lawyer_exists(lawyer_id):
@@ -3380,9 +3561,20 @@ async def upload_lawyer_image(lawyer_id: str, image: UploadFile = File(...)):
 # ============================================================
 
 @app.get("/api/lawyer/clients")
-async def get_lawyer_clients(lawyer_id: Optional[str] = None):
-    """Get clients for a lawyer"""
+async def get_lawyer_clients(
+    lawyer_id: Optional[str] = None,
+    current_user: dict = Depends(require_role("lawyer"))
+):
+    """Get clients for a lawyer (Lawyer only)"""
     try:
+        # Verify lawyer is accessing their own data
+        if lawyer_id and current_user.get("sub") != lawyer_id:
+            verify_ownership(current_user, lawyer_id)
+
+        # If no lawyer_id provided, use the authenticated user's ID
+        if not lawyer_id:
+            lawyer_id = current_user.get("sub")
+
         clients = db_repo.list_lawyer_client_payloads(lawyer_id)
         unique_clients = {}
         for client in clients:

@@ -1,0 +1,428 @@
+{
+  "test_report_metadata": {
+    "project_name": "Lawmate - Virtual Lawyer Platform",
+    "test_type": "Manual Testing (Automated Script)",
+    "test_level": "System Testing",
+    "test_environment": {
+      "backend_url": "http://localhost:8000",
+      "frontend_url": "http://localhost:3000"
+    },
+    "test_execution_date": "2026-04-23T20:18:43.516743",
+    "tester": "Automated Test Suite",
+    "standard": "IEEE 829-2008"
+  },
+  "test_summary": {
+    "total_tests": 15,
+    "passed": 4,
+    "failed": 11,
+    "pass_rate": "26.7%"
+  },
+  "test_categories": {
+    "form_testing": {
+      "count": 7,
+      "description": "Testing all input forms for validation, security, and data handling"
+    },
+    "security_url_testing": {
+      "count": 5,
+      "description": "Testing authentication, authorization, and API security"
+    },
+    "e2e_flow_testing": {
+      "count": 3,
+      "description": "Testing complete user workflows and data isolation"
+    }
+  },
+  "test_cases": [
+    {
+      "Test Case ID": "TC-FORM-001",
+      "Test Case Title": "Login Form - Valid Credentials (Citizen)",
+      "Test Objective": "Verify login form accepts valid citizen credentials",
+      "Preconditions": "User exists in database with valid credentials",
+      "Test Steps": [
+        "1. Navigate to login API endpoint",
+        "2. Send POST request with valid email, password, userType",
+        "3. Observe response"
+      ],
+      "Test Data": "Email: ali.raza@example.pk, Password: demo123, UserType: citizen",
+      "Expected Result": "Status 200, Returns user object with id, name, email, userType",
+      "Actual Result": "Status: 200, Response: {'success': True, 'user': {'id': 'cit-001', 'name': 'Ali Raza', 'email': 'ali.raza@example.pk', 'role': 'Citizen', 'userType': 'citizen', 'status': 'Active'}, 'message': 'Login successful'}",
+      "Status": "PASS",
+      "Priority": "HIGH",
+      "Notes": "",
+      "Timestamp": "2026-04-23T20:18:39.446915"
+    },
+    {
+      "Test Case ID": "TC-FORM-002",
+      "Test Case Title": "Login Form - Invalid Email",
+      "Test Objective": "Verify login form rejects invalid credentials",
+      "Preconditions": "User does not exist in database",
+      "Test Steps": [
+        "1. Navigate to login API endpoint",
+        "2. Send POST request with non-existent email",
+        "3. Observe response"
+      ],
+      "Test Data": "{'email': 'nonexistent@test.com', 'password': 'wrongpass', 'userType': 'citizen'}",
+      "Expected Result": "Status 401 or 404, Returns error message",
+      "Actual Result": "Status: 500, Response: Server Error",
+      "Status": "FAIL",
+      "Priority": "HIGH",
+      "Notes": "",
+      "Timestamp": "2026-04-23T20:18:39.615703"
+    },
+    {
+      "Test Case ID": "TC-FORM-003",
+      "Test Case Title": "Login Form - SQL Injection Attempt",
+      "Test Objective": "Verify login form blocks SQL injection attempts",
+      "Preconditions": "Security measures in place",
+      "Test Steps": [
+        "1. Navigate to login API endpoint",
+        "2. Send POST request with SQL injection payload",
+        "3. Verify request is rejected"
+      ],
+      "Test Data": "{'email': \"' OR 1=1 --\", 'password': \"' OR 1=1 --\", 'userType': 'citizen'}",
+      "Expected Result": "Status 401/400, SQL injection blocked",
+      "Actual Result": "Status: 500, Response blocked/rejected",
+      "Status": "PASS",
+      "Priority": "CRITICAL",
+      "Notes": "SQL injection properly blocked",
+      "Timestamp": "2026-04-23T20:18:39.790816"
+    },
+    {
+      "Test Case ID": "TC-FORM-004",
+      "Test Case Title": "Signup Form - XSS Injection Attempt",
+      "Test Objective": "Verify signup form sanitizes XSS attempts",
+      "Preconditions": "Security sanitization in place",
+      "Test Steps": [
+        "1. Navigate to signup API endpoint",
+        "2. Send POST request with XSS payload in name field",
+        "3. Verify payload is sanitized or rejected"
+      ],
+      "Test Data": "{'name': \"<script>alert('XSS')</script>\", 'email': 'test_xss_1776957519@test.com', 'password': 'test123', 'userType': 'citizen'}",
+      "Expected Result": "XSS payload sanitized (< > converted to entities) or rejected",
+      "Actual Result": "Status: 200, Name returned: <script>alert('XSS')</script>",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: XSS vulnerability - script tags not sanitized!",
+      "Timestamp": "2026-04-23T20:18:40.646310"
+    },
+    {
+      "Test Case ID": "TC-FORM-005",
+      "Test Case Title": "Case Creation Form - Empty Required Fields",
+      "Test Objective": "Verify case creation validates required fields",
+      "Preconditions": "User logged in as citizen",
+      "Test Steps": [
+        "1. Login as citizen",
+        "2. Send POST request to /api/cases with empty title/description",
+        "3. Verify validation error"
+      ],
+      "Test Data": "{'user_id': 'cit-001', 'title': '', 'description': '', 'status': 'open'}",
+      "Expected Result": "Status 400/422 with validation error message",
+      "Actual Result": "Status: 422",
+      "Status": "PASS",
+      "Priority": "HIGH",
+      "Notes": "Empty fields properly validated",
+      "Timestamp": "2026-04-23T20:18:40.829055"
+    },
+    {
+      "Test Case ID": "TC-FORM-006",
+      "Test Case Title": "Case Creation Form - Very Long Input (Buffer Overflow Test)",
+      "Test Objective": "Verify system handles very long inputs safely",
+      "Preconditions": "User logged in as citizen",
+      "Test Steps": [
+        "1. Login as citizen",
+        "2. Create case with 10,000 character description",
+        "3. Verify system handles gracefully"
+      ],
+      "Test Data": "Description: 10000 characters",
+      "Expected Result": "Either accepts with length limit or rejects with 413/400",
+      "Actual Result": "Status: 422, Response handled: 10000 chars",
+      "Status": "FAIL",
+      "Priority": "MEDIUM",
+      "Notes": "Unexpected response: 422",
+      "Timestamp": "2026-04-23T20:18:41.014022"
+    },
+    {
+      "Test Case ID": "TC-FORM-007",
+      "Test Case Title": "Document Generation - Special Characters in Placeholders",
+      "Test Objective": "Verify document generation sanitizes special characters",
+      "Preconditions": "Document templates exist",
+      "Test Steps": [
+        "1. Prepare data with special characters: < > ' \" &",
+        "2. Send POST to /api/documents/generate",
+        "3. Verify document generates and chars are escaped"
+      ],
+      "Test Data": "{'ACCUSED_NAME': 'Test < > \\' \" & Name', 'FIR_NUMBER': '123/2024 & <test>', 'SECTIONS': \"302, 34 PPC ' OR 1=1\", 'POLICE_STATION': 'City Station \"Test\" & <script>'}",
+      "Expected Result": "Status 200, Document generated with sanitized content",
+      "Actual Result": "Status: 404",
+      "Status": "FAIL",
+      "Priority": "HIGH",
+      "Notes": "Request failed: 404",
+      "Timestamp": "2026-04-23T20:18:41.016378"
+    },
+    {
+      "Test Case ID": "TC-SEC-001",
+      "Test Case Title": "URL Access Control - Citizen accessing Lawyer routes",
+      "Test Objective": "Verify citizens cannot access lawyer-only routes",
+      "Preconditions": "Logged in as citizen",
+      "Test Steps": [
+        "1. Login as citizen user",
+        "2. Attempt to access /api/lawyer/clients",
+        "3. Verify access denied"
+      ],
+      "Test Data": "User ID: cit-001, Role: citizen",
+      "Expected Result": "Status 403 or empty response",
+      "Actual Result": "Status: 200",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: Citizen can access lawyer data!",
+      "Timestamp": "2026-04-23T20:18:41.368791"
+    },
+    {
+      "Test Case ID": "TC-SEC-002",
+      "Test Case Title": "URL Access Control - Lawyer accessing Admin routes",
+      "Test Objective": "Verify lawyers cannot access admin-only routes",
+      "Preconditions": "Logged in as lawyer",
+      "Test Steps": [
+        "1. Login as lawyer user",
+        "2. Attempt to access /api/admin/users",
+        "3. Verify access denied"
+      ],
+      "Test Data": "Role: lawyer",
+      "Expected Result": "Status 403/401",
+      "Actual Result": "Status: 200",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: Lawyer can access admin routes!",
+      "Timestamp": "2026-04-23T20:18:41.890729"
+    },
+    {
+      "Test Case ID": "TC-SEC-003",
+      "Test Case Title": "URL Access Control - Unauthenticated access to protected routes",
+      "Test Objective": "Verify protected routes require authentication",
+      "Preconditions": "No authentication token provided",
+      "Test Steps": [
+        "1. Access protected endpoints without authentication",
+        "2. Verify all return 401/403"
+      ],
+      "Test Data": "['/api/cases', '/api/documents/list', '/api/lawyer/clients', '/api/admin/users']",
+      "Expected Result": "All endpoints return 401/403/422",
+      "Actual Result": "/api/cases: 405, /api/documents/list: 404, /api/lawyer/clients: 200, /api/admin/users: 200",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: Some protected routes accessible without auth!",
+      "Timestamp": "2026-04-23T20:18:42.396365"
+    },
+    {
+      "Test Case ID": "TC-SEC-004",
+      "Test Case Title": "API Security - SQL Injection on Case Endpoint",
+      "Test Objective": "Verify API endpoints block SQL injection attempts",
+      "Preconditions": "API endpoints accessible",
+      "Test Steps": [
+        "1. Send SQL injection payloads in query parameters",
+        "2. Verify queries are sanitized/parameterized",
+        "3. Confirm no sensitive data leaked"
+      ],
+      "Test Data": "[\"1' OR '1'='1\", '1; DROP TABLE cases--', \"' UNION SELECT * FROM users--\"]",
+      "Expected Result": "All SQL injection attempts blocked or return errors",
+      "Actual Result": "Payload '1' OR '1'='1': Status 200; Payload '1; DROP TABLE cases--': Status 200; Payload '' UNION SELECT * FROM users--': Status 200",
+      "Status": "PASS",
+      "Priority": "CRITICAL",
+      "Notes": "SQL injection attempts properly blocked",
+      "Timestamp": "2026-04-23T20:18:42.902766"
+    },
+    {
+      "Test Case ID": "TC-SEC-005",
+      "Test Case Title": "API Security - CORS Configuration",
+      "Test Objective": "Verify CORS configuration is not overly permissive",
+      "Preconditions": "API server running",
+      "Test Steps": [
+        "1. Send request with Origin header from external site",
+        "2. Check Access-Control-Allow-Origin header",
+        "3. Verify not set to '*' (allow all)"
+      ],
+      "Test Data": "Origin: http://malicious-site.com",
+      "Expected Result": "CORS limited to specific origins (not '*')",
+      "Actual Result": "CORS Header: *",
+      "Status": "FAIL",
+      "Priority": "HIGH",
+      "Notes": "WARNING: CORS allows all origins - security risk!",
+      "Timestamp": "2026-04-23T20:18:42.905548"
+    },
+    {
+      "Test Case ID": "TC-FLOW-001",
+      "Test Case Title": "E2E User Flow - Complete Citizen Journey",
+      "Test Objective": "Verify complete citizen workflow from login to document generation",
+      "Preconditions": "Citizen account exists, templates available",
+      "Test Steps": [
+        "1. Login as citizen",
+        "2. Create a new criminal case",
+        "3. Analyze the case",
+        "4. Get lawyer recommendations",
+        "5. Generate bail application document"
+      ],
+      "Test Data": "Complete citizen workflow with bail case",
+      "Expected Result": "All steps complete successfully: Login → Case → Analysis → Lawyers → Document",
+      "Actual Result": "1. Login successful; Failed at: Case creation failed: 422",
+      "Status": "FAIL",
+      "Priority": "HIGH",
+      "Notes": "Journey interrupted: Case creation failed: 422",
+      "Timestamp": "2026-04-23T20:18:43.091767"
+    },
+    {
+      "Test Case ID": "TC-FLOW-002",
+      "Test Case Title": "E2E User Flow - Lawyer Client Management",
+      "Test Objective": "Verify complete lawyer workflow for client management",
+      "Preconditions": "Lawyer account exists and verified",
+      "Test Steps": [
+        "1. Login as lawyer",
+        "2. Add new client with details",
+        "3. Create case for the client",
+        "4. Retrieve all clients to verify data persistence"
+      ],
+      "Test Data": "Lawyer client management workflow",
+      "Expected Result": "All steps complete: Login → Add Client → Create Case → View Clients",
+      "Actual Result": "1. Lawyer login successful; Failed at: Client creation failed: 422",
+      "Status": "FAIL",
+      "Priority": "HIGH",
+      "Notes": "Workflow interrupted: Client creation failed: 422",
+      "Timestamp": "2026-04-23T20:18:43.330745"
+    },
+    {
+      "Test Case ID": "TC-FLOW-003",
+      "Test Case Title": "E2E Data Isolation - Citizen A cannot see Citizen B's data",
+      "Test Objective": "Verify data isolation between different citizen users",
+      "Preconditions": "Multiple citizen accounts exist",
+      "Test Steps": [
+        "1. Login as Citizen A",
+        "2. Create private case as Citizen A",
+        "3. Attempt to access Citizen A's case with different user ID",
+        "4. Verify access denied or data not visible"
+      ],
+      "Test Data": "Cross-user data access attempt",
+      "Expected Result": "Citizen B cannot see or access Citizen A's cases",
+      "Actual Result": "1. Citizen A logged in; Error: Case creation failed",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "Test failed: Case creation failed",
+      "Timestamp": "2026-04-23T20:18:43.516556"
+    }
+  ],
+  "critical_findings": [
+    {
+      "Test Case ID": "TC-FORM-004",
+      "Test Case Title": "Signup Form - XSS Injection Attempt",
+      "Test Objective": "Verify signup form sanitizes XSS attempts",
+      "Preconditions": "Security sanitization in place",
+      "Test Steps": [
+        "1. Navigate to signup API endpoint",
+        "2. Send POST request with XSS payload in name field",
+        "3. Verify payload is sanitized or rejected"
+      ],
+      "Test Data": "{'name': \"<script>alert('XSS')</script>\", 'email': 'test_xss_1776957519@test.com', 'password': 'test123', 'userType': 'citizen'}",
+      "Expected Result": "XSS payload sanitized (< > converted to entities) or rejected",
+      "Actual Result": "Status: 200, Name returned: <script>alert('XSS')</script>",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: XSS vulnerability - script tags not sanitized!",
+      "Timestamp": "2026-04-23T20:18:40.646310"
+    },
+    {
+      "Test Case ID": "TC-SEC-001",
+      "Test Case Title": "URL Access Control - Citizen accessing Lawyer routes",
+      "Test Objective": "Verify citizens cannot access lawyer-only routes",
+      "Preconditions": "Logged in as citizen",
+      "Test Steps": [
+        "1. Login as citizen user",
+        "2. Attempt to access /api/lawyer/clients",
+        "3. Verify access denied"
+      ],
+      "Test Data": "User ID: cit-001, Role: citizen",
+      "Expected Result": "Status 403 or empty response",
+      "Actual Result": "Status: 200",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: Citizen can access lawyer data!",
+      "Timestamp": "2026-04-23T20:18:41.368791"
+    },
+    {
+      "Test Case ID": "TC-SEC-002",
+      "Test Case Title": "URL Access Control - Lawyer accessing Admin routes",
+      "Test Objective": "Verify lawyers cannot access admin-only routes",
+      "Preconditions": "Logged in as lawyer",
+      "Test Steps": [
+        "1. Login as lawyer user",
+        "2. Attempt to access /api/admin/users",
+        "3. Verify access denied"
+      ],
+      "Test Data": "Role: lawyer",
+      "Expected Result": "Status 403/401",
+      "Actual Result": "Status: 200",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: Lawyer can access admin routes!",
+      "Timestamp": "2026-04-23T20:18:41.890729"
+    },
+    {
+      "Test Case ID": "TC-SEC-003",
+      "Test Case Title": "URL Access Control - Unauthenticated access to protected routes",
+      "Test Objective": "Verify protected routes require authentication",
+      "Preconditions": "No authentication token provided",
+      "Test Steps": [
+        "1. Access protected endpoints without authentication",
+        "2. Verify all return 401/403"
+      ],
+      "Test Data": "['/api/cases', '/api/documents/list', '/api/lawyer/clients', '/api/admin/users']",
+      "Expected Result": "All endpoints return 401/403/422",
+      "Actual Result": "/api/cases: 405, /api/documents/list: 404, /api/lawyer/clients: 200, /api/admin/users: 200",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "CRITICAL: Some protected routes accessible without auth!",
+      "Timestamp": "2026-04-23T20:18:42.396365"
+    },
+    {
+      "Test Case ID": "TC-FLOW-003",
+      "Test Case Title": "E2E Data Isolation - Citizen A cannot see Citizen B's data",
+      "Test Objective": "Verify data isolation between different citizen users",
+      "Preconditions": "Multiple citizen accounts exist",
+      "Test Steps": [
+        "1. Login as Citizen A",
+        "2. Create private case as Citizen A",
+        "3. Attempt to access Citizen A's case with different user ID",
+        "4. Verify access denied or data not visible"
+      ],
+      "Test Data": "Cross-user data access attempt",
+      "Expected Result": "Citizen B cannot see or access Citizen A's cases",
+      "Actual Result": "1. Citizen A logged in; Error: Case creation failed",
+      "Status": "FAIL",
+      "Priority": "CRITICAL",
+      "Notes": "Test failed: Case creation failed",
+      "Timestamp": "2026-04-23T20:18:43.516556"
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "finding": "5 critical security/functionality issues found",
+      "recommendation": "Address all critical failures immediately before production deployment"
+    },
+    {
+      "priority": "CRITICAL",
+      "finding": "XSS vulnerability detected",
+      "recommendation": "Implement input sanitization and output encoding"
+    },
+    {
+      "priority": "HIGH",
+      "finding": "Authorization bypass detected",
+      "recommendation": "Implement proper role-based access control (RBAC) at API level"
+    },
+    {
+      "priority": "HIGH",
+      "finding": "Authorization bypass detected",
+      "recommendation": "Implement proper role-based access control (RBAC) at API level"
+    },
+    {
+      "priority": "HIGH",
+      "finding": "Authorization bypass detected",
+      "recommendation": "Implement proper role-based access control (RBAC) at API level"
+    }
+  ]
+}

@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Tuple
 from pathlib import Path
 import hashlib
 from datetime import datetime
+import numpy as np
 
 # PDF processing
 try:
@@ -32,7 +33,6 @@ except ImportError:
 # Embeddings and vector search
 try:
     from sentence_transformers import SentenceTransformer
-    import numpy as np
     from sklearn.metrics.pairwise import cosine_similarity
     EMBEDDINGS_AVAILABLE = True
 except ImportError:
