@@ -5,6 +5,7 @@ export interface Case {
   id: string;
   case_type: string;
   status: string;
+  case_summary?: string;
   next_hearing?: string;
   documents_count?: number;
   assigned_lawyer?: string | null;
@@ -25,6 +26,9 @@ export interface CaseDetails extends Case {
   fir_number?: string;
   client_name?: string;
   description?: string;
+  case_summary?: string;
+  case_metadata?: Record<string, string>;
+  case_documents?: Array<{ doc_id: string; file_name: string }>;
   timeline?: Array<{
     date: string;
     event: string;
@@ -87,7 +91,12 @@ export async function getLawyerCases(status?: string): Promise<CasesResponse> {
 export async function getCaseDetails(caseId: string): Promise<CaseDetails> {
   // Case IDs may contain "/" (e.g. "123/2023"), so encode the full ID.
   const encodedId = encodeURIComponent(caseId);
-  return api.get<CaseDetails>(`/api/cases/${encodedId}`);
+  try {
+    return await api.get<CaseDetails>(`/api/cases/${encodedId}`);
+  } catch (error) {
+    // Fallback for environments/proxies that mishandle slash-based path params.
+    return api.get<CaseDetails>(`/api/cases/by-id?case_id=${encodedId}`);
+  }
 }
 
 export interface CreateCaseRequest {
@@ -102,6 +111,9 @@ export interface CreateCaseRequest {
   filing_date?: string;
   next_hearing?: string;
   priority?: "High" | "Medium" | "Low"; // For lawyer cases
+  case_summary?: string;
+  case_metadata?: Record<string, string>;
+  uploaded_documents?: Array<{ doc_id: string; file_name: string }>;
   owner_citizen_id?: string;
   owner_lawyer_id?: string;
 }

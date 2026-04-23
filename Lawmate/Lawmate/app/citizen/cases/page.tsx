@@ -188,6 +188,13 @@ export default function CitizenCasesPage() {
                             </div>
                           </div>
 
+                          {caseItem.case_summary && (
+                            <div className="mb-3 p-3 rounded-lg border border-border/50 bg-card/60">
+                              <p className="text-xs text-muted-foreground mb-1">Case Summary</p>
+                              <p className="text-sm text-foreground">{caseItem.case_summary}</p>
+                            </div>
+                          )}
+
                           {caseItem.next_hearing && (
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                               <Calendar className="w-4 h-4" />

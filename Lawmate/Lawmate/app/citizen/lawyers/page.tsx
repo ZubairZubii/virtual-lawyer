@@ -23,6 +23,17 @@ import type { LawyerData } from "@/components/marketplace/lawyer-card-premium"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 
+const COURTS_BY_CITY: Record<string, string[]> = {
+  Karachi: ["Sindh High Court, Karachi", "City Courts Karachi", "District & Sessions Court Karachi South", "Anti-Terrorism Court Karachi"],
+  Lahore: ["Lahore High Court, Lahore", "District & Sessions Court Lahore", "Anti-Terrorism Court Lahore"],
+  Islamabad: ["Islamabad High Court", "District & Sessions Court Islamabad", "Special Court (Central), Islamabad"],
+  Rawalpindi: ["District & Sessions Court Rawalpindi", "Special Judge Central Rawalpindi"],
+  Peshawar: ["Peshawar High Court", "District & Sessions Court Peshawar"],
+  Quetta: ["Balochistan High Court, Quetta", "District & Sessions Court Quetta"],
+  Multan: ["Lahore High Court, Multan Bench", "District & Sessions Court Multan"],
+  Faisalabad: ["Lahore High Court, Faisalabad Bench", "District & Sessions Court Faisalabad"],
+}
+
 export default function LawyerDirectoryPage() {
   const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
@@ -33,7 +44,9 @@ export default function LawyerDirectoryPage() {
   const [recommending, setRecommending] = useState(false)
   const [recommendationError, setRecommendationError] = useState<string | null>(null)
   const [recommendedLawyers, setRecommendedLawyers] = useState<RecommendedLawyer[]>([])
-  const [caseTags, setCaseTags] = useState<string[]>([])
+  const [activeTab, setActiveTab] = useState<"recommended" | "all">("all")
+  const [selectedCity, setSelectedCity] = useState("")
+  const [courtInputMode, setCourtInputMode] = useState<"dropdown" | "manual">("dropdown")
   const [form, setForm] = useState<LawyerRecommendationRequest>({
     case_type: "",
     case_description: "",
@@ -98,6 +111,7 @@ export default function LawyerDirectoryPage() {
   }
 
   const filteredLawyers = lawyers
+  const selectedCityCourts = selectedCity ? COURTS_BY_CITY[selectedCity] || [] : []
   const normalizeSpecs = (lawyer: Lawyer): string[] =>
     Array.isArray(lawyer.specialization)
       ? lawyer.specialization
@@ -117,11 +131,10 @@ export default function LawyerDirectoryPage() {
       setRecommendationError(null)
       const response = await getLawyerRecommendations(form)
       setRecommendedLawyers(response.recommendations || [])
-      setCaseTags(response.caseTags || [])
+      setActiveTab("recommended")
     } catch (err: any) {
       setRecommendationError(err.message || "Failed to generate recommendations")
       setRecommendedLawyers([])
-      setCaseTags([])
     } finally {
       setRecommending(false)
     }
@@ -162,34 +175,78 @@ export default function LawyerDirectoryPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="charges-sections">Charges/Sections (Optional)</Label>
-                <Input
-                  id="charges-sections"
-                  placeholder="e.g., PPC 302, 420, CrPC 497"
-                  value={form.charges_or_sections}
-                  onChange={(e) => setForm((prev) => ({ ...prev, charges_or_sections: e.target.value }))}
-                  className="mt-2"
-                />
-              </div>
-              <div>
                 <Label htmlFor="city-location">City / Preferred Location</Label>
-                <Input
-                  id="city-location"
-                  placeholder="e.g., Lahore"
-                  value={form.city}
-                  onChange={(e) => setForm((prev) => ({ ...prev, city: e.target.value }))}
-                  className="mt-2"
-                />
+                <Select
+                  value={selectedCity}
+                  onValueChange={(value) => {
+                    setSelectedCity(value)
+                    setCourtInputMode("dropdown")
+                    setForm((prev) => ({ ...prev, city: value === "Other" ? "" : value, hearing_court: "" }))
+                  }}
+                >
+                  <SelectTrigger id="city-location" className="mt-2">
+                    <SelectValue placeholder="Select preferred city" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.keys(COURTS_BY_CITY).map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="Other">Other / Not listed</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="hearing-court">Hearing Court (Optional)</Label>
-                <Input
-                  id="hearing-court"
-                  placeholder="e.g., Sessions Court Lahore"
-                  value={form.hearing_court}
-                  onChange={(e) => setForm((prev) => ({ ...prev, hearing_court: e.target.value }))}
-                  className="mt-2"
-                />
+                {courtInputMode === "dropdown" && selectedCity && selectedCity !== "Other" ? (
+                  <>
+                    <Select
+                      value={form.hearing_court || ""}
+                      onValueChange={(value) => {
+                        if (value === "__manual__") {
+                          setCourtInputMode("manual")
+                          setForm((prev) => ({ ...prev, hearing_court: "" }))
+                          return
+                        }
+                        setForm((prev) => ({ ...prev, hearing_court: value }))
+                      }}
+                    >
+                      <SelectTrigger id="hearing-court" className="mt-2">
+                        <SelectValue placeholder="Select hearing court" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {selectedCityCourts.map((court) => (
+                          <SelectItem key={court} value={court}>
+                            {court}
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__manual__">Other court (type manually)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </>
+                ) : (
+                  <>
+                    <Input
+                      id="hearing-court"
+                      placeholder="e.g., Sessions Court Lahore"
+                      value={form.hearing_court}
+                      onChange={(e) => setForm((prev) => ({ ...prev, hearing_court: e.target.value }))}
+                      className="mt-2"
+                    />
+                    {selectedCity && selectedCity !== "Other" && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => setCourtInputMode("dropdown")}
+                      >
+                        Back to court dropdown
+                      </Button>
+                    )}
+                  </>
+                )}
               </div>
               <div>
                 <Label htmlFor="urgency">Urgency</Label>
@@ -275,71 +332,24 @@ export default function LawyerDirectoryPage() {
                   </>
                 )}
               </Button>
-              {caseTags.length > 0 && (
-                <div className="flex gap-2 flex-wrap">
-                  {caseTags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag.replace("_", " ")}
-                    </Badge>
-                  ))}
-                </div>
-              )}
             </div>
 
             {recommendationError && (
               <p className="text-sm text-destructive mt-3">{recommendationError}</p>
             )}
-
-            {recommendedLawyers.length > 0 && (
-              <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {recommendedLawyers.map((lawyer) => (
-                  <Card key={lawyer.id} className="p-5 border border-primary/30 bg-primary/5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <h3 className="font-semibold text-lg">{lawyer.name}</h3>
-                        <p className="text-sm text-muted-foreground">{lawyer.expertise}</p>
-                      </div>
-                      <Badge className="bg-primary/15 text-primary border border-primary/30">
-                        Match {lawyer.matchScore}%
-                      </Badge>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="w-4 h-4" />
-                        {lawyer.location}
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Scale className="w-4 h-4" />
-                        {lawyer.yearsExp} yrs exp
-                      </div>
-                      <div className="text-muted-foreground">Win Rate: {lawyer.winRate}%</div>
-                      <div className="text-muted-foreground">Fee Band: {lawyer.estimatedFeeBand}</div>
-                    </div>
-                    <div className="mt-3">
-                      <p className="text-xs text-muted-foreground mb-1">Why recommended</p>
-                      <ul className="list-disc list-inside text-sm text-foreground space-y-1">
-                        {lawyer.whyRecommended?.map((reason, idx) => (
-                          <li key={idx}>{reason}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      <Button disabled className="flex-1" title="Coming soon">
-                        Contact Lawyer (Coming soon)
-                      </Button>
-                      <Link href={`/citizen/lawyers/${lawyer.id}`} className="flex-1">
-                        <Button variant="outline" className="w-full bg-transparent">
-                          View Profile
-                        </Button>
-                      </Link>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
           </Card>
 
-          {/* Note: Search and filtering is now handled by the Premium Marketplace component below */}
+          <div className="mb-6 flex gap-2">
+            <Button
+              variant={activeTab === "recommended" ? "default" : "outline"}
+              onClick={() => setActiveTab("recommended")}
+            >
+              Recommended Lawyers
+            </Button>
+            <Button variant={activeTab === "all" ? "default" : "outline"} onClick={() => setActiveTab("all")}>
+              All Lawyers
+            </Button>
+          </div>
 
           {/* Error Message */}
           {error && (
@@ -357,7 +367,6 @@ export default function LawyerDirectoryPage() {
             </Card>
           )}
 
-          {/* Premium Lawyers Marketplace */}
           {loading ? (
             <motion.div
               initial={{ opacity: 0 }}
@@ -366,6 +375,60 @@ export default function LawyerDirectoryPage() {
             >
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
               <span className="ml-3 text-muted-foreground">Loading lawyers...</span>
+            </motion.div>
+          ) : activeTab === "recommended" ? (
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+              {recommendedLawyers.length === 0 ? (
+                <Card className="p-8 border border-border/50 text-center">
+                  <p className="text-muted-foreground">
+                    Click <strong>Recommend Best Lawyers</strong> to see best-matched lawyers here.
+                  </p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {recommendedLawyers.map((lawyer) => (
+                    <Card key={lawyer.id} className="p-5 border border-primary/30 bg-primary/5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <h3 className="font-semibold text-lg">{lawyer.name}</h3>
+                          <p className="text-sm text-muted-foreground">{lawyer.expertise}</p>
+                        </div>
+                        <Badge className="bg-primary/15 text-primary border border-primary/30">Match {lawyer.matchScore}%</Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <MapPin className="w-4 h-4" />
+                          {lawyer.location}
+                        </div>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Scale className="w-4 h-4" />
+                          {lawyer.yearsExp} yrs exp
+                        </div>
+                        <div className="text-muted-foreground">Win Rate: {lawyer.winRate}%</div>
+                        <div className="text-muted-foreground">Fee Band: {lawyer.estimatedFeeBand}</div>
+                      </div>
+                      <div className="mt-3">
+                        <p className="text-xs text-muted-foreground mb-1">Why recommended</p>
+                        <ul className="list-disc list-inside text-sm text-foreground space-y-1">
+                          {lawyer.whyRecommended?.map((reason, idx) => (
+                            <li key={idx}>{reason}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="mt-4 flex gap-2">
+                        <Button disabled className="flex-1" title="Coming soon">
+                          Contact Lawyer (Coming soon)
+                        </Button>
+                        <Link href={`/citizen/lawyers/${lawyer.id}`} className="flex-1">
+                          <Button variant="outline" className="w-full bg-transparent">
+                            View Profile
+                          </Button>
+                        </Link>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </motion.div>
           ) : (
             <motion.div

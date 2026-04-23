@@ -373,6 +373,9 @@ class CreateCaseRequest(BaseModel):
     filing_date: Optional[str] = None
     next_hearing: Optional[str] = None
     priority: Optional[str] = None  # For lawyer cases: High, Medium, Low
+    case_summary: Optional[str] = None
+    case_metadata: Optional[Dict[str, str]] = None
+    uploaded_documents: Optional[List[Dict[str, str]]] = []
     owner_citizen_id: Optional[str] = None
     owner_lawyer_id: Optional[str] = None
 
@@ -2523,7 +2526,7 @@ async def get_lawyer_cases(status: Optional[str] = None, lawyer_id: Optional[str
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error getting cases: {str(e)}")
 
-@app.get("/api/cases/{case_id}")
+@app.get("/api/cases/{case_id:path}")
 async def get_case_details(case_id: str):
     """
     Get detailed information about a specific case
@@ -2536,6 +2539,25 @@ async def get_case_details(case_id: str):
     except Exception as e:
         import traceback
         print(f"Error getting case details: {e}")
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Error getting case details: {str(e)}")
+
+
+@app.get("/api/cases/by-id")
+async def get_case_details_by_query(case_id: str):
+    """
+    Fallback case lookup endpoint for clients/proxies that struggle with slash-containing path params.
+    """
+    try:
+        case_details = db_repo.find_stored_case_by_id(case_id)
+        if not case_details:
+            raise HTTPException(status_code=404, detail="Case not found")
+        return case_details
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        print(f"Error getting case details by query: {e}")
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"Error getting case details: {str(e)}")
 
@@ -2560,6 +2582,11 @@ async def create_case(request: CreateCaseRequest, user_type: str = "citizen"):
                 case_id = f"FIR/{datetime.now().strftime('%Y')}/{str(uuid.uuid4())[:6]}"
         
         # Create case object
+        uploaded_documents = [
+            {"doc_id": str(d.get("doc_id", "")).strip(), "file_name": str(d.get("file_name", "")).strip()}
+            for d in (request.uploaded_documents or [])
+            if str(d.get("doc_id", "")).strip() and str(d.get("file_name", "")).strip()
+        ][:2]
         new_case = {
             "id": case_id,
             "case_type": request.case_type,
@@ -2568,8 +2595,12 @@ async def create_case(request: CreateCaseRequest, user_type: str = "citizen"):
             "judge": request.judge or "Not assigned",
             "filing_date": request.filing_date or datetime.now().strftime("%Y-%m-%d"),
             "next_hearing": request.next_hearing,
-            "documents_count": 0,
-            "progress": 0
+            "documents_count": len(uploaded_documents),
+            "case_documents": uploaded_documents,
+            "case_summary": request.case_summary or "",
+            "case_metadata": request.case_metadata or {},
+            "description": request.description or "",
+            "progress": 0,
         }
         
         # Add citizen-specific fields

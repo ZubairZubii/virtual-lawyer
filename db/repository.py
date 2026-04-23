@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, TypeVar
 
 from passlib.context import CryptContext
 from pymongo import ReturnDocument
+from pymongo.errors import AutoReconnect, NetworkTimeout, ServerSelectionTimeoutError
 
 from .database import get_collection, get_database
 
 pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
+T = TypeVar("T")
 
 DEFAULT_ADMIN_SETTINGS: Dict[str, Any] = {
     "platform_name": "Lawmate",
@@ -51,6 +54,25 @@ def _strip_id(doc: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
     clean = dict(doc)
     clean.pop("_id", None)
     return clean
+
+
+def _run_with_mongo_retry(fn: Callable[[], T], *, attempts: int = 4, base_delay_sec: float = 0.35) -> T:
+    """
+    Retry transient Mongo connectivity errors so brief Atlas hiccups don't fail user operations.
+    """
+    last_err: Optional[Exception] = None
+    for i in range(attempts):
+        try:
+            return fn()
+        except (AutoReconnect, NetworkTimeout, ServerSelectionTimeoutError) as err:
+            last_err = err
+            if i == attempts - 1:
+                break
+            sleep_s = base_delay_sec * (2 ** i)
+            time.sleep(sleep_s)
+    if last_err:
+        raise last_err
+    raise RuntimeError("Mongo retry failed with unknown error")
 
 
 def _citizen_public(c: Dict[str, Any]) -> Dict[str, Any]:
@@ -270,11 +292,14 @@ def append_stored_case(scope: str, case_dict: Dict[str, Any]) -> None:
     cid = case_dict.get("id")
     if not cid:
         raise ValueError("case dict must include id")
-    get_collection("stored_cases").update_one(
-        {"id": str(cid)},
-        {"$set": {"id": str(cid), "scope": scope, "payload": case_dict}},
-        upsert=True,
-    )
+    def _write() -> None:
+        get_collection("stored_cases").update_one(
+            {"id": str(cid)},
+            {"$set": {"id": str(cid), "scope": scope, "payload": case_dict}},
+            upsert=True,
+        )
+
+    _run_with_mongo_retry(_write)
 
 
 def list_stored_cases(scope: str) -> List[Dict[str, Any]]:

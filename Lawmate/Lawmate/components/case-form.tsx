@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { X, Loader2 } from "lucide-react"
 import { createCase, type CreateCaseRequest } from "@/lib/services/cases"
+import { uploadDocument } from "@/lib/services/documents"
 
 const COURTS_BY_CITY: Record<string, string[]> = {
   Karachi: [
@@ -128,6 +129,67 @@ interface CaseFormProps {
   onCancel: () => void
 }
 
+type DynamicFieldConfig = {
+  key: string
+  label: string
+  placeholder: string
+  required?: boolean
+}
+
+const CASE_TYPE_OPTIONS = [
+  "Bail Application",
+  "FIR Complaint",
+  "Criminal Appeal",
+  "Revision Petition",
+  "Cyber Crime Complaint",
+  "Domestic Violence",
+  "Narcotics Matter",
+  "Fraud / Cheating",
+  "Appeal",
+  "Other",
+]
+
+const CASE_TYPE_DYNAMIC_FIELDS: Record<string, DynamicFieldConfig[]> = {
+  "Bail Application": [
+    { key: "arrest_date", label: "Arrest Date", placeholder: "YYYY-MM-DD", required: true },
+    { key: "custody_status", label: "Custody Status", placeholder: "In custody / Not in custody", required: true },
+    { key: "urgent_ground", label: "Urgent Ground", placeholder: "Medical, family hardship, weak evidence..." },
+  ],
+  "FIR Complaint": [
+    { key: "incident_date", label: "Incident Date", placeholder: "YYYY-MM-DD", required: true },
+    { key: "incident_location", label: "Incident Location", placeholder: "Area, city, landmark", required: true },
+    { key: "accused_details", label: "Accused Details", placeholder: "Known/unknown, identifiers if available" },
+  ],
+  "Criminal Appeal": [
+    { key: "trial_order_date", label: "Trial Court Order Date", placeholder: "YYYY-MM-DD", required: true },
+    { key: "sentence_details", label: "Sentence / Order Summary", placeholder: "Conviction, sentence length, fine..." },
+    { key: "appeal_ground", label: "Primary Appeal Ground", placeholder: "Misreading evidence, procedural defect..." },
+  ],
+  "Revision Petition": [
+    { key: "impugned_order_date", label: "Impugned Order Date", placeholder: "YYYY-MM-DD", required: true },
+    { key: "procedural_defect", label: "Procedural Defect", placeholder: "Jurisdiction issue, illegal order..." },
+    { key: "relief_sought", label: "Relief Sought", placeholder: "Set aside order / remand / other relief" },
+  ],
+  "Cyber Crime Complaint": [
+    { key: "platform", label: "Platform / Channel", placeholder: "WhatsApp, Facebook, email, website..." },
+    { key: "digital_evidence", label: "Digital Evidence", placeholder: "Screenshots, logs, account IDs..." },
+  ],
+  "Domestic Violence": [
+    { key: "relationship", label: "Relationship", placeholder: "Spouse / family relation / guardian..." },
+    { key: "incident_frequency", label: "Incident Frequency", placeholder: "Single, repeated, ongoing..." },
+  ],
+  "Narcotics Matter": [
+    { key: "recovery_details", label: "Recovery Details", placeholder: "Quantity, place of recovery..." },
+    { key: "search_witnesses", label: "Search Witnesses", placeholder: "Independent witnesses present or not" },
+  ],
+  "Fraud / Cheating": [
+    { key: "amount_involved", label: "Amount Involved", placeholder: "PKR amount if any" },
+    { key: "transaction_mode", label: "Transaction Mode", placeholder: "Cash, bank transfer, online wallet..." },
+  ],
+}
+
+const MAX_CASE_DOCS = 2
+
 export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -146,7 +208,11 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
   })
   const [selectedCity, setSelectedCity] = useState("")
   const [courtInputMode, setCourtInputMode] = useState<"dropdown" | "manual">("dropdown")
+  const [dynamicFields, setDynamicFields] = useState<Record<string, string>>({})
+  const [uploadedDocs, setUploadedDocs] = useState<Array<{ doc_id: string; file_name: string }>>([])
+  const [docLimitError, setDocLimitError] = useState<string | null>(null)
   const selectedCaseType = formData.case_type
+  const selectedDynamicFieldConfig = CASE_TYPE_DYNAMIC_FIELDS[selectedCaseType] || []
   const showPoliceFields = ["FIR Complaint", "Bail Application", "Criminal Appeal", "Revision Petition"].includes(
     selectedCaseType,
   )
@@ -169,6 +235,37 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
       "Write complete timeline in plain language: what happened, where, who is involved, documents/evidence available, current stage, and desired outcome.",
   }
 
+  const handleDocUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return
+    setDocLimitError(null)
+    const allowed = Math.max(0, MAX_CASE_DOCS - uploadedDocs.length)
+    if (allowed <= 0) {
+      setDocLimitError(`Maximum ${MAX_CASE_DOCS} case documents are allowed.`)
+      return
+    }
+    const selected = Array.from(files).slice(0, allowed)
+    try {
+      const userRaw = typeof window !== "undefined" ? localStorage.getItem("user") : null
+      const user = userRaw ? JSON.parse(userRaw) : {}
+      const role = userType === "lawyer" ? "lawyer" : "citizen"
+      const uploaded = await Promise.all(
+        selected.map((f) =>
+          uploadDocument(f, {
+            email: user?.email || "",
+            role,
+          }),
+        ),
+      )
+      setUploadedDocs((prev) => [...prev, ...uploaded.map((u) => ({ doc_id: u.doc_id, file_name: u.file_name }))])
+      if (files.length > allowed) {
+        setDocLimitError(`Only ${allowed} file(s) were added due to max ${MAX_CASE_DOCS} documents.`)
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to upload case documents."
+      setError(message)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -182,8 +279,34 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
       if (!formData.description || formData.description.trim().length < 20) {
         throw new Error("Please provide complete case facts (at least 20 characters).")
       }
+      for (const field of selectedDynamicFieldConfig) {
+        if (field.required && !(dynamicFields[field.key] || "").trim()) {
+          throw new Error(`${field.label} is required for ${selectedCaseType}.`)
+        }
+      }
 
-      const response = await createCase(formData, userType)
+      const caseSummary = [
+        `Case Type: ${formData.case_type}`,
+        selectedCity ? `City: ${selectedCity}` : "",
+        `Court: ${formData.court}`,
+        ...selectedDynamicFieldConfig
+          .map((f) => `${f.label}: ${dynamicFields[f.key] || "Not provided"}`),
+      ]
+        .filter(Boolean)
+        .join(" | ")
+
+      const response = await createCase(
+        {
+          ...formData,
+          case_summary: caseSummary,
+          case_metadata: {
+            city: selectedCity || "",
+            ...dynamicFields,
+          },
+          uploaded_documents: uploadedDocs,
+        },
+        userType,
+      )
       console.log("✅ Case created:", response)
       onSuccess()
     } catch (err: any) {
@@ -219,23 +342,49 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
               <Label htmlFor="case_type">Case Type *</Label>
               <Select
                 value={formData.case_type}
-                onValueChange={(value) =>
+                onValueChange={(value) => {
                   setFormData({ ...formData, case_type: value })
-                }
+                  setDynamicFields({})
+                }}
               >
                 <SelectTrigger id="case_type" className="w-full border-2 border-border focus:border-primary">
                   <SelectValue placeholder="Select case type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Bail Application">Bail Application</SelectItem>
-                  <SelectItem value="Appeal">Appeal</SelectItem>
-                  <SelectItem value="Revision Petition">Revision Petition</SelectItem>
-                  <SelectItem value="Criminal Appeal">Criminal Appeal</SelectItem>
-                  <SelectItem value="FIR Complaint">FIR Complaint</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                  {CASE_TYPE_OPTIONS.map((caseType) => (
+                    <SelectItem key={caseType} value={caseType}>
+                      {caseType}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
+
+            {selectedDynamicFieldConfig.length > 0 && (
+              <div className="space-y-3 p-4 rounded-lg border border-border/50 bg-muted/20">
+                <p className="text-sm font-semibold">Case-Type Intake Fields</p>
+                {selectedDynamicFieldConfig.map((field) => (
+                  <div key={field.key}>
+                    <Label htmlFor={field.key}>
+                      {field.label}
+                      {field.required ? " *" : ""}
+                    </Label>
+                    <Input
+                      id={field.key}
+                      value={dynamicFields[field.key] || ""}
+                      onChange={(e) =>
+                        setDynamicFields((prev) => ({
+                          ...prev,
+                          [field.key]: e.target.value,
+                        }))
+                      }
+                      placeholder={field.placeholder}
+                      className="w-full border-2 border-border focus:border-primary"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* City */}
             <div>
@@ -445,6 +594,25 @@ export function CaseForm({ userType, onSuccess, onCancel }: CaseFormProps) {
               <p className="text-xs text-muted-foreground mt-1">
                 Include timeline, parties, evidence/documents, current stage, and the outcome you want.
               </p>
+            </div>
+
+            <div className="space-y-2 p-4 rounded-lg border border-border/50">
+              <Label htmlFor="caseDocs">Case Documents (optional, max 2)</Label>
+              <Input
+                id="caseDocs"
+                type="file"
+                multiple
+                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+                onChange={(e) => void handleDocUpload(e.target.files)}
+              />
+              {docLimitError && <p className="text-xs text-orange-500">{docLimitError}</p>}
+              {uploadedDocs.length > 0 && (
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  {uploadedDocs.map((doc) => (
+                    <li key={doc.doc_id}>Attached: {doc.file_name}</li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4">

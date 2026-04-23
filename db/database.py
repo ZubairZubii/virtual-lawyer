@@ -14,7 +14,13 @@ MONGODB_DATABASE_NAME = os.environ.get("MONGODB_DATABASE_NAME", "FYP_VirtualLawy
 def get_client() -> MongoClient:
     if not MONGODB_CONNECTION_STRING:
         raise RuntimeError("MONGODB_CONNECTION_STRING is not set. Please configure it in .env")
-    return MongoClient(MONGODB_CONNECTION_STRING)
+    return MongoClient(
+        MONGODB_CONNECTION_STRING,
+        retryWrites=True,
+        serverSelectionTimeoutMS=10000,
+        connectTimeoutMS=10000,
+        socketTimeoutMS=15000,
+    )
 
 
 @lru_cache(maxsize=1)

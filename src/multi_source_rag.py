@@ -32,6 +32,9 @@ class MultiSourceRAG:
         self.statute_guide_path = statute_guide_path
         self.embeddings_dir = embeddings_dir
         os.makedirs(embeddings_dir, exist_ok=True)
+        # CPU-safe startup mode: avoid expensive fresh embedding builds on laptops.
+        # Set RAG_ALLOW_CPU_EMBED_BUILD=1 to force rebuilding on CPU when needed.
+        self.allow_cpu_embed_build = str(os.getenv("RAG_ALLOW_CPU_EMBED_BUILD", "0")).lower() in {"1", "true", "yes"}
         
         # Load embedding model
         print("Loading embedding model...")
@@ -163,6 +166,18 @@ class MultiSourceRAG:
     def _load_or_create_embeddings(self, force_rebuild: bool = False):
         """Load cached embeddings or create new ones"""
         print("\nLoading embeddings...")
+        cpu_no_build_mode = (not torch.cuda.is_available()) and (not self.allow_cpu_embed_build) and (not force_rebuild)
+        if cpu_no_build_mode:
+            print("   CPU-only mode detected: skipping new embedding builds (set RAG_ALLOW_CPU_EMBED_BUILD=1 to enable).")
+
+        def _should_build(source_label: str, corpus_size: int) -> bool:
+            if not cpu_no_build_mode:
+                return True
+            print(
+                f"   ⚠️  Skipping {source_label} embedding build on CPU ({corpus_size} docs). "
+                "Using cached embeddings only."
+            )
+            return False
         
         # PPC embeddings
         if self.ppc_corpus:
@@ -178,11 +193,13 @@ class MultiSourceRAG:
                     print(f"   ✅ Loaded PPC embeddings ({len(self.ppc_corpus)} documents)")
                 except Exception as e:
                     print(f"   ⚠️  Failed to load cached PPC embeddings: {e}")
-                    print("   Creating new PPC embeddings...")
-                    self._create_ppc_embeddings()
+                    if _should_build("PPC", len(self.ppc_corpus)):
+                        print("   Creating new PPC embeddings...")
+                        self._create_ppc_embeddings()
             else:
-                print("   Creating PPC embeddings...")
-                self._create_ppc_embeddings()
+                if _should_build("PPC", len(self.ppc_corpus)):
+                    print("   Creating PPC embeddings...")
+                    self._create_ppc_embeddings()
         
         # SHC embeddings
         if self.shc_corpus:
@@ -198,11 +215,13 @@ class MultiSourceRAG:
                     print(f"   ✅ Loaded SHC embeddings ({len(self.shc_corpus)} documents)")
                 except Exception as e:
                     print(f"   ⚠️  Failed to load cached SHC embeddings: {e}")
-                    print("   Creating new SHC embeddings...")
-                    self._create_shc_embeddings()
+                    if _should_build("SHC", len(self.shc_corpus)):
+                        print("   Creating new SHC embeddings...")
+                        self._create_shc_embeddings()
             else:
-                print("   Creating SHC embeddings...")
-                self._create_shc_embeddings()
+                if _should_build("SHC", len(self.shc_corpus)):
+                    print("   Creating SHC embeddings...")
+                    self._create_shc_embeddings()
         
         # CrPC embeddings
         if self.crpc_corpus:
@@ -218,11 +237,13 @@ class MultiSourceRAG:
                     print(f"   ✅ Loaded CrPC embeddings ({len(self.crpc_corpus)} documents)")
                 except Exception as e:
                     print(f"   ⚠️  Failed to load cached CrPC embeddings: {e}")
-                    print("   Creating new CrPC embeddings...")
-                    self._create_crpc_embeddings()
+                    if _should_build("CrPC", len(self.crpc_corpus)):
+                        print("   Creating new CrPC embeddings...")
+                        self._create_crpc_embeddings()
             else:
-                print("   Creating CrPC embeddings...")
-                self._create_crpc_embeddings()
+                if _should_build("CrPC", len(self.crpc_corpus)):
+                    print("   Creating CrPC embeddings...")
+                    self._create_crpc_embeddings()
         
         # Constitution embeddings
         if self.constitution_corpus:
@@ -238,11 +259,13 @@ class MultiSourceRAG:
                     print(f"   ✅ Loaded Constitution embeddings ({len(self.constitution_corpus)} documents)")
                 except Exception as e:
                     print(f"   ⚠️  Failed to load cached Constitution embeddings: {e}")
-                    print("   Creating new Constitution embeddings...")
-                    self._create_constitution_embeddings()
+                    if _should_build("Constitution", len(self.constitution_corpus)):
+                        print("   Creating new Constitution embeddings...")
+                        self._create_constitution_embeddings()
             else:
-                print("   Creating Constitution embeddings...")
-                self._create_constitution_embeddings()
+                if _should_build("Constitution", len(self.constitution_corpus)):
+                    print("   Creating Constitution embeddings...")
+                    self._create_constitution_embeddings()
         
         # Structured data embeddings
         if self.structured_corpus:
@@ -258,11 +281,13 @@ class MultiSourceRAG:
                     print(f"   ✅ Loaded Structured data embeddings ({len(self.structured_corpus)} documents)")
                 except Exception as e:
                     print(f"   ⚠️  Failed to load cached Structured data embeddings: {e}")
-                    print("   Creating new Structured data embeddings...")
-                    self._create_structured_embeddings()
+                    if _should_build("Structured data", len(self.structured_corpus)):
+                        print("   Creating new Structured data embeddings...")
+                        self._create_structured_embeddings()
             else:
-                print("   Creating Structured data embeddings...")
-                self._create_structured_embeddings()
+                if _should_build("Structured data", len(self.structured_corpus)):
+                    print("   Creating Structured data embeddings...")
+                    self._create_structured_embeddings()
 
         # Statute guide embeddings
         if self.statute_guide_corpus:
@@ -277,11 +302,13 @@ class MultiSourceRAG:
                     print(f"   ✅ Loaded Statute Guide embeddings ({len(self.statute_guide_corpus)} documents)")
                 except Exception as e:
                     print(f"   ⚠️  Failed to load cached Statute Guide embeddings: {e}")
-                    print("   Creating new Statute Guide embeddings...")
-                    self._create_statute_guide_embeddings()
+                    if _should_build("Statute Guide", len(self.statute_guide_corpus)):
+                        print("   Creating new Statute Guide embeddings...")
+                        self._create_statute_guide_embeddings()
             else:
-                print("   Creating Statute Guide embeddings...")
-                self._create_statute_guide_embeddings()
+                if _should_build("Statute Guide", len(self.statute_guide_corpus)):
+                    print("   Creating Statute Guide embeddings...")
+                    self._create_statute_guide_embeddings()
     
     def _create_ppc_embeddings(self):
         """Create and save PPC embeddings"""
