@@ -422,7 +422,7 @@ export default function Home() {
                     className="hover:bg-primary/10 bg-transparent border-primary/50 px-8"
                     onClick={() => router.push("/login")}
                   >
-                    Schedule Demo
+                    Sign In
                     <PlayCircle className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
@@ -1462,7 +1462,7 @@ export default function Home() {
                   className="hover:bg-primary/10 bg-transparent border-primary/50"
                   onClick={() => router.push("/login")}
                 >
-                  Schedule Live Demo
+                  Sign In
                 </Button>
               </div>
             </div>

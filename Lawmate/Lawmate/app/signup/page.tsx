@@ -223,16 +223,6 @@ export default function SignupPage() {
             </p>
           </Card>
         )}
-
-        {/* Demo Info */}
-        <div
-          className="mt-8 p-4 rounded-lg bg-primary/10 border border-primary/30 animate-fadeInUp"
-          style={{ animationDelay: "200ms" }}
-        >
-          <p className="text-xs text-muted-foreground">
-            <strong>Demo Mode:</strong> Use any email and password to explore the platform. No account needed.
-          </p>
-        </div>
       </div>
     </div>
   )
