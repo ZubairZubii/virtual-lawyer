@@ -148,6 +148,26 @@ export type CitizenQuickCaseAnalysisResponse = {
   disclaimer: string;
 };
 
+/** Advocate quick triage: same response shape as citizen quick analysis; extra optional intake for the lawyer endpoint. */
+export type LawyerQuickCaseAnalysisRequest = CitizenQuickCaseAnalysisRequest & {
+  known_ppc_sections?: string;
+  case_stage?: string;
+  procedural_notes?: string;
+};
+
+function mergeLawyerQuickTextForGuards(req: LawyerQuickCaseAnalysisRequest): CitizenQuickCaseAnalysisRequest {
+  const merged = [req.case_description, req.known_ppc_sections, req.case_stage, req.procedural_notes]
+    .filter((s) => (s || "").trim().length > 0)
+    .join("\n");
+  return {
+    case_description: merged || req.case_description,
+    urgency: req.urgency,
+    city: req.city,
+    hearing_court: req.hearing_court,
+    custody_status: req.custody_status,
+  };
+}
+
 /** Groq sometimes returns 0–1 (e.g. 0.08) or 1–10; normalize to 0–100 severity. */
 function normalizeRiskScore0To100(raw: unknown): number {
   if (raw === null || raw === undefined) return 50;
@@ -345,6 +365,85 @@ export async function analyzeCitizenCaseQuick(
         "Do not delete chats/files that may be evidence.",
       ],
       disclaimer: "Backend quick-analysis endpoint is unavailable; this is a compatibility estimate.",
+    };
+  }
+
+  const errText = await res.text().catch(() => "");
+  throw new Error(`Request failed: ${res.status} ${res.statusText} ${errText}`.trim());
+}
+
+export async function analyzeLawyerCaseQuick(
+  request: LawyerQuickCaseAnalysisRequest
+): Promise<CitizenQuickCaseAnalysisResponse> {
+  const guardInput = mergeLawyerQuickTextForGuards(request);
+  const res = await fetch(`${BASE_URL}/api/lawyer/case-quick-analysis`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      case_description: request.case_description,
+      urgency: request.urgency ?? "medium",
+      city: request.city ?? "",
+      hearing_court: request.hearing_court ?? "",
+      custody_status: request.custody_status ?? "unknown",
+      known_ppc_sections: request.known_ppc_sections ?? "",
+      case_stage: request.case_stage ?? "",
+      procedural_notes: request.procedural_notes ?? "",
+    }),
+  });
+
+  if (res.ok) {
+    const data = (await res.json()) as CitizenQuickCaseAnalysisResponse;
+    return applyRiskGuards(data, guardInput);
+  }
+
+  if (res.status === 404) {
+    const text = (guardInput.case_description || "").toLowerCase();
+    const sectionMatches = (guardInput.case_description.match(/\b\d{2,4}[A-Za-z]?\b/g) || []).slice(0, 8);
+    const sections = Array.from(new Set(sectionMatches.map((s) => s.toUpperCase())));
+
+    let riskScore = 45;
+    if (
+      ["murder", "kill", "killed", "death", "dead", "302", "kidnap", "terror", "narcotics", "rape", "qatal"].some((k) =>
+        text.includes(k)
+      )
+    ) {
+      riskScore = 82;
+    } else if (["fraud", "420", "cyber", "harassment", "cheating", "theft", "steal", "robbery", "379"].some((k) => text.includes(k))) {
+      riskScore = 62;
+    } else if (["bail", "custody", "arrest"].some((k) => text.includes(k))) {
+      riskScore = 58;
+    }
+
+    if ((request.urgency || "medium") === "high") riskScore = Math.min(95, riskScore + 5);
+    if ((request.custody_status || "unknown") === "in_custody") riskScore = Math.min(95, riskScore + 6);
+
+    riskScore = Math.max(0, Math.min(100, Math.max(riskScore, heuristicRiskFloor(guardInput))));
+    const riskLevel = riskLevelFromScore(riskScore);
+    const recommendations = [
+      "Map prosecution witnesses to each charge element; prepare impeachment or contradiction notes.",
+      "Index FIR, seizure memos, and medico-legal reports for chain-of-custody gaps.",
+      "Draft bail or discharge grounds tied to investigation defects where applicable.",
+    ];
+    if ((request.custody_status || "") === "in_custody") {
+      recommendations.unshift("File or press bail with custody timeline and hardship grounds without delay.");
+    }
+    if (text.includes("cyber")) {
+      recommendations.push("Verify digital evidence handling under applicable procedure; request certified server logs where relevant.");
+    }
+
+    return {
+      summary: "Quick advocate triage generated in compatibility mode from your memo and optional sections.",
+      extracted_sections: sections,
+      likely_case_type: "Criminal Matter",
+      risk_score: riskScore,
+      risk_level: riskLevel,
+      recommendations: recommendations.slice(0, 6),
+      next_steps: [
+        "Align written submissions with oral arguments for the next hearing.",
+        "Confirm limitation and service requirements for any interlocutory relief.",
+        "Brief the client on realistic outcomes and disclosure obligations.",
+      ],
+      disclaimer: "Lawyer quick-analysis endpoint is unavailable; this is a compatibility estimate.",
     };
   }
 

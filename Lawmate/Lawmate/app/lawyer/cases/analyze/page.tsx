@@ -26,10 +26,25 @@ import {
   comprehensiveAnalysis,
   analyzeCaseFromText,
   predictBail,
+  analyzeLawyerCaseQuick,
   type CaseDetails,
+  type CitizenQuickCaseAnalysisResponse,
 } from "@/lib/services/analysis"
 
 export default function LawyerCaseAnalysisPage() {
+  const [workspaceMode, setWorkspaceMode] = useState<"quick" | "structured">("quick")
+  const [quickDescription, setQuickDescription] = useState("")
+  const [quickUrgency, setQuickUrgency] = useState<"low" | "medium" | "high">("medium")
+  const [quickCity, setQuickCity] = useState("")
+  const [quickHearingCourt, setQuickHearingCourt] = useState("")
+  const [quickCustody, setQuickCustody] = useState<"in_custody" | "not_in_custody" | "unknown">("unknown")
+  const [quickKnownSections, setQuickKnownSections] = useState("")
+  const [quickCaseStage, setQuickCaseStage] = useState("")
+  const [quickProceduralNotes, setQuickProceduralNotes] = useState("")
+  const [quickLoading, setQuickLoading] = useState(false)
+  const [quickResults, setQuickResults] = useState<CitizenQuickCaseAnalysisResponse | null>(null)
+  const [quickError, setQuickError] = useState<string | null>(null)
+
   const [loading, setLoading] = useState(false)
   const [analysisType, setAnalysisType] = useState<"risk" | "prediction" | "advanced" | "comprehensive" | "text" | "bail">("comprehensive")
   
@@ -122,6 +137,30 @@ export default function LawyerCaseAnalysisPage() {
     return "bg-green-500/20 border-green-500/50"
   }
 
+  const handleQuickAnalyze = async () => {
+    setQuickLoading(true)
+    setQuickError(null)
+    setQuickResults(null)
+    try {
+      const response = await analyzeLawyerCaseQuick({
+        case_description: quickDescription,
+        urgency: quickUrgency,
+        city: quickCity,
+        hearing_court: quickHearingCourt,
+        custody_status: quickCustody,
+        known_ppc_sections: quickKnownSections,
+        case_stage: quickCaseStage,
+        procedural_notes: quickProceduralNotes,
+      })
+      setQuickResults(response)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Analysis failed. Please try again."
+      setQuickError(message)
+    } finally {
+      setQuickLoading(false)
+    }
+  }
+
   return (
     <div className="flex">
       <Sidebar userType="lawyer" />
@@ -129,9 +168,197 @@ export default function LawyerCaseAnalysisPage() {
         <div className="max-w-7xl mx-auto space-y-6">
           <div>
             <h1 className="text-4xl font-bold text-foreground mb-2">AI Case Analysis</h1>
-            <p className="text-muted-foreground">Comprehensive risk assessment, predictions, and strategic recommendations</p>
+            <p className="text-muted-foreground mb-4">
+              Fast advocate triage uses the same engine as citizen quick analysis, tuned for counsel input. Structured tools
+              remain for deep risk and prediction workflows.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-6">
+              <Button variant={workspaceMode === "quick" ? "default" : "outline"} onClick={() => setWorkspaceMode("quick")}>
+                Quick case triage
+              </Button>
+              <Button
+                variant={workspaceMode === "structured" ? "default" : "outline"}
+                onClick={() => setWorkspaceMode("structured")}
+              >
+                Structured analysis
+              </Button>
+            </div>
           </div>
 
+          {workspaceMode === "quick" ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-1 space-y-6">
+                <Card className="p-6 border border-border/50">
+                  <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                    <Brain className="w-5 h-5 text-primary" />
+                    Advocate intake
+                  </h2>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium mb-2 block">Matter summary / memo *</label>
+                    <Textarea
+                      value={quickDescription}
+                      onChange={(e) => setQuickDescription(e.target.value)}
+                      placeholder="FIR sections, key facts, custody status, witness issues, and what you need from triage (same detail you would brief a colleague)…"
+                      rows={8}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Known PPC sections (optional)</label>
+                    <Input
+                      value={quickKnownSections}
+                      onChange={(e) => setQuickKnownSections(e.target.value)}
+                      placeholder="e.g. 302, 34 or narrative if already in memo"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Procedural stage (optional)</label>
+                    <Input
+                      value={quickCaseStage}
+                      onChange={(e) => setQuickCaseStage(e.target.value)}
+                      placeholder="Investigation / challan / trial / appeal"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Tactical / procedural notes (optional)</label>
+                    <Textarea
+                      value={quickProceduralNotes}
+                      onChange={(e) => setQuickProceduralNotes(e.target.value)}
+                      placeholder="Illegal search, identification parade issues, remand gaps, disclosure requests…"
+                      rows={3}
+                    />
+                    <label className="text-sm font-medium mb-2 block">Urgency</label>
+                    <select
+                      value={quickUrgency}
+                      onChange={(e) => setQuickUrgency(e.target.value as "low" | "medium" | "high")}
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                    <label className="text-sm font-medium mb-2 block">City (optional)</label>
+                    <Input value={quickCity} onChange={(e) => setQuickCity(e.target.value)} placeholder="Lahore" />
+                    <label className="text-sm font-medium mb-2 block">Hearing court (optional)</label>
+                    <Input
+                      value={quickHearingCourt}
+                      onChange={(e) => setQuickHearingCourt(e.target.value)}
+                      placeholder="Sessions Court"
+                    />
+                    <label className="text-sm font-medium mb-2 block">Client custody</label>
+                    <select
+                      value={quickCustody}
+                      onChange={(e) =>
+                        setQuickCustody(e.target.value as "in_custody" | "not_in_custody" | "unknown")
+                      }
+                      className="w-full px-3 py-2 border rounded-md bg-background"
+                    >
+                      <option value="unknown">Unknown</option>
+                      <option value="in_custody">In custody</option>
+                      <option value="not_in_custody">Not in custody</option>
+                    </select>
+                  </div>
+                </Card>
+                <Card className="p-6 border border-border/50">
+                  <h2 className="text-xl font-bold mb-4">Run analysis</h2>
+                  <Button
+                    onClick={handleQuickAnalyze}
+                    disabled={quickLoading || quickDescription.trim().length < 20}
+                    className="w-full bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                  >
+                    {quickLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Analyzing…
+                      </>
+                    ) : (
+                      <>
+                        <Brain className="w-4 h-4 mr-2" />
+                        Analyze matter
+                      </>
+                    )}
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Uses the lawyer quick-analysis API with the same risk guards as citizen quick triage. Add sections and
+                    stage for sharper output.
+                  </p>
+                </Card>
+              </div>
+              <div className="lg:col-span-2 space-y-6">
+                {quickError && (
+                  <Card className="p-6 border-destructive/50 bg-destructive/10">
+                    <div className="flex items-center gap-2 text-destructive">
+                      <XCircle className="w-5 h-5" />
+                      <p className="font-semibold">Error: {quickError}</p>
+                    </div>
+                  </Card>
+                )}
+                {quickResults && (
+                  <>
+                    <Card className="p-6 border border-border/50 bg-gradient-to-br from-card to-card/80">
+                      <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                        <BarChart3 className="w-6 h-6 text-primary" />
+                        Case summary
+                      </h2>
+                      <p className="text-sm text-muted-foreground mb-4">{quickResults.summary}</p>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className={`p-4 rounded-lg border ${getRiskBg(quickResults.risk_score)}`}>
+                          <p className="text-sm text-muted-foreground mb-1">Risk score</p>
+                          <p className={`text-3xl font-bold ${getRiskColor(quickResults.risk_score)}`}>
+                            {quickResults.risk_score}%
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-1">{quickResults.risk_level} risk</p>
+                        </div>
+                        <div className="p-4 rounded-lg border border-border/50 bg-card">
+                          <p className="text-sm text-muted-foreground mb-1">Likely case type</p>
+                          <p className="text-lg font-semibold text-foreground">{quickResults.likely_case_type}</p>
+                        </div>
+                        <div className="p-4 rounded-lg border border-border/50 bg-card">
+                          <p className="text-sm text-muted-foreground mb-1">Extracted sections</p>
+                          <p className="text-sm font-semibold text-foreground">
+                            {quickResults.extracted_sections.length > 0
+                              ? quickResults.extracted_sections.join(", ")
+                              : "Not clearly identified"}
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                    <Card className="p-6 border border-border/50">
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5 text-primary" />
+                        Recommendations
+                      </h3>
+                      <ul className="space-y-2">
+                        {quickResults.recommendations.map((rec, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                            <p className="text-sm">{rec}</p>
+                          </li>
+                        ))}
+                      </ul>
+                    </Card>
+                    <Card className="p-6 border border-border/50">
+                      <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-primary" />
+                        Immediate next steps
+                      </h3>
+                      <ul className="space-y-2">
+                        {quickResults.next_steps.map((step, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <CheckCircle2 className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                            <p className="text-sm">{step}</p>
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-xs text-muted-foreground mt-4">{quickResults.disclaimer}</p>
+                    </Card>
+                  </>
+                )}
+                {!quickResults && !quickError && (
+                  <Card className="p-12 text-center border border-border/50">
+                    <Brain className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                    <p className="text-muted-foreground">
+                      Enter your matter memo (and optional sections or stage), then run analysis for fast triage aligned
+                      with citizen quick analysis.
+                    </p>
+                  </Card>
+                )}
+              </div>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-1 space-y-6">
               <Card className="p-6 border border-border/50">
@@ -594,6 +821,7 @@ export default function LawyerCaseAnalysisPage() {
               )}
             </div>
           </div>
+          )}
         </div>
       </main>
     </div>

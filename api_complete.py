@@ -250,6 +250,18 @@ class CitizenQuickCaseRequest(BaseModel):
     custody_status: Optional[str] = "unknown"  # in_custody, not_in_custody, unknown
 
 
+class LawyerQuickCaseRequest(BaseModel):
+    """Advocate-facing quick triage: same JSON output as citizen flow, richer optional intake."""
+    case_description: str
+    urgency: Optional[str] = "medium"
+    city: Optional[str] = ""
+    hearing_court: Optional[str] = ""
+    custody_status: Optional[str] = "unknown"
+    known_ppc_sections: Optional[str] = ""
+    case_stage: Optional[str] = ""
+    procedural_notes: Optional[str] = ""
+
+
 class CreateLawyerClientRequest(BaseModel):
     lawyerId: str
     clientName: str
@@ -742,14 +754,19 @@ def _normalize_risk_score_0_100(raw) -> int:
     return int(max(0, min(100, round(val))))
 
 
-def _heuristic_risk_floor(request: CitizenQuickCaseRequest) -> int:
-    """Minimum plausible severity from plain text + sections (Pakistan criminal triage)."""
-    text = (request.case_description or "").lower()
-    sections = _extract_sections_from_text(request.case_description)
+def _heuristic_risk_floor_core(
+    case_description: str,
+    custody_status: Optional[str],
+    urgency: Optional[str],
+    supplementary_text: str = "",
+) -> int:
+    """Minimum plausible severity from narrative + optional advocate context (Pakistan criminal triage)."""
+    combined = f"{case_description or ''} {supplementary_text or ''}"
+    text = combined.lower()
+    sections = _extract_sections_from_text(combined)
     sec_join = " ".join(sections).lower()
 
     floor = 22
-    # Violent / grave
     violent = [
         "murder", "kill", "killed", "killing", "death", "dead", "die", "dies",
         "qatal", "qatil", "302", "307", "324", "kidnap", "abduct", "rape",
@@ -757,7 +774,6 @@ def _heuristic_risk_floor(request: CitizenQuickCaseRequest) -> int:
     ]
     if any(k in text for k in violent) or any(s in sec_join for s in ["302", "307", "324", "392"]):
         floor = 78
-    # Theft / property / robbery
     elif any(
         k in text
         for k in [
@@ -766,20 +782,27 @@ def _heuristic_risk_floor(request: CitizenQuickCaseRequest) -> int:
         ]
     ) or any(s in sec_join for s in ["379", "380", "356", "457"]):
         floor = 44
-    # Fraud / cyber / white-collar
     elif any(
         k in text for k in ["fraud", "420", "cyber", "online", "cheat", "cheating", "forgery", "468", "471"]
     ) or any(s in sec_join for s in ["420", "468", "471"]):
         floor = 52
-    # Assault / hurt / harassment
     elif any(k in text for k in ["assault", "beat", "beating", "hurt", "323", "354", "harass"]):
         floor = 48
-    # Custody / arrest urgency
-    if (request.custody_status or "").lower() == "in_custody":
+    if (custody_status or "").lower() == "in_custody":
         floor = min(95, floor + 8)
-    if (request.urgency or "medium").lower() == "high":
+    if (urgency or "medium").lower() == "high":
         floor = min(95, floor + 5)
     return floor
+
+
+def _heuristic_risk_floor(request: CitizenQuickCaseRequest) -> int:
+    """Citizen quick-analysis risk floor (unchanged behaviour: narrative only)."""
+    return _heuristic_risk_floor_core(
+        request.case_description or "",
+        request.custody_status,
+        request.urgency,
+        "",
+    )
 
 
 def _risk_level_from_score(score: int) -> str:
@@ -790,10 +813,16 @@ def _risk_level_from_score(score: int) -> str:
     return "Low"
 
 
-def _fallback_quick_case_analysis(request: CitizenQuickCaseRequest) -> Dict:
-    """Fast no-model fallback so citizens always get instant guidance."""
-    text = (request.case_description or "").lower()
-    sections = _extract_sections_from_text(request.case_description)
+def _fallback_quick_case_analysis(
+    request: CitizenQuickCaseRequest,
+    *,
+    supplementary_text: str = "",
+    audience: str = "citizen",
+) -> Dict:
+    """Fast no-model fallback for quick triage (citizen or advocate audience)."""
+    combined = f"{request.case_description or ''} {supplementary_text or ''}".strip()
+    text = combined.lower()
+    sections = _extract_sections_from_text(combined)
 
     risk_score = 45
     if any(k in text for k in ["murder", "302", "kidnap", "terror", "narcotics", "rape"]):
@@ -808,32 +837,57 @@ def _fallback_quick_case_analysis(request: CitizenQuickCaseRequest) -> Dict:
     if (request.custody_status or "unknown").lower() == "in_custody":
         risk_score = min(95, risk_score + 6)
 
-    risk_score = int(max(0, min(100, max(risk_score, _heuristic_risk_floor(request)))))
+    floor = _heuristic_risk_floor_core(
+        request.case_description or "",
+        request.custody_status,
+        request.urgency,
+        supplementary_text,
+    )
+    risk_score = int(max(0, min(100, max(risk_score, floor))))
     risk_level = _risk_level_from_score(risk_score)
 
-    recommendations = [
-        "Keep FIR copy, arrest memo, and all police documents in one folder.",
-        "Write a clear timeline of events with dates, locations, and witness names.",
-        "Consult a criminal lawyer before giving detailed statements."
-    ]
-    if (request.custody_status or "").lower() == "in_custody":
-        recommendations.insert(0, "Discuss urgent bail preparation and hearing strategy immediately.")
-    if "cyber" in text:
-        recommendations.append("Preserve digital evidence (screenshots, logs, messages, transaction IDs).")
+    if audience == "lawyer":
+        recommendations = [
+            "Cross-check FIR narrative with witness statements and recovery memos for material contradictions.",
+            "Map statutory ingredients to facts; note gaps the prosecution must prove beyond reasonable doubt.",
+            "Calendar limitation, remand, and bail-application deadlines; preserve proof of service on opposing counsel.",
+        ]
+        if (request.custody_status or "").lower() == "in_custody":
+            recommendations.insert(0, "Prioritize bail grounds (352 Cr.P.C., case law, medical/family hardship) and custody conditions.")
+        if "cyber" in text:
+            recommendations.append("Chain-of-custody for digital exhibits: hash values, seizure memos, FIA/cybercrime lab reports.")
+        next_steps = [
+            "Prepare a one-page issues matrix (charges, elements, key exhibits, adverse witnesses).",
+            "Request complete investigation file where procedure allows; flag illegal search or arrest if applicable.",
+            "Align client instructions with written brief before hearings.",
+        ]
+        summary = "Advocate triage from your case memo and optional sections—verify against the complete record."
+    else:
+        recommendations = [
+            "Keep FIR copy, arrest memo, and all police documents in one folder.",
+            "Write a clear timeline of events with dates, locations, and witness names.",
+            "Consult a criminal lawyer before giving detailed statements.",
+        ]
+        if (request.custody_status or "").lower() == "in_custody":
+            recommendations.insert(0, "Discuss urgent bail preparation and hearing strategy immediately.")
+        if "cyber" in text:
+            recommendations.append("Preserve digital evidence (screenshots, logs, messages, transaction IDs).")
+        next_steps = [
+            "Share all available documents with your lawyer.",
+            "Track next hearing date and required court documents.",
+            "Do not delete chats/files that may be evidence.",
+        ]
+        summary = "Initial legal triage generated from your plain-language case description."
 
     return {
-        "summary": "Initial legal triage generated from your plain-language case description.",
+        "summary": summary,
         "extracted_sections": sections,
         "likely_case_type": "Criminal Matter",
         "risk_score": risk_score,
         "risk_level": risk_level,
         "recommendations": recommendations[:6],
-        "next_steps": [
-            "Share all available documents with your lawyer.",
-            "Track next hearing date and required court documents.",
-            "Do not delete chats/files that may be evidence."
-        ],
-        "disclaimer": "This is AI-supported guidance, not a substitute for formal legal advice."
+        "next_steps": next_steps,
+        "disclaimer": "This is AI-supported guidance, not a substitute for formal legal advice.",
     }
 
 
@@ -953,6 +1007,219 @@ Rules:
         print(f"Error in citizen quick case analysis: {e}")
         print(traceback.format_exc())
         return _fallback_quick_case_analysis(request)
+
+
+def _lawyer_quick_supplementary(req: LawyerQuickCaseRequest) -> str:
+    return " ".join(
+        p
+        for p in [req.known_ppc_sections or "", req.case_stage or "", req.procedural_notes or ""]
+        if (p or "").strip()
+    )
+
+
+def _merge_quick_extracted_sections(*text_blobs: str) -> List[str]:
+    """Union section-like tokens from multiple free-text fields (dedup, cap length)."""
+    seen: List[str] = []
+    for blob in text_blobs:
+        if not blob:
+            continue
+        for item in _extract_sections_from_text(blob):
+            u = str(item).strip().upper()
+            if u and u not in seen:
+                seen.append(u)
+            if len(seen) >= 12:
+                return seen
+    return seen
+
+
+@app.post("/api/lawyer/case-quick-analysis")
+async def lawyer_case_quick_analysis(request: LawyerQuickCaseRequest):
+    """
+    Advocate quick triage: same JSON schema as /api/citizen/case-quick-analysis,
+    with optional PPC/stage/notes for sharper strategy-oriented output.
+    """
+    try:
+        description = (request.case_description or "").strip()
+        if len(description) < 20:
+            raise HTTPException(
+                status_code=400,
+                detail="Please provide at least 20 characters describing the matter.",
+            )
+
+        supplementary = _lawyer_quick_supplementary(request)
+        base = CitizenQuickCaseRequest(
+            case_description=request.case_description,
+            urgency=request.urgency,
+            city=request.city,
+            hearing_court=request.hearing_court,
+            custody_status=request.custody_status,
+        )
+
+        groq_key = ""
+        try:
+            from config import GROQ_API_KEY
+            groq_key = GROQ_API_KEY or ""
+        except Exception:
+            groq_key = ""
+
+        if not groq_key:
+            parsed_fb = _fallback_quick_case_analysis(
+                base, supplementary_text=supplementary, audience="lawyer"
+            )
+            parsed_fb["extracted_sections"] = _merge_quick_extracted_sections(
+                request.case_description,
+                request.known_ppc_sections or "",
+                supplementary,
+            )
+            return parsed_fb
+
+        prompt = f"""You are a senior Pakistan criminal-law advocate advising another lawyer on a live file.
+Use precise but concise professional language (court-ready thinking, not lay explanations).
+
+Matter summary:
+- Facts / memo: {request.case_description}
+- Known PPC sections (if stated): {request.known_ppc_sections or "not specified"}
+- Procedural stage: {request.case_stage or "not specified"}
+- Advocate notes (procedure / evidence / risk): {request.procedural_notes or "none"}
+- Urgency: {request.urgency or "medium"}
+- City: {request.city or "not provided"}
+- Hearing court: {request.hearing_court or "not provided"}
+- Client custody status: {request.custody_status or "unknown"}
+
+Return STRICT JSON in this schema:
+{{
+  "summary": "short professional summary of issues and exposure",
+  "extracted_sections": ["302","420"],
+  "likely_case_type": "string",
+  "risk_score": 0,
+  "risk_level": "Low|Medium|High",
+  "recommendations": ["3-6 tactical bullets for counsel"],
+  "next_steps": ["3-5 immediate litigation / file tasks"],
+  "disclaimer": "short legal disclaimer"
+}}
+
+CRITICAL for risk_score:
+- risk_score MUST be an INTEGER from 0 to 100 (NOT a decimal, NOT a probability).
+- It measures overall seriousness / litigation exposure for triage (higher = more serious).
+- Calibrate using both narrative and any stated PPC sections.
+- Do NOT output values like 0.08. Use whole numbers only.
+
+Rules:
+- Recommendations should reflect advocate work (applications, record, cross-examination angles, disclosure)—not generic client advice.
+- If sections are unknown, use [] or best inference from text.
+- Return JSON only. No markdown.
+"""
+
+        response = requests.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {groq_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "llama-3.3-70b-versatile",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You generate valid JSON for Pakistan criminal-law advocate triage.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                "temperature": 0.2,
+                "max_tokens": 800,
+            },
+            timeout=25,
+        )
+
+        if response.status_code != 200:
+            parsed_fb = _fallback_quick_case_analysis(
+                base, supplementary_text=supplementary, audience="lawyer"
+            )
+            parsed_fb["extracted_sections"] = _merge_quick_extracted_sections(
+                request.case_description,
+                request.known_ppc_sections or "",
+                supplementary,
+            )
+            return parsed_fb
+
+        payload = response.json()
+        content = payload["choices"][0]["message"]["content"].strip()
+
+        import json
+
+        try:
+            cleaned = content.strip()
+            if cleaned.startswith("```"):
+                cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned, flags=re.IGNORECASE)
+                cleaned = re.sub(r"\s*```$", "", cleaned)
+            parsed = json.loads(cleaned)
+        except Exception:
+            parsed_fb = _fallback_quick_case_analysis(
+                base, supplementary_text=supplementary, audience="lawyer"
+            )
+            parsed_fb["extracted_sections"] = _merge_quick_extracted_sections(
+                request.case_description,
+                request.known_ppc_sections or "",
+                supplementary,
+            )
+            return parsed_fb
+
+        normalized = _normalize_risk_score_0_100(parsed.get("risk_score"))
+        floor = _heuristic_risk_floor_core(
+            request.case_description or "",
+            request.custody_status,
+            request.urgency,
+            supplementary,
+        )
+        parsed["risk_score"] = int(max(0, min(100, max(normalized, floor))))
+
+        if parsed.get("risk_level") not in {"Low", "Medium", "High"}:
+            parsed["risk_level"] = _risk_level_from_score(parsed["risk_score"])
+        else:
+            expected = _risk_level_from_score(parsed["risk_score"])
+            if parsed["risk_level"] == "Low" and parsed["risk_score"] >= 60:
+                parsed["risk_level"] = expected
+            elif parsed["risk_level"] == "High" and parsed["risk_score"] < 45:
+                parsed["risk_level"] = expected
+
+        model_sections = parsed.get("extracted_sections")
+        if not isinstance(model_sections, list):
+            model_sections = []
+        parsed["extracted_sections"] = _merge_quick_extracted_sections(
+            request.known_ppc_sections or "",
+            request.case_description,
+            " ".join(str(s) for s in model_sections),
+        )
+        parsed.setdefault(
+            "disclaimer",
+            "This is AI-supported guidance, not a substitute for formal legal advice.",
+        )
+        return parsed
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+
+        print(f"Error in lawyer quick case analysis: {e}")
+        print(traceback.format_exc())
+        supplementary = _lawyer_quick_supplementary(request)
+        base = CitizenQuickCaseRequest(
+            case_description=request.case_description,
+            urgency=request.urgency,
+            city=request.city,
+            hearing_court=request.hearing_court,
+            custody_status=request.custody_status,
+        )
+        parsed_fb = _fallback_quick_case_analysis(
+            base, supplementary_text=supplementary, audience="lawyer"
+        )
+        parsed_fb["extracted_sections"] = _merge_quick_extracted_sections(
+            request.case_description,
+            request.known_ppc_sections or "",
+            supplementary,
+        )
+        return parsed_fb
+
 
 # Bail Prediction Endpoint (standalone)
 class BailFactorsRequest(BaseModel):
